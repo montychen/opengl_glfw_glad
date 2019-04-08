@@ -1,3 +1,7 @@
+* Mac 系统已经自带了 OpenGL 核心库。
+感兴趣的可以去目录 /System/Library/Frameworks/OpenGL.framework/ 里看一下。
+
+
 * Mac 下安装 GLFW
 使用homebrew来安装 GLFW，如果没安装homebrew的需要先安装一下。
 
