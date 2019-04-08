@@ -13,6 +13,7 @@ INCLUDE_DIRECTORIES("/usr/local/Cellar/glfw/3.2.1/include")
 
 LINK_LIBRARIES("/usr/local/Cellar/glfw/3.2.1/lib/libglfw.3.2.dylib")
 
+** 更多关于使用 glfw 和 glad 的文章可以参考 [[https://learnopengl-cn.github.io/01%20Getting%20started/02%20Creating%20a%20window/]] 
 
 
 * use cmake build
