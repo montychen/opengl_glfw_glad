@@ -1,0 +1,25 @@
+* Mac 下安装 GLFW
+使用homebrew来安装 GLFW，如果没安装homebrew的需要先安装一下。
+
+$ brew install glfw3
+
+下载完就安装好了！
+
+/usr/local/Cellar/ 目录下会多出来一个 glfw 的文件夹，相关的文件都在这个里面。
+
+在 CMakeLists.txt 文件里 设置头文件和引用库的包含路径后。就可以在使用的时候引入头文件 glfw3.h 
+
+INCLUDE_DIRECTORIES("/usr/local/Cellar/glfw/3.2.1/include")
+
+LINK_LIBRARIES("/usr/local/Cellar/glfw/3.2.1/lib/libglfw.3.2.dylib")
+
+
+
+* use cmake build
+参考这里设置 [[https://zhuanlan.zhihu.com/p/45528705][CMakeLists.txt]]
+至此, 你已经完成了基本项目的构建, 可以随意修改代码, 只要运行
+
+cd build 
+cmake ..  #生成Makefile
+make   #编译
+就可以生成可执行文件了.
