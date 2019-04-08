@@ -20,6 +20,9 @@ LINK_LIBRARIES("/usr/local/Cellar/glfw/3.2.1/lib/libglfw.3.2.dylib")
 至此, 你已经完成了基本项目的构建, 可以随意修改代码, 只要运行
 
 cd build 
+
 cmake ..  #生成Makefile
+
 make   #编译
+
 就可以生成可执行文件了.
