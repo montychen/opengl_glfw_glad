@@ -1,5 +1,5 @@
 * Mac 系统已经自带了 OpenGL 核心库。
-- 完整支持OpenGL v4.1 :  2019年3月在本人的电脑macOS Mojava 10.14.3 用 OpenGL Extensions Viewer 查看，  OpenGL v4.1 100%完整支持.
+- MacOS Mojava 10.14 完整支持OpenGL v4.1 :  2019年3月在本人的电脑, 用 OpenGL Extensions Viewer 查看
 - 感兴趣的可以去目录 /System/Library/Frameworks/OpenGL.framework/ 里看一下。
 
 
