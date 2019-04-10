@@ -3,4 +3,4 @@
 早期的OpenGL使用  *立即渲染模式*（Immediate mode，也就是 /固定渲染管线/ ），这个模式下 +绘制+ 图形很 _方便_ 。OpenGL的大多数功能都被库隐藏起来，开发者很少能控制OpenGL如何进行计算的自由.
 
 *aa*
-_ab_ dkaei _a_ dkaiekdaei _a_ *dk* adfaf *未来*     
+_ab_ dkaei _a_ dkaiekdaei _a_ * dk* adfaf *未来* *立即渲染模式*  *aa*     
