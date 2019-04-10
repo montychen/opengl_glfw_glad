@@ -1,7 +1,23 @@
 * 入门
 ** OpenGL
 - 早期的OpenGL使用 *立即渲染模式* （Immediate mode，也就是固定渲染管线），这个模式下绘制图形很方便。OpenGL的大多数功能都被库隐藏起来，开发者很少能控制OpenGL如何进行计算的自由。
-- *立即渲染模式* 确实容易使用和理解，但是效率太低。因此从OpenGL3.2开始，规范文档开始废弃立即渲染模式，并鼓励开发者在OpenGL的 *核心模式* (Core-profile)下进行开发，3.3分支的规范完全移除了旧的特性。
+- *立即渲染模式* 确实容易使用和理解，但是效率太低。因此从OpenGL3.2开始，规范文档开始废弃立即渲染模式，并鼓励开发者在OpenGL的 *核心模式* ( *Core-profile* )下进行开发，3.3分支的规范完全移除了旧的特性。后续OpenGL的更高的版本都是在3.3的基础上，引入了额外的功能，并没有改动核心架构。
 - 当使用OpenGL的核心模式时，OpenGL迫使我们使用现代的函数。当我们试图使用一个已废弃的函数时，OpenGL会抛出一个错误并终止绘图。现代函数要求使用者真正理解OpenGL和图形编程，它有一些难度，然而提供了更多的灵活性，更高的效率，更重要的是可以更深入的理解图形编程。
+
+** 状态机
+- OpenGL自身是一个巨大的 *状态机(State Machine)* ：一系列的变量描述OpenGL此刻应当如何运行。OpenGL的状态通常被称为OpenGL *上下文(Context)* 。我们通常使用如下途径去更改OpenGL状态：设置选项，操作缓冲。最后，我们使用当前OpenGL上下文来渲染。假设当我们想告诉OpenGL去画线段而不是三角形的时候，我们通过改变一些上下文变量来改变OpenGL状态，从而告诉OpenGL如何去绘图。一旦我们改变了OpenGL的状态为绘制线段，下一个绘制命令就会画出线段而不是三角形。
+
+#+BEGIN_SRC c++
+// 创建对象
+unsigned int objectId = 0;
+glGenObject(1, &objectId);
+// 绑定对象至上下文
+glBindObject(GL_WINDOW_TARGET, objectId);
+// 设置当前绑定到 GL_WINDOW_TARGET 的对象的一些选项
+glSetObjectOption(GL_WINDOW_TARGET, GL_OPTION_WINDOW_WIDTH, 800);
+glSetObjectOption(GL_WINDOW_TARGET, GL_OPTION_WINDOW_HEIGHT, 600);
+// 将上下文对象设回默认
+glBindObject(GL_WINDOW_TARGET, 0);
+#+BEGIN_SRC
 
 
