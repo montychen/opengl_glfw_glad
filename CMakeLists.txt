@@ -24,9 +24,9 @@ SET(EXECUTABLE_OUTPUT_PATH "${PROJECT_SOURCE_DIR}/bin") # 可执行文件输出�
 
 INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/include") # 头文件包含目录  
 
-INCLUDE_DIRECTORIES("/usr/local/Cellar/glfw/3.2.1/include")
+INCLUDE_DIRECTORIES("/usr/local/include")   # 用brew 安装软件，头文件都放在这个目录。
+LINK_LIBRARIES("/usr/local/lib/libglfw.dylib")  # 用brew安安装软件，库文件都放在这里
 
-LINK_LIBRARIES("/usr/local/Cellar/glfw/3.2.1/lib/libglfw.3.2.dylib")
 
 
 
