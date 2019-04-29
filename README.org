@@ -1,6 +1,7 @@
 * Mac 系统已经自带了 OpenGL 核心库。
 - MacOS Mojave 10.14 完整支持OpenGL v4.1 :  2019年3月在本人的电脑, 用 OpenGL Extensions Viewer 查看
-- 感兴趣的可以去目录 /System/Library/Frameworks/OpenGL.framework/ 里看一下。
+
+- 感兴趣的可以去目录  /System/Library/Frameworks/OpenGL.framework/ 里看一下。
 
 
 * Mac 下安装 GLFW
@@ -12,11 +13,10 @@ $ brew install glfw3
 
 /usr/local/Cellar/ 目录下会多出来一个 glfw 的文件夹，相关的文件都在这个里面。
 
-在 CMakeLists.txt 文件里 设置头文件和引用库的包含路径: 添加GLFW的include文件夹里头文件的路径，和libglfw3.2.dylib库文件的。之后就可以在使用的时候引入头文件 glfw3.h 了。
+在 CMakeLists.txt 文件里 设置头文件和引用库的包含路径: 添加GLFW头文件的路径，和libglfw3.2.dylib库文件的路径。之后就可以在使用的时候引入头文件 glfw3.h 了。
 
-INCLUDE_DIRECTORIES("/usr/local/Cellar/glfw/3.2.1/include")
-
-LINK_LIBRARIES("/usr/local/Cellar/glfw/3.2.1/lib/libglfw.3.2.dylib")
+INCLUDE_DIRECTORIES("/usr/local/include")   #brew安装头文件的目录 /usr/local/include, 包括 GLFW 头文件
+LINK_LIBRARIES("/usr/local/lib/libglfw.3.3.dylib")    # brew安装链接库的目录 /usr/local/lib
 
 ** 更多关于使用 glfw 和 glad 的文章可以参考 [[https://learnopengl-cn.github.io/01%20Getting%20started/02%20Creating%20a%20window/]] 
 
