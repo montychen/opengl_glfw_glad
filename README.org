@@ -42,7 +42,7 @@ OpenGL 只是一个标准/规范，具体的实现是由驱动开发商针对特
 #include <glad/glad.h> 
 #+end_src
 
-** 更多关于使用 glfw 和 glad 的文章可以参考 [[https://learnopengl-cn.github.io/01%20Getting%20started/02%20Creating%20a%20window/]] 
+** 更多关于使用 glfw 和 glad 的文章可以参考 [[https://learnopengl-cn.github.io/01%20Getting%20started/02%20Creating%20a%20window/][LearnOpenGL 创建窗口这章]]
 
 
 
