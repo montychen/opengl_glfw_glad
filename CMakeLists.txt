@@ -25,6 +25,8 @@ INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/include") # 头文件包含目录
 
 INCLUDE_DIRECTORIES("/usr/local/include")   # 用brew 安装软件，头文件都放在这个目录。
 LINK_LIBRARIES("/usr/local/lib/libglfw.dylib")  # 用brew安安装软件，库文件都放在这里
+LINK_LIBRARIES("/usr/local/lib/libsoil2-debug.a")    # 下一步生成的 SOIL2 库文件。
+
 
 
 
