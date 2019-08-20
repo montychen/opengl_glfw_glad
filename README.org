@@ -1,34 +1,87 @@
 * Mac 系统已经自带了 OpenGL 核心库。
-- MacOS Mojave 10.14 完整支持OpenGL v4.1 :  2019年3月在本人的电脑, 用 OpenGL Extensions Viewer 查看
+- MacOS Mojave 10.14 完整支持 *OpenGL v4.1* :  2019 年 3 月在本人的电脑, 用 OpenGL Extensions Viewer 查看
 
 - 感兴趣的可以去目录  /System/Library/Frameworks/OpenGL.framework/ 里看一下。
 
 
 * Mac 下安装 GLFW
-使用homebrew来安装 GLFW，如果没安装homebrew的需要先安装一下。
+GLFW 是一个专门针对 OpenGL/Vulkan 的 C 语言库，它提供了渲染物体所需的最小的接口：创建 OpenGL 上下文、生成跨平台的显示窗口、处理用户输入，这正是我们需要的。
+
+** 1、使用 homebrew 来安装 GLFW，如果没安装 homebrew 的需要先安装一下。
 
 $ brew install glfw3
 
-下载完就安装好了！
+安装后：
 
 /usr/local/Cellar/ 目录下会多出来一个 glfw 的文件夹，相关的文件都在这个里面。
 
-在 CMakeLists.txt 文件里 设置头文件和引用库的包含路径: 添加GLFW头文件的路径，和libglfw3.2.dylib库文件的路径。之后就可以在使用的时候引入头文件 glfw3.h 了。
+** 2、在 CMakeLists.txt 文件里 设置头文件和引用库的包含路径: 添加 GLFW 头文件的路径，和 libglfw3.2.dylib 库文件的路径。之后就可以在使用的时候引入头文件 glfw3.h 了。
+#+begin_src bash
+INCLUDE_DIRECTORIES("/usr/local/include")   #brew 安装头文件的目录 /usr/local/include, 包括 GLFW 头文件
+LINK_LIBRARIES("/usr/local/lib/libglfw.3.3.dylib")    # brew 安装链接库的目录 /usr/local/lib
+LINK_LIBRARIES("/usr/local/lib/libsoil2-debug.a")    # 下一步生成的 SOIL2 库文件。
+#+end_src
 
-INCLUDE_DIRECTORIES("/usr/local/include")   #brew安装头文件的目录 /usr/local/include, 包括 GLFW 头文件
-LINK_LIBRARIES("/usr/local/lib/libglfw.3.3.dylib")    # brew安装链接库的目录 /usr/local/lib
+现在你就可以用如下方式引用 GLFW 头文件：
+#+begin_src c++
+#include <GLFW\glfw3.h>
+#+end_src
+
+
+* 配置 GLAD
+OpenGL 只是一个标准/规范，具体的实现是由驱动开发商针对特定显卡实现的。由于 OpenGL 驱动版本众多，它大多数函数的位置都无法在编译时确定下来，需要在运行时查询。所以任务就落在了开发者身上，开发者需要在运行时获取函数地址并将其保存在一个函数指针中供以后使用。
+
+** 1、打开 [[https://glad.dav1d.de][GLAD 的在线服务]]，生成 Glad 文件：
+- 将语言(Language)设置为 C/C++，在 API 选项中，选择 3.3 或以上版本
+- 将模式(Profile)设置为 Core，并且保证生成加载器(Generate loader)的选项是选中的。
+- 现在可以先（暂时）忽略拓展(Extensions)中的内容。都选择完之后，点击生成(Generate)按钮来生成库文件。
+
+** 2、GLAD 现在应该提供给你了一个 zip 压缩文件：包含两个头文件目录（glad 和 KHR），和一个 glad.c 文件。
+- 将两个头文件目录 [[file:include/glad/][glad]] 和 [[file:include/KHR][KHR]] 复制到你的 Include 文件夹中。 这里把它放到项目的 include 目录下： ${PROJECT_SOURCE_DIR}/include"
+- 添加 [[file:src/glad.c][glad.c]] 文件到你的工程中。 这里把它放到项目的源代码 src 目录中： ${PROJECT_SOURCE_DIR}/src
+
+经过前面的这些步骤之后，你就应该可以将以下的指令加到你的文件顶部了：
+#+begin_src c++
+#include <glad/glad.h> 
+#+end_src
 
 ** 更多关于使用 glfw 和 glad 的文章可以参考 [[https://learnopengl-cn.github.io/01%20Getting%20started/02%20Creating%20a%20window/]] 
 
 
-* use cmake build
-参考这里设置 [[https://zhuanlan.zhihu.com/p/45528705][CMakeLists.txt]]
+
+* 矩阵运算 [[https://github.com/g-truc/glm][glm]] 它是一个只需要包含它的头文件就可以使用的库：
+- 下载 glm 后解压， 里面有一个 glm 文件夹，把它拷贝到 [[/usr/local/include/glm][/usr/local/include]] 目录下即可。或者也可以通过 brew install glm 就可以把需要的 glm  文件夹安装到/usr/local/include 目录下。
+
+
+* [[https://bitbucket.org/SpartanJ/soil2/src/default][SOIL2]] 简易 OpenGL 图像库(Simple OpenGL Image Library)
+- 下载 SOIL2, 解压。
+- 下载 [[https://premake.github.io/index.html][premake 4.4 beta 版]] 解压后是一个可执行文件，把它拷贝到 SOIL2 的目录下。
+- 打开终端，进入 SOIL2 所在的目录下,运行
+  #+begin_src bash
+./premake4 gmake               # 会生成一个 make 目录。
+cd make/macosx
+make                            # build 会成功，在 lib/macosx 目录下生成 libsoil2-debug.a 文件；但没安装 SDL2, test 可能会失败，不过没关系。
+  #+end_src
+- 把 SOIL2 根目录下的头文件目录 src/SOIL2 拷贝到 [[/usr/local/include/SOIL2][/usr/local/include]]
+- 把上一步 build 出来的库文件 lib/macosx/libsoil2-debug.a 放到[[/usr/local/lib]]目录下。
+
+
+* xCode项目配置
+- 在Build Settings >> Header Search Paths 加入目录：/usr/local/include
+- 在Build Settings >> library search path 加入目录：/usr/local/lib
+- 在Build Phases   >> Link Binary with Libraries, 点击 + 添加如下库文件
+  1) OpenGL.Framework           ;;系统自带
+  2) CoreFoundation.Framework   ;;系统自带u
+  3) libglfw.3.3.dylib     ;; 在/usr/local/lib
+  4) libsoil2-debug.a      ;; 在/usr/local/lib
+
+
+* use cmake build，参考这里设置 [[https://zhuanlan.zhihu.com/p/45528705][CMakeLists.txt]]
 至此, 你已经完成了基本项目的构建, 可以随意修改代码, 只要运行
-
-cd build 
-
-cmake ..  #生成Makefile
-
+#+begin_src bash
+cd build
+cmake ..  #生成 Makefile
 make   #编译
+#+end_src
 
 就可以生成可执行文件了.
