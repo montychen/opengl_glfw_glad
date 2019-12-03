@@ -1,1 +1,11 @@
-WebGL 1.0 基于OpenGL ES 2.0; 截止2019年12月，iOS和Android上的浏览器都已经支持WebGL 1.0, 但都还不支持WebGL 2.0。
+* WebGL和画布canvas
+WebGL使用在HTML5中新引入的<canvas>标签来定义绘图区域；传统的<img>标签只能用来显示图片，不能进行实时绘制和渲染；<canvas>允许Javascript动态的绘制图形，如果没有WebGL, Javascript只能在<canvas>绘制二维图形，有了WebGL,就可以在上面绘制三维图形了。
+#+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
+[[file:webgl/webgl_opengl.png]]
+
+- 2011年3月发布基于OpenGL ES 2.0的 WebGL 1.0;  2017年1月发布基于OpenGL ES 3.0的WebGL 2.0。
+- 截止2019年12月，iOS和Android上的浏览器都已经支持WebGL 1.0, 但都还不支持WebGL 2.0。 PC上，Chrome和firefox都支持WebGL 2.0, safari只支持WebGL 1.0
+- 在浏览器输入 https://webglreport.com/ 可查看该浏览器对WebGL的支持情况。
+- WebGL渲染过程
+#+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
+[[file:webgl/webgl_pipeline.png]]
