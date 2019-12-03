@@ -9,3 +9,44 @@ WebGL使用在HTML5中新引入的<canvas>标签来定义绘图区域；传统�
 - WebGL渲染过程
 #+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
 [[file:webgl/webgl_pipeline.png]]
+
+* 获取画布canvas和绘图基本步骤
+** 在html中定义canvas，并用id属性为其指定唯一标识符；加载JS文件，同时在<body>的onload属性指定JS执行的入口函数
+#+begin_src html
+<!DOCTYPE html>
+<html lang="en">
+  <head> <meta charset="utf-8" /> <title>Draw a blue rectangle (canvas version)</title>  </head>
+
+  <body onload="main()"> <!-- 指定JS执行的入口函数 -->
+    <canvas id="example" width="400" height="400">  Please use a browser that supports "canvas" </canvas> <!-- 定义canvas，并用id属性为其指定唯一标识符； -->
+    <script src="DrawRectangle.js"></script>       <!-- 加载JS文件 -->
+  </body>
+</html>
+#+end_src
+
+** 在canvas上绘制二位图形（2D图形），需要以下三个步骤
+  1、通过id标识符，获取<canvas>元素
+  2、请求绘图上下文context
+  3、通过绘图上下文调用绘图函数
+  #+begin_src javascript
+// DrawTriangle.js (c) 2012 matsuda
+function main() {               // JS函数入口
+    var canvas = document.getElementById('example'); // 通过id标识符，获取<canvas>元素
+    if (!canvas) {
+        console.log('Failed to retrieve the <canvas> element');
+        return false;
+    }
+
+    var ctx = canvas.getContext('2d'); // 请求绘图上下文context， 这里请求的是2D的上下文。
+
+    // 绘制蓝色矩形
+    ctx.fillStyle = 'rgba(0, 0, 255, 1.0)'; // 设置填充颜色为蓝色。 a的取值在0.0透明---到1.0不透明之间。
+    ctx.fillRect(120, 10, 150, 150);        // 使用填充色填充矩形。前两个参数（120，10）定义了矩形的左上顶点， 后两个参数（150，150）是矩形的宽高
+}
+  #+end_src
+
+** canvas的坐标
+- 原点（0，0）在左上角， x轴正向朝右， y轴正向朝下。上例定义的canvas宽高（400，400）， 在其中绘制的矩形fillRect(120, 10, 150, 150)如下图所示：
+
+#+ATTR_latex: :width 500   #+ATTR_HTML: :width 500  #+ATTR_ORG: :width 500
+[[file:webgl/webgl_coord.png]]
