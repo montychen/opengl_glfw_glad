@@ -1,0 +1,1 @@
+WebGL 1.0 基于OpenGL ES 2.0; 截止2019年12月，iOS和Android上的浏览器都已经支持WebGL 1.0, 但都还不支持WebGL 2.0。
