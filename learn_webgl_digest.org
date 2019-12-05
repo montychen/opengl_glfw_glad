@@ -10,8 +10,8 @@ WebGL使用在HTML5中新引入的<canvas>标签来定义绘图区域；传统�
 #+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
 [[file:webgl/webgl_pipeline.png]]
 
-* 获取画布canvas和绘图基本步骤
-** 在html中定义canvas，并用id属性为其指定唯一标识符；加载JS文件，同时在<body>的onload属性指定JS执行的入口函数
+* 在canvas绘图的4个步骤
+1、在html中定义canvas，并用id属性为其指定唯一标识符；加载JS文件，同时在<body>的onload属性指定JS执行的入口函数
 #+begin_src html
 <!DOCTYPE html>
 <html lang="en">
@@ -24,10 +24,12 @@ WebGL使用在HTML5中新引入的<canvas>标签来定义绘图区域；传统�
 </html>
 #+end_src
 
-** 在canvas上绘图，需要以下三个步骤
-1、通过id标识符，获取<canvas>元素
-2、请求绘图上下文context
-3、通过绘图上下文调用绘图函数
+2、通过id标识符，获取<canvas>元素
+3、请求绘图上下文context
+4、通过绘图上下文调用绘图函数
+
+*** 例子1：清空绘图背景色
+
 #+begin_src javascript
 // DrawTriangle.js (c) 2012 matsuda
 function main() {               // JS函数入口
@@ -42,6 +44,50 @@ function main() {               // JS函数入口
     // 用指定的黑色，清空绘图区域
     gl.clearColor(0.0, 0.0, 0.0, 1.0); // 指定清空画布的颜色为黑色。 颜色的取值从0.0到1.0。前面3个参数分别是rgb的值。最后一个参数是透明度a，它的取值在0.0透明---到1.0不透明之间。
     gl.clear(gl.COLOR_BUFFER_BIT);     // 用上面设置的clearColor清空绘图区域。opengl有多个缓冲区：颜色缓冲区COLOR_BUFFER_BIT、深度缓冲区DEPTH_BUFFER_BIT、模版缓冲区STENCIL_BUFFER_BIT。清空绘图区域实际上是清空颜色缓冲区color buffer， 所以这里传递的参数是COLOR_BUFFER_BIT
+}
+#+end_src
+
+*** 例子2: 绘制一个点
+#+begin_src javascript
+// HelloPoint1.js (c) 2012 matsuda
+// Vertex shader program
+var VSHADER_SOURCE =
+    'void main() {\n' +
+    '  gl_Position = vec4(0.0, 0.0, 0.0, 1.0);\n' + // Set the vertex coordinates of the point
+    '  gl_PointSize = 10.0;\n' +                    // Set the point size
+    '}\n';
+
+// Fragment shader program
+var FSHADER_SOURCE =
+    'void main() {\n' +
+    '  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n' + // Set the point color
+    '}\n';
+
+function main() {
+    // Retrieve <canvas> element
+    var canvas = document.getElementById('webgl');
+
+    // Get the rendering context for WebGL
+    var gl = getWebGLContext(canvas);
+    if (!gl) {
+        console.log('Failed to get the rendering context for WebGL');
+        return;
+    }
+
+    // Initialize shaders
+    if (!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) {
+        console.log('Failed to intialize shaders.');
+        return;
+    }
+
+    // Specify the color for clearing <canvas>
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+
+    // Clear <canvas>
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    // Draw a point
+    gl.drawArrays(gl.POINTS, 0, 1);
 }
 #+end_src
 
