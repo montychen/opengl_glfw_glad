@@ -11,7 +11,7 @@ WebGL使用在HTML5中新引入的<canvas>标签来定义绘图区域；传统�
 [[file:webgl/webgl_pipeline.png]]
 
 * 在canvas绘图的4个步骤
-1、在html中定义canvas，并用id属性为其指定唯一标识符；加载JS文件，同时在<body>的onload属性指定JS执行的入口函数
+1. 在html中定义canvas，并用id属性为其指定唯一标识符；加载JS文件，同时在<body>的onload属性指定JS执行的入口函数
 #+begin_src html
 <!DOCTYPE html>
 <html lang="en">
@@ -24,9 +24,9 @@ WebGL使用在HTML5中新引入的<canvas>标签来定义绘图区域；传统�
 </html>
 #+end_src
 
-2、通过id标识符，获取<canvas>元素
-3、请求绘图上下文context
-4、通过绘图上下文调用绘图函数
+2. 通过id标识符，获取<canvas>元素
+3. 请求绘图上下文context
+4. 通过绘图上下文调用绘图函数
 
 *** 例子1：清空绘图背景色
 
