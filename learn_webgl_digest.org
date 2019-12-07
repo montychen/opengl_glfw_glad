@@ -27,7 +27,8 @@ WebGL使用在HTML5中新引入的<canvas>标签来定义绘图区域；传统�
 ** 2、通过id标识符，获取<canvas>元素
 ** 3、请求绘图上下文context
 ** 4、通过绘图上下文调用绘图函数
-*** 例子1：清空绘图背景色
+
+** 例子1：清空绘图背景色
 
 #+begin_src javascript
 // DrawTriangle.js (c) 2012 matsuda
@@ -46,53 +47,60 @@ function main() {               // JS函数入口
 }
 #+end_src
 
-*** 例子2: 绘制一个点
+** 例子2: 绘制一个点
 #+begin_src javascript
-// HelloPoint1.js (c) 2012 matsuda
-// Vertex shader program
+// 顶点着色器。顶点指的是二维或三维空间总的一个点。
 var VSHADER_SOURCE =
     'void main() {\n' +
-    '  gl_Position = vec4(0.0, 0.0, 0.0, 1.0);\n' + // Set the vertex coordinates of the point
-    '  gl_PointSize = 10.0;\n' +                    // Set the point size
+    '  gl_Position = vec4(0.0, 0.0, 0.0, 1.0);\n' + // gl_Position是内置变量，用来表示一个顶点的位置坐标。
+    '  gl_PointSize = 10.0;\n' +                    // gl_PointSize也是内置变量，用来表示点的大小： 这里把每个点设为10个像素的大小
     '}\n';
 
-// Fragment shader program
+// 片元着色器的作用就是处理片元，使其显示在屏幕上。 片元指的是显示在屏幕上的一个像素，包括像素的位置、颜色和其它信息。
 var FSHADER_SOURCE =
     'void main() {\n' +
-    '  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n' + // Set the point color
+    '  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n' + // gl_FragColor是片元着色器唯一的内置变量，它控制这像素在屏幕上的最终颜色RGBA，这里设为红色
     '}\n';
 
 function main() {
-    // Retrieve <canvas> element
-    var canvas = document.getElementById('webgl');
+    var canvas = document.getElementById('webgl'); // 获取canvas元素
 
-    // Get the rendering context for WebGL
-    var gl = getWebGLContext(canvas);
+    var gl = getWebGLContext(canvas); // 获取webgl的绘图上下文
     if (!gl) {
         console.log('Failed to get the rendering context for WebGL');
         return;
     }
 
-    // Initialize shaders
-    if (!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) {
+    if (!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) { // 初始化着色器
         console.log('Failed to intialize shaders.');
         return;
     }
 
-    // Specify the color for clearing <canvas>
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    // 用指定的黑色，清空绘图区域
+    gl.clearColor(0.0, 0.0, 0.0, 1.0); // 指定清空画布的颜色为黑色。 颜色的取值从0.0到1.0。前面3个参数分别是rgb的值。最后一个参数是透明度a，它的取值在0.0透明---到1.0不透明之间。
+    gl.clear(gl.COLOR_BUFFER_BIT);     // 用上面设置的clearColor清空绘图区域。opengl有多个缓冲区：颜色缓冲区COLOR_BUFFER_BIT、深度缓冲区DEPTH_BUFFER_BIT、模版缓冲区STENCIL_BUFFER_BIT。清空绘图区域实际上是清空颜色缓冲区color buffer， 所以这里传递的参数是COLOR_BUFFER_BIT
 
-    // Clear <canvas>
-    gl.clear(gl.COLOR_BUFFER_BIT);
-
-    // Draw a point
-    gl.drawArrays(gl.POINTS, 0, 1);
+    // drawArrays(mode, first, count) 触发着色器开始执行：先逐顶点的执行顶点着色器vertex shader...再逐片元的执行片元着色器fragment shader。
+    // count被设为1表示只绘制一个点，所以drawArrays触发顶点着色器执行1次：它将vec4(0.0, 0.0, 0.0, 1.0)赋值给gl_Position，将值10.0赋给gl_PointSize.
+    // 一旦顶点着色器执行完后，片元着色器就开始执行，调用main()函数：将颜色值红色 vec4(1.0, 0.0, 0.0, 1.0)赋给gl_FragColor
+    // 最后一个 红色的 10个像素打的点 就被绘制在了(0.0, 0.0, 0.0, 1.0）处，也就是canvas的中间。
+    gl.drawArrays(gl.POINTS, 0, 1); // gl.POINTS表示绘制点; 0 表示从第一个顶点开始绘制； 1 表示只有一个顶点。
 }
 #+end_src
 
 
-* canvas的坐标
-- 原点（0，0）在左上角， x轴正向朝右， y轴正向朝下。上例定义的canvas宽高（400，400）， 在其中绘制的矩形fillRect(120, 10, 150, 150)如下图所示：
-
+* WebGL坐标
+** canvas的坐标
+- 原点（0，0）在左上角， x轴正向朝右， y轴正向朝下。例如：定义的canvas宽高（400，400）， 在用如下代码绘制的矩形fillRect(120, 10, 150, 150)，效果如下图所示：
+#+begin_src javascript
+ctx.fillStyle = 'rgba(0, 0, 255, 1.0)'; // Set color to blue
+ctx.fillRect(120, 10, 150, 150);        // Fill a rectangle with the color
+#+end_src
 #+ATTR_latex: :width 500   #+ATTR_HTML: :width 500  #+ATTR_ORG: :width 500
+[[file:webgl/canvas_coord.png]]
+
+** WebGL/OpenGL坐标 也叫 右手坐标系(Right-handed Coordinate System)
+- 当我们看向屏幕，原点（0.0，0.0，0.0）在屏幕的中间，X轴正向朝右， Y轴正向朝上，Z轴垂直于屏幕正向朝外（从屏幕指向你的后面）。
+ 
+#+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
 [[file:webgl/webgl_coord.png]]
