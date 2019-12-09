@@ -99,6 +99,11 @@ ctx.fillRect(120, 10, 150, 150);        // Fill a rectangle with the color
 #+ATTR_latex: :width 500   #+ATTR_HTML: :width 500  #+ATTR_ORG: :width 500
 [[file:webgl/canvas_coord.png]]
 
+* 浏览器客户区坐标 client area
+- 在浏览器，鼠标点击位置的坐标，是一个基于浏览器客户区的坐标值（client area）。它和canvas的坐标关系如下图所示：
+#+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
+[[file:webgl/browser_coord.png]]
+
 ** WebGL/OpenGL坐标 也叫 右手坐标系(Right-handed Coordinate System)
 - 当我们看向屏幕，原点（0.0，0.0，0.0）在屏幕的中间，X轴正向朝右， Y轴正向朝上，Z轴垂直于屏幕正向朝外（从屏幕指向你的后面）。
  
@@ -150,5 +155,99 @@ function main() {
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.drawArrays(gl.POINTS, 0, 1);
+}
+#+end_src
+** 例子： 使用uniform变量，将颜色值传给片元着色器
+#+begin_src javascript
+// Vertex shader program
+var VSHADER_SOURCE =
+    'attribute vec4 a_Position;\n' + //  声明attribute 变量
+    'void main() {\n' +
+    '  gl_Position = a_Position;\n' +
+    '  gl_PointSize = 10.0;\n' +
+    '}\n';
+
+// Fragment shader program
+var FSHADER_SOURCE =
+    'precision mediump float;\n' +
+    'uniform vec4 u_FragColor;\n' +  // 声明uniform变量
+    'void main() {\n' +
+    '  gl_FragColor = u_FragColor;\n' +
+    '}\n';
+
+function main() {
+    var canvas = document.getElementById('webgl');
+
+    var gl = getWebGLContext(canvas);
+    if (!gl) {
+        console.log('Failed to get the rendering context for WebGL');
+        return;
+    }
+
+    if (!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) {
+        console.log('Failed to intialize shaders.');
+        return;
+    }
+
+    // // Get the storage location of a_Position
+    var a_Position = gl.getAttribLocation(gl.program, 'a_Position'); // 获取attribute变量的存储位置
+    if (a_Position < 0) {
+        console.log('Failed to get the storage location of a_Position');
+        return;
+    }
+
+    // Get the storage location of u_FragColor
+    var u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor'); // 获取uniform变量的存储位置
+    if (!u_FragColor) {
+        console.log('Failed to get the storage location of u_FragColor');
+        return;
+    }
+
+    // Register function (event handler) to be called on a mouse press
+    canvas.onmousedown = function(ev){ click(ev, gl, canvas, a_Position, u_FragColor) }; // 注册鼠标点击时的回调函数
+
+    // Specify the color for clearing <canvas>
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+
+    // Clear <canvas>
+    gl.clear(gl.COLOR_BUFFER_BIT);
+}
+
+var g_points = [];  // 记录所有鼠标点击的坐标位置
+var g_colors = [];  // The array to store the color of a point
+function click(ev, gl, canvas, a_Position, u_FragColor) {
+    var x = ev.clientX;   //  鼠标点击位置的坐标，是一个基于浏览器客户区的坐标值（client area）
+    var y = ev.clientY;   //  下面还要做坐标转换：client area  --》 canvas坐标  --》 webgl的归一化设备坐标
+    var rect = ev.target.getBoundingClientRect(); // 获取canvas的矩形区域
+
+    // （x - rect.left）转换成canvas坐标。  ((x - rect.left) - canvas.width/2) 获得把canvas的原点移到中心点的坐标。 再除以(canvas.width/2）完成归一化。
+    x = ((x - rect.left) - canvas.width/2)/(canvas.width/2); // 把鼠标点击时的坐标转换为opengl的归一化坐标（-1.0，1.0）
+    y = (canvas.height/2 - (y - rect.top))/(canvas.height/2); // (y - rect.top) 转换成canvas坐标。 (canvas.height/2 - (y - rect.top))获得把canvas的原点移到中心点的坐标
+    // Store the coordinates to g_points array
+    g_points.push([x, y]);
+    // Store the coordinates to g_points array
+    if (x >= 0.0 && y >= 0.0) {      // First quadrant
+        g_colors.push([1.0, 0.0, 0.0, 1.0]);  // Red
+    } else if (x < 0.0 && y < 0.0) { // Third quadrant
+        g_colors.push([0.0, 1.0, 0.0, 1.0]);  // Green
+    } else {                         // Others
+        g_colors.push([1.0, 1.0, 1.0, 1.0]);  // White
+    }
+
+    // Clear <canvas>
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    var len = g_points.length;
+    for(var i = 0; i < len; i++) {
+        var xy = g_points[i];
+        var rgba = g_colors[i];
+
+        // Pass the position of a point to a_Position variable
+        gl.vertexAttrib3f(a_Position, xy[0], xy[1], 0.0);
+        // Pass the color of a point to u_FragColor variable
+        gl.uniform4f(u_FragColor, rgba[0], rgba[1], rgba[2], rgba[3]);
+        // Draw
+        gl.drawArrays(gl.POINTS, 0, 1);
+    }
 }
 #+end_src
