@@ -104,3 +104,51 @@ ctx.fillRect(120, 10, 150, 150);        // Fill a rectangle with the color
  
 #+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
 [[file:webgl/webgl_coord.png]]
+
+* 从程序传递数据给着色器：attribute变量 和 uniform变量
+- attribute变量：是一种GLSL ES变量, 被用来从app向顶点着色器传递数据。只有顶点着色器vertex shader能使用它，所以一般用来传递和顶点相关的数据。在顶点着色器里，必须要把attribute变量声明为一个全局变量。
+- uniform变量：传输的是那些对 所有顶点都相同 或者和 顶点无关的数据。
+** 例子： 使用attribute变量，传递顶点坐标给顶点着色器
+#+begin_src javascript
+// Vertex shader program
+var VSHADER_SOURCE =
+    'attribute vec4 a_Position;\n' + // - attribute变量：被用来从app向顶点着色器传递数据。只有顶点着色器vertex shader能使用它，所以一般用来传递和顶点相关的数据。在顶点着色器里，必须把attribute变量声明为全局变量。
+
+    'void main() {\n' +
+    '  gl_Position = a_Position;\n' + // 通过attribute变量， 把顶底坐标值赋给 gl_Position。所以只要在app里动态调整attribute变量的值，就可以修改顶点着色器的坐标。
+    '  gl_PointSize = 10.0;\n' +
+    '}\n';
+
+// Fragment shader program
+var FSHADER_SOURCE =
+    'void main() {\n' +
+    '  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n' +
+    '}\n';
+
+function main() {
+    var canvas = document.getElementById('webgl');
+
+    var gl = getWebGLContext(canvas);
+    if (!gl) {
+        console.log('Failed to get the rendering context for WebGL');
+        return;
+    }
+
+    if (!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) {
+        console.log('Failed to intialize shaders.');
+        return;
+    }
+
+    var a_Position = gl.getAttribLocation(gl.program, 'a_Position'); // 获取attribute变量的存储位置
+    if (a_Position < 0) {
+        console.log('Failed to get the storage location of a_Position');
+        return;
+    }
+
+    gl.vertexAttrib3f(a_Position, 0.0, -0.5, 0.0); // 给顶点着色器的attribute变量赋值
+
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawArrays(gl.POINTS, 0, 1);
+}
+#+end_src
