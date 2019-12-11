@@ -49,14 +49,14 @@ function main() {               // JS函数入口
 
 ** 例子2: 绘制一个点
 #+begin_src javascript
-// 顶点着色器。顶点指的是二维或三维空间总的一个点。
+// vertex shader顶点着色器进行的是逐顶点的操作。顶点指的是二维或三维空间总的一个点。
 var VSHADER_SOURCE =
     'void main() {\n' +
     '  gl_Position = vec4(0.0, 0.0, 0.0, 1.0);\n' + // gl_Position是内置变量，用来表示一个顶点的位置坐标。
     '  gl_PointSize = 10.0;\n' +                    // gl_PointSize也是内置变量，用来表示点的大小： 这里把每个点设为10个像素的大小
     '}\n';
 
-// 片元着色器的作用就是处理片元，使其显示在屏幕上。 片元指的是显示在屏幕上的一个像素，包括像素的位置、颜色和其它信息。
+// fragment shader片元着色器的作用就是处理片元，使其显示在屏幕上，它进行的也是逐片元的操作。 片元指的是显示在屏幕上的一个像素，包括像素的位置、颜色和其它信息。
 var FSHADER_SOURCE =
     'void main() {\n' +
     '  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n' + // gl_FragColor是片元着色器唯一的内置变量，它控制这像素在屏幕上的最终颜色RGBA，这里设为红色
