@@ -49,7 +49,7 @@ function main() {               // JS函数入口
 
 ** 例子2: 绘制一个点
 #+begin_src javascript
-// vertex shader顶点着色器进行的是逐顶点的操作。顶点指的是二维或三维空间总的一个点。
+// vertex shader顶点着色器进行的是逐顶点的操作。顶点指的是二维或三维空间总的一个点的位置坐标。
 var VSHADER_SOURCE =
     'void main() {\n' +
     '  gl_Position = vec4(0.0, 0.0, 0.0, 1.0);\n' + // gl_Position是内置变量，用来表示一个顶点的位置坐标。
@@ -84,7 +84,7 @@ function main() {
     // count被设为1表示只绘制一个点，所以drawArrays触发顶点着色器执行1次：它将vec4(0.0, 0.0, 0.0, 1.0)赋值给gl_Position，将值10.0赋给gl_PointSize.
     // 一旦顶点着色器执行完后，片元着色器就开始执行，调用main()函数：将颜色值红色 vec4(1.0, 0.0, 0.0, 1.0)赋给gl_FragColor
     // 最后一个 红色的 10个像素打的点 就被绘制在了(0.0, 0.0, 0.0, 1.0）处，也就是canvas的中间。
-    gl.drawArrays(gl.POINTS, 0, 1); // gl.POINTS表示绘制点; 0 表示从第一个顶点开始绘制； 1 表示只有一个顶点。
+    gl.drawArrays(gl.POINTS, 0, 1); // gl.POINTS表示绘制点; 0 表示从第一个顶点开始绘制； 1 表示只有一个顶点，所以drawArrays触发顶点着色器执行1次
 }
 #+end_src
 
@@ -106,9 +106,10 @@ ctx.fillRect(120, 10, 150, 150);        // Fill a rectangle with the color
 
 ** WebGL/OpenGL坐标 也叫 右手坐标系(Right-handed Coordinate System)
 - 当我们看向屏幕，原点（0.0，0.0，0.0）在屏幕的中间，X轴正向朝右， Y轴正向朝上，Z轴垂直于屏幕正向朝外（从屏幕指向你的后面）。
- 
+
 #+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
 [[file:webgl/webgl_coord.png]]
+
 
 * 从程序传递数据给着色器：attribute变量、uniform变量和varying变量
 ** attribute变量
@@ -166,7 +167,8 @@ function main() {
     gl.vertexAttrib3f(a_Position, 0.0, -0.5, 0.0); // 给顶点着色器的attribute变量赋值
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.clear(gl.COLOR_BUFFER_BIT);     // 用上面设置的clearColor清空绘图区域。opengl有多个缓冲区：颜色缓冲区COLOR_BUFFER_BIT、深度缓冲区DEPTH_BUFFER_BIT、模版缓冲区STENCIL_BUFFER_BIT。清空绘图区域实际上是清空颜色缓冲区color
+
     gl.drawArrays(gl.POINTS, 0, 1);
 }
 #+end_src
@@ -218,7 +220,7 @@ function main() {
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
-    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.clear(gl.COLOR_BUFFER_BIT);     // 用上面设置的clearColor清空绘图区域。opengl有多个缓冲区：颜色缓冲区COLOR_BUFFER_BIT、深度缓冲区DEPTH_BUFFER_BIT、模版缓冲区STENCIL_BUFFER_BIT。清空绘图区域实际上是清空颜色缓冲区color
 }
 
 var g_points = [];  // 记录所有鼠标点击位置的坐标
@@ -255,3 +257,14 @@ function click(ev, gl, canvas, a_Position, u_FragColor) {
     }
 }
 #+end_src
+
+
+* 缓冲对象buffer object
+- 可以预先在缓冲对象中保存所有想要绘制的顶点数据，然后一次性的向着色器传入多个顶点的数据，避免多次传输，提高效率。需要5个步骤：
+  1) 创建缓冲区对象 vertexBuffer = gl.createBuffer()
+  2) 绑定缓冲区对象到目标区域 gl.bindBuffer(gl.ARRAY_BUFFER | gl.ELEMENT_ARRAY_BUFFER, vertexBuffer)。
+     - 目标区域gl.ARRAY_BUFFER表示缓冲区对象中包含的是顶点的数据。 gl.ELEMENT_ARRAY_BUFFER表示缓冲区对象中包含了顶点的索引值
+  3) 向缓冲区对象写入数据 gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW) 将第2个参数vertices中的数据写入目标区域gl.ARRAY_BUFFER所对应的缓冲区（其实就是上一步绑定的缓冲区）
+     - GL_STATIC_DRAW：表示该缓存区不会被修改； GL_DyNAMIC_DRAW：表示该缓存区会被周期性更改；GL_STREAM_DRAW：表示该缓存区会被频繁更改；
+  4) 将缓冲区对象分配给一个attribute 变量 gl.vertexAttribPointer
+  5) 开启attribute变量 gl.enableVertexAttribArray
