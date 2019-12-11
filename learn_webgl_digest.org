@@ -99,7 +99,7 @@ ctx.fillRect(120, 10, 150, 150);        // Fill a rectangle with the color
 #+ATTR_latex: :width 500   #+ATTR_HTML: :width 500  #+ATTR_ORG: :width 500
 [[file:webgl/canvas_coord.png]]
 
-* 浏览器客户区坐标 client area
+** 浏览器客户区坐标 client area
 - 在浏览器，鼠标点击位置的坐标，是一个基于浏览器客户区的坐标值（client area）。它和canvas的坐标关系如下图所示：
 #+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
 [[file:webgl/browser_coord.png]]
@@ -110,9 +110,22 @@ ctx.fillRect(120, 10, 150, 150);        // Fill a rectangle with the color
 #+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
 [[file:webgl/webgl_coord.png]]
 
-* 从程序传递数据给着色器：attribute变量 和 uniform变量
-- attribute变量：是一种GLSL ES变量, 被用来从app向顶点着色器传递数据。只有顶点着色器vertex shader能使用它，所以一般用来传递和顶点相关的数据。在顶点着色器里，必须要把attribute变量声明为一个全局变量。
-- uniform变量：传输的是那些对 所有顶点都相同 或者和 顶点无关的数据。
+* 从程序传递数据给着色器：attribute变量、uniform变量和varying变量
+** attribute变量
+- attribute变量：只能在vertex shader中使用的变量, 一般用来表示一些顶点的数据如：顶点坐标，纹理坐标，顶点颜色等。
+- 在顶点着色器里，必须要把attribute变量声明为一个全局变量。
+- 应用程序通过glGetAttribLocation函数来获得某个attribute 变量存储位置， 然后通过glVertexAttrib**函数赋值。
+
+** uniform变量
+- 用来向vertex或fragment着色器中传递不变的数据，就像C语言里的const常量，它不能被shader程序修改（shader只能用，不能改）。如果想从app传递数据给片元着色器，只就要使用uniform变量。
+- 如果uniform变量在vertex和fragment着色器两者之间的声明方式完全一样，则它可以在vertex和fragment共享使用。相当于一个被vertex和fragment shader共享的全局变量
+- uniform变量一般用来表示：变换矩阵，材质，光照参数和颜色等信息。
+- 应用程序通过glGetUniformLocation函数函数来获得存储位置，再通过函数glUniform**（）函数赋值
+
+** varying变量
+- varying变量是vertex和fragment shader之间做数据传递用的。一般vertex shader修改varying变量的值，然后fragment shader使用该varying变量的值。因此varying变量在vertex和fragment shader二者之间的声明必须是一致的。
+- 应用程序不能访问或使用此变量。
+
 ** 例子： 使用attribute变量，传递顶点坐标给顶点着色器
 #+begin_src javascript
 // Vertex shader program
@@ -170,84 +183,75 @@ var VSHADER_SOURCE =
 // Fragment shader program
 var FSHADER_SOURCE =
     'precision mediump float;\n' +
-    'uniform vec4 u_FragColor;\n' +  // 声明uniform变量
+    'uniform vec4 u_FragColor;\n' +  // 声明uniform变量。 顶点着色器才能使用attribute变量， 如果想从app传递数据给片元着色器，就要使用uniform变量。
     'void main() {\n' +
     '  gl_FragColor = u_FragColor;\n' +
     '}\n';
 
 function main() {
-    var canvas = document.getElementById('webgl');
+  var canvas = document.getElementById('webgl');
 
-    var gl = getWebGLContext(canvas);
-    if (!gl) {
-        console.log('Failed to get the rendering context for WebGL');
-        return;
-    }
+  var gl = getWebGLContext(canvas);
+  if (!gl) {
+    console.log('Failed to get the rendering context for WebGL');
+    return;
+  }
 
-    if (!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) {
-        console.log('Failed to intialize shaders.');
-        return;
-    }
+  if (!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) {
+    console.log('Failed to intialize shaders.');
+    return;
+  }
 
-    // // Get the storage location of a_Position
-    var a_Position = gl.getAttribLocation(gl.program, 'a_Position'); // 获取attribute变量的存储位置
-    if (a_Position < 0) {
-        console.log('Failed to get the storage location of a_Position');
-        return;
-    }
+  var a_Position = gl.getAttribLocation(gl.program, 'a_Position'); // 获取attribute变量的存储位置
+  if (a_Position < 0) {
+    console.log('Failed to get the storage location of a_Position');
+    return;
+  }
 
-    // Get the storage location of u_FragColor
-    var u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor'); // 获取uniform变量的存储位置
-    if (!u_FragColor) {
-        console.log('Failed to get the storage location of u_FragColor');
-        return;
-    }
+  var u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor'); // 获取uniform变量的存储位置
+  if (!u_FragColor) {
+    console.log('Failed to get the storage location of u_FragColor');
+    return;
+  }
 
-    // Register function (event handler) to be called on a mouse press
-    canvas.onmousedown = function(ev){ click(ev, gl, canvas, a_Position, u_FragColor) }; // 注册鼠标点击时的回调函数
+  canvas.onmousedown = function(ev){ click(ev, gl, canvas, a_Position, u_FragColor) }; // 注册鼠标点击时的回调函数
 
-    // Specify the color for clearing <canvas>
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
-    // Clear <canvas>
-    gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.clear(gl.COLOR_BUFFER_BIT);
 }
 
-var g_points = [];  // 记录所有鼠标点击的坐标位置
+var g_points = [];  // 记录所有鼠标点击位置的坐标
 var g_colors = [];  // The array to store the color of a point
 function click(ev, gl, canvas, a_Position, u_FragColor) {
-    var x = ev.clientX;   //  鼠标点击位置的坐标，是一个基于浏览器客户区的坐标值（client area）
-    var y = ev.clientY;   //  下面还要做坐标转换：client area  --》 canvas坐标  --》 webgl的归一化设备坐标
-    var rect = ev.target.getBoundingClientRect(); // 获取canvas的矩形区域
+  var x = ev.clientX;   //  鼠标点击位置的坐标，是一个基于浏览器客户区的坐标值（client area）
+  var y = ev.clientY;   //  下面还要做坐标转换：client area  --》 canvas坐标  --》 webgl的归一化设备坐标
+  var rect = ev.target.getBoundingClientRect(); // 获取canvas的矩形区域
 
-    // （x - rect.left）转换成canvas坐标。  ((x - rect.left) - canvas.width/2) 获得把canvas的原点移到中心点的坐标。 再除以(canvas.width/2）完成归一化。
-    x = ((x - rect.left) - canvas.width/2)/(canvas.width/2); // 把鼠标点击时的坐标转换为opengl的归一化坐标（-1.0，1.0）
-    y = (canvas.height/2 - (y - rect.top))/(canvas.height/2); // (y - rect.top) 转换成canvas坐标。 (canvas.height/2 - (y - rect.top))获得把canvas的原点移到中心点的坐标
-    // Store the coordinates to g_points array
-    g_points.push([x, y]);
-    // Store the coordinates to g_points array
-    if (x >= 0.0 && y >= 0.0) {      // First quadrant
-        g_colors.push([1.0, 0.0, 0.0, 1.0]);  // Red
-    } else if (x < 0.0 && y < 0.0) { // Third quadrant
-        g_colors.push([0.0, 1.0, 0.0, 1.0]);  // Green
-    } else {                         // Others
-        g_colors.push([1.0, 1.0, 1.0, 1.0]);  // White
-    }
+  // （x - rect.left）从浏览器客户区坐标转换成canvas坐标。  ((x - rect.left) - canvas.width/2) 获得把canvas的原点移到中心点的坐标。 再除以(canvas.width/2）完成归一化。
+  x = ((x - rect.left) - canvas.width/2)/(canvas.width/2); // 把鼠标点击时的坐标转换为opengl的归一化坐标（-1.0，1.0）
+  y = (canvas.height/2 - (y - rect.top))/(canvas.height/2); // (y - rect.top) 从浏览器客户区坐标转换成canvas坐标。 (canvas.height/2 - (y - rect.top))获得把canvas的原点移到中心点的坐标
 
-    // Clear <canvas>
-    gl.clear(gl.COLOR_BUFFER_BIT);
+  g_points.push([x, y]);                 // 要把鼠标每次点击的位置都记录下来（基于webgl的归一化的坐标）？而不是仅仅记录最近一次鼠标点击的位置。
 
-    var len = g_points.length;
-    for(var i = 0; i < len; i++) {
-        var xy = g_points[i];
-        var rgba = g_colors[i];
+  if (x >= 0.0 && y >= 0.0) {      // 不同的区域设置不同的颜色， 第一象限
+    g_colors.push([1.0, 0.0, 0.0, 1.0]);  // Red
+  } else if (x < 0.0 && y < 0.0) { // 第三象限
+    g_colors.push([0.0, 1.0, 0.0, 1.0]);  // Green
+  } else {                         // 其它
+    g_colors.push([1.0, 1.0, 1.0, 1.0]);  // White
+  }
 
-        // Pass the position of a point to a_Position variable
-        gl.vertexAttrib3f(a_Position, xy[0], xy[1], 0.0);
-        // Pass the color of a point to u_FragColor variable
-        gl.uniform4f(u_FragColor, rgba[0], rgba[1], rgba[2], rgba[3]);
-        // Draw
-        gl.drawArrays(gl.POINTS, 0, 1);
-    }
+  gl.clear(gl.COLOR_BUFFER_BIT); //  这行很重要。每次绘制完成之后，颜色缓冲区都会被重置，所以这里要明确的用我们自己设定的clear color来清空画布。
+
+  var len = g_points.length;      // 绘制操作实际上是在颜色缓冲区color buffer中进行，绘制结束后系统将缓冲区中的内容显示在屏幕上，然后颜色缓冲区就会被重置，其中的内容会丢失
+  for(var i = 0; i < len; i++) {  // 因此我们有必要将鼠标每次点击的位置都记录下来，鼠标每次点击之后，程序都重新绘制了所有的点，从第一次点击到最近的一次。
+    var xy = g_points[i];         // 比如第1次点击鼠标，绘制第1个点；。。。 第3次点击鼠标，绘制第1、2和第3个点；以此类推
+    var rgba = g_colors[i];
+
+    gl.vertexAttrib3f(a_Position, xy[0], xy[1], 0.0); // 通过赋值给attribute变量， 把值传递给着色器
+    gl.uniform4f(u_FragColor, rgba[0], rgba[1], rgba[2], rgba[3]); // 通过赋值给uniform变量，把颜色值传递给片元着色器的内置变量 u_FragColor
+    gl.drawArrays(gl.POINTS, 0, 1);                                // 触发绘制
+  }
 }
 #+end_src
