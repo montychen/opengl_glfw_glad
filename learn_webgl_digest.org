@@ -267,13 +267,89 @@ function click(ev, gl, canvas, a_Position, u_FragColor) {
 * 缓冲对象buffer object
 - 可以预先在缓冲对象中保存所有想要绘制的顶点数据，然后一次性将多个顶点数据的传给着色器，避免多次传输，提高效率。需要5个步骤：
   1) 创建缓冲区对象 vertexBuffer = gl.createBuffer()
+    
   2) 绑定缓冲区对象到目标区域 gl.bindBuffer(gl.ARRAY_BUFFER | gl.ELEMENT_ARRAY_BUFFER, vertexBuffer)。
      - 目标区域gl.ARRAY_BUFFER表示缓冲区对象中包含的是顶点的数据。 gl.ELEMENT_ARRAY_BUFFER表示缓冲区对象中包含了顶点的索引值
+       
   3) 向缓冲区对象写入数据 gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW) 将第2个参数vertices数组中的数据写入目标区域gl.ARRAY_BUFFER所对应的缓冲区（其实就是上一步绑定的缓冲区）
      - GL_STATIC_DRAW：表示该缓存区不会被修改； GL_DyNAMIC_DRAW：表示该缓存区会被周期性更改；GL_STREAM_DRAW：表示该缓存区会被频繁更改；
 
-  4) 将缓冲区对象分配给一个attribute 变量   gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+  4) 把缓冲区对象分配给attribute变量  gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);  参数2表示每个顶点的分量个数（1到4）； false数据不需要做归一化处理； 0指定相邻两个顶点间的间隔；0指定顶点在缓冲区起始位置的偏移量。
      - gl.vertexAttrib3f(a_Position, 0.0, -0.5, 0.0)  *一次只能向attribute变量传输1个顶点的数据* 顶点数据多时，要传输多次，效率低。
-     - gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0) 可以 *一次性将整个缓冲区对象（多个顶点数据）传给着色器的attribute变量,* 效率高很多
+     - gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0) 可以 *一次性将整个缓冲区对象（多个顶点数据）传给着色器的attribute变量* , 效率高很多
 
-  5) 开启attribute变量 gl.enableVertexAttribArray
+  5) 激活attribute变量，使顶点着色器能够访问缓冲区的数据。   gl.enableVertexAttribArray(a_Position)
+
+** 例子：绘制3个点，使用缓冲区对象一次性把这3个顶点传给attribute变量
+#+begin_src javascript
+// Vertex shader program
+var VSHADER_SOURCE =
+    'attribute vec4 a_Position;\n' + // attribute 变量
+    'void main() {\n' +
+    '  gl_Position = a_Position;\n' +
+    '  gl_PointSize = 10.0;\n' +
+    '}\n';
+
+// Fragment shader program
+var FSHADER_SOURCE =
+    'void main() {\n' +
+    '  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n' +
+    '}\n';
+
+function main() {
+    var canvas = document.getElementById('webgl');
+
+    var gl = getWebGLContext(canvas);
+    if (!gl) {
+        console.log('Failed to get the rendering context for WebGL');
+        return;
+    }
+
+    if (!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) {
+        console.log('Failed to intialize shaders.');
+        return;
+    }
+
+    // 使用缓冲对象向顶点着色器一次性传输多个（3个）顶点数据。
+    var n = initVertexBuffers(gl); // 创建顶点缓冲对象
+    if (n < 0) {
+        console.log('Failed to set the positions of the vertices');
+        return;
+    }
+
+    gl.clearColor(0, 0, 0, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    gl.drawArrays(gl.POINTS, 0, n); // n的值是3，代表有3个顶点，所以虽然该函数仅调用了一次，但顶点着色器会被触发执行3次。
+}
+
+// 使用缓冲对象向顶点着色器一次性传输多个（3个）顶点数据。
+function initVertexBuffers(gl) {
+    var vertices = new Float32Array([
+        0.0, 0.5,   -0.5, -0.5,   0.5, -0.5
+    ]);
+    var n = 3; // 顶点的数量是 3个
+
+    var vertexBuffer = gl.createBuffer(); // 创建缓冲区对象
+    if (!vertexBuffer) {
+        console.log('Failed to create the buffer object');
+        return -1;
+    }
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer); // 绑定缓冲区对象到目标区域。目标区域gl.ARRAY_BUFFER表示缓冲区对象中包含的是顶点的数据。 gl.ELEMENT_ARRAY_BUFFER表示缓冲区对象中包含了顶点的索引值
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW); // 向缓冲区对象写入数据，将第2个参数vertices数组中的数据写入目标区域gl.ARRAY_BUFFER所对应的缓冲区（其实就是上一步绑定的缓冲区）
+
+    var a_Position = gl.getAttribLocation(gl.program, 'a_Position'); // 获取attribute变量的存储位置
+    if (a_Position < 0) {
+        console.log('Failed to get the storage location of a_Position');
+        return -1;
+    }
+    // gl.vertexAttrib3f(a_Position, 0.0, -0.5, 0.0)  *一次只能向attribute变量传输1个顶点的数据* 顶点数据多时，要传输多次，效率低。
+    // gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0) 可以 *一次性将整个缓冲区对象（多个顶点数据）传给着色器的attribute变量* , 效率高很多
+    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0); // 参数2表示每个顶点的分量个数（1到4）； false数据不需要做归一化处理； 0指定相邻两个顶点间的间隔；0指定顶点在缓冲区起始位置的偏移量。
+
+    gl.enableVertexAttribArray(a_Position); // 激活attribute变量，使顶点着色器能够访问缓冲区的数据。
+
+    return n;
+}
+#+end_src
