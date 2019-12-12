@@ -10,6 +10,11 @@ WebGL使用在HTML5中新引入的<canvas>标签来定义绘图区域；传统�
 #+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
 [[file:webgl/webgl_pipeline.png]]
 
+* 图像管线Graphics pipeline： 顶点着色器、光栅化、片元着色器
+- vertex shader顶点着色器（确定顶点的位置）：针对每个顶点都执行一次该着色器（逐顶点操作），它最重要的功能是执行顶点的坐标变换，输出的是归一化后的坐标NDC（-1.0， 1.0）。顶点指的是二维或三维空间总的一个点的位置坐标。
+- rasterizaiton光栅化（生成片元fragment）：它将图元primitive离散成片元fragment，屏幕外的片元将被丢弃。片元指的是显示在屏幕上的一个像素，包括像素的位置、颜色和其它信息。
+- fragment shader片元着色器（确定片元的颜色）：针对每个片元都执行一次该着色器（逐片元操作），它主要用来计算每个片元（像素）的颜色值，使其显示在屏幕上。
+
 * 在canvas绘图的4个步骤
 ** 1、在html中定义canvas，并用id属性为其指定唯一标识符；加载JS文件，同时在<body>的onload属性指定JS执行的入口函数
 #+begin_src html
@@ -260,11 +265,15 @@ function click(ev, gl, canvas, a_Position, u_FragColor) {
 
 
 * 缓冲对象buffer object
-- 可以预先在缓冲对象中保存所有想要绘制的顶点数据，然后一次性的向着色器传入多个顶点的数据，避免多次传输，提高效率。需要5个步骤：
+- 可以预先在缓冲对象中保存所有想要绘制的顶点数据，然后一次性将多个顶点数据的传给着色器，避免多次传输，提高效率。需要5个步骤：
   1) 创建缓冲区对象 vertexBuffer = gl.createBuffer()
   2) 绑定缓冲区对象到目标区域 gl.bindBuffer(gl.ARRAY_BUFFER | gl.ELEMENT_ARRAY_BUFFER, vertexBuffer)。
      - 目标区域gl.ARRAY_BUFFER表示缓冲区对象中包含的是顶点的数据。 gl.ELEMENT_ARRAY_BUFFER表示缓冲区对象中包含了顶点的索引值
-  3) 向缓冲区对象写入数据 gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW) 将第2个参数vertices中的数据写入目标区域gl.ARRAY_BUFFER所对应的缓冲区（其实就是上一步绑定的缓冲区）
+  3) 向缓冲区对象写入数据 gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW) 将第2个参数vertices数组中的数据写入目标区域gl.ARRAY_BUFFER所对应的缓冲区（其实就是上一步绑定的缓冲区）
      - GL_STATIC_DRAW：表示该缓存区不会被修改； GL_DyNAMIC_DRAW：表示该缓存区会被周期性更改；GL_STREAM_DRAW：表示该缓存区会被频繁更改；
-  4) 将缓冲区对象分配给一个attribute 变量 gl.vertexAttribPointer
+
+  4) 将缓冲区对象分配给一个attribute 变量   gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+     - gl.vertexAttrib3f(a_Position, 0.0, -0.5, 0.0)  *一次只能向attribute变量传输1个顶点的数据* 顶点数据多时，要传输多次，效率低。
+     - gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0) 可以 *一次性将整个缓冲区对象（多个顶点数据）传给着色器的attribute变量,* 效率高很多
+
   5) 开启attribute变量 gl.enableVertexAttribArray
