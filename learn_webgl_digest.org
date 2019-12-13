@@ -280,7 +280,7 @@ function click(ev, gl, canvas, a_Position, u_FragColor) {
 
   5) 激活attribute变量，使顶点着色器能够访问缓冲区的数据。   gl.enableVertexAttribArray(a_Position)
 
-** 例子：绘制3个点，使用缓冲区对象一次性把这3个顶点传给attribute变量
+** 例子：绘制3个独立的点或一个三角形，使用缓冲区对象一次性把这3个顶点传给attribute变量
 #+begin_src javascript
 // Vertex shader program
 var VSHADER_SOURCE =
@@ -321,6 +321,8 @@ function main() {
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     gl.drawArrays(gl.POINTS, 0, n); // n的值是3，代表有3个顶点，所以虽然该函数仅调用了一次，但顶点着色器会被触发执行3次。
+    // gl.drawArrays(gl.TRIANGLES, 0, n); // gl.TRIANGLES表示绘制三角形：从缓冲区第一个顶点开始，执行顶点着色器3次（n为3），用这3个点绘制出一个三角形。
+
 }
 
 // 使用缓冲对象向顶点着色器一次性传输多个（3个）顶点数据。
@@ -353,3 +355,22 @@ function initVertexBuffers(gl) {
     return n;
 }
 #+end_src
+
+* 函数详解glDrawArrays(GLenum mode, GLint first, GLsizei count) 提供绘制功能，提取顶点数据绘制基本图元
+WebGL可以绘制的3种基本图元是：点、线、三角形。其它的图形都是由这3种基本图元组成。
+
+1. GLenum mode绘图模式：需要绘制的图元类型
+  - GL_POINTS：将传入的顶点坐标作为单独的点绘制
+
+  - GL_LINES：将传入的坐标作为单独线条绘制，ABCDEFG六个顶点，绘制AB、CD、EF三条线，如果点的个数是奇数，最后一个点将被忽略。
+  - GL_LINE_STRIP条状/带状：将传入的顶点作为折线绘制，ABCD四个顶点，绘制AB、BC、CD三条线
+  - GL_LINE_LOOP：将传入的顶点作为闭合折线绘制，ABCD四个顶点，绘制AB、BC、CD、DA四条线。
+
+  - GL_TRIANGLES：将传入的顶点作为单独的三角形绘制，ABCDEF绘制ABC,DEF两个三角形
+  - GL_TRIANGLE_STRIP：将传入的顶点作为三角条带绘制，ABCDEF绘制ABC,BCD,CDE,DEF四个三角形
+  - GL_TRIANGLE_FAN扇形：将传入的顶点作为扇面绘制，ABCDEF绘制ABC、ACD、ADE、AEF四个三角形
+2. GLint first：第一个顶点元素的索引
+3. GLsizei count： 一共有多少个顶点
+
+#+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
+[[file:webgl/drawarrays_mode.png]]
