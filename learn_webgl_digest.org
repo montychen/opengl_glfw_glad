@@ -85,10 +85,10 @@ function main() {
     gl.clearColor(0.0, 0.0, 0.0, 1.0); // 指定清空画布的颜色为黑色。 颜色的取值从0.0到1.0。前面3个参数分别是rgb的值。最后一个参数是透明度a，它的取值在0.0透明---到1.0不透明之间。
     gl.clear(gl.COLOR_BUFFER_BIT);     // 用上面设置的clearColor清空绘图区域。opengl有多个缓冲区：颜色缓冲区COLOR_BUFFER_BIT、深度缓冲区DEPTH_BUFFER_BIT、模版缓冲区STENCIL_BUFFER_BIT。清空绘图区域实际上是清空颜色缓冲区color buffer， 所以这里传递的参数是COLOR_BUFFER_BIT
 
-    // drawArrays(mode, first, count) 触发着色器开始执行：先逐顶点的执行顶点着色器vertex shader...再逐片元的执行片元着色器fragment shader。
+    // drawArrays(mode, first, count) 触发绘制开始执行：先把缓冲区中的数据传递给attribute|uniform|varying变量， 然后着色器开始执行。先逐顶点的执行顶点着色器vertex shader...再逐片元的执行片元着色器fragment shader。
     // count被设为1表示只绘制一个点，所以drawArrays触发顶点着色器执行1次：它将vec4(0.0, 0.0, 0.0, 1.0)赋值给gl_Position，将值10.0赋给gl_PointSize.
     // 一旦顶点着色器执行完后，片元着色器就开始执行，调用main()函数：将颜色值红色 vec4(1.0, 0.0, 0.0, 1.0)赋给gl_FragColor
-    // 最后一个 红色的 10个像素打的点 就被绘制在了(0.0, 0.0, 0.0, 1.0）处，也就是canvas的中间。
+    // 最终的结果就是：1个 红色的 10个像素大的点 被绘制在了(0.0, 0.0, 0.0, 1.0）处，也就是canvas的中间。
     gl.drawArrays(gl.POINTS, 0, 1); // gl.POINTS表示绘制点; 0 表示从第一个顶点开始绘制； 1 表示只有一个顶点，所以drawArrays触发顶点着色器执行1次
 }
 #+end_src
@@ -280,6 +280,9 @@ function click(ev, gl, canvas, a_Position, u_FragColor) {
 
   5) 激活attribute变量，使顶点着色器能够访问缓冲区的数据。   gl.enableVertexAttribArray(a_Position)
 
+- gl.drawArrays(mode, first, count) 触发绘制开始执行：先把缓冲区中的数据传递给attribute|uniform|varying变量， 然后着色器开始执行。先逐顶点的执行顶点着色器vertex shader...再逐片元的执行片元着色器fragment shader。
+
+
 ** 例子：绘制3个独立的点或一个三角形，使用缓冲区对象一次性把这3个顶点传给attribute变量
 #+begin_src javascript
 // Vertex shader program
@@ -355,6 +358,7 @@ function initVertexBuffers(gl) {
     return n;
 }
 #+end_src
+
 
 * 函数详解glDrawArrays(GLenum mode, GLint first, GLsizei count) 提供绘制功能，提取顶点数据绘制基本图元
 WebGL可以绘制的3种基本图元是：点、线、三角形。其它的图形都是由这3种基本图元组成。
