@@ -129,8 +129,8 @@ ctx.fillRect(120, 10, 150, 150);        // Fill a rectangle with the color
 - 应用程序通过glGetUniformLocation函数函数来获得存储位置，再通过函数glUniform**（）函数赋值
 
 ** varying变量
-- varying变量是vertex和fragment shader之间做数据传递用的。一般vertex shader修改varying变量的值，然后fragment shader使用该varying变量的值。因此varying变量在vertex和fragment shader二者之间的声明必须是一致的。
-- 应用程序不能访问或使用此变量。
+- varying变量：用来从顶点着色器向片元着色器传递数据。一般vertex shader修改varying变量的值，然后fragment shader使用该varying变量的值。只要varying变量在顶点着色器和片元着色器中的声明是一致的（类型和名字都要相同）就可以了。
+- 应用程序不能访问或使用此变量。所以一般的做法是：应用程序先把数据传给顶点着色器的attribute变量， 然后attribute变量再把值传给varying变量， 最终fragmnet shader就可以使用varying 变量的值。
 
 ** 例子：绘制一个点， 用attribute变量，传递一个顶点坐标给顶点着色器
 #+begin_src javascript
