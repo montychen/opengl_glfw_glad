@@ -360,8 +360,9 @@ function initVertexBuffers(gl) {
 #+end_src
 
 
-* 函数详解glDrawArrays(GLenum mode, GLint first, GLsizei count) 提供绘制功能，提取顶点数据绘制基本图元
-WebGL可以绘制的3种基本图元是：点、线、三角形。其它的图形都是由这3种基本图元组成。
+* 函数详解glDrawArrays(GLenum mode, GLint first, GLsizei count) : 触发绘制开始执行》缓冲区数据传递给着色器变量》着色器执行绘制基本图元
+- gl.drawArrays(mode, first, count) 触发绘制开始执行：先把缓冲区中的数据传递给attribute|uniform|varying变量， 然后着色器开始执行。先逐顶点的执行顶点着色器vertex shader...再逐片元的执行片元着色器fragment shader。
+- WebGL可以绘制的3种基本图元是：点、线、三角形。其它的图形都是由这3种基本图元组成。
 
 1. GLenum mode绘图模式：需要绘制的图元类型
    - GL_POINTS：将传入的顶点坐标作为单独的点绘制
