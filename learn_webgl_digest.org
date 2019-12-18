@@ -274,7 +274,15 @@ function click(ev, gl, canvas, a_Position, u_FragColor) {
   3) 向缓冲区对象写入数据 gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW) 将第2个参数vertices数组中的数据写入目标区域gl.ARRAY_BUFFER所对应的缓冲区（其实就是上一步绑定的缓冲区）
      - GL_STATIC_DRAW：表示该缓存区不会被修改； GL_DyNAMIC_DRAW：表示该缓存区会被周期性更改；GL_STREAM_DRAW：表示该缓存区会被频繁更改；
 
-  4) 把缓冲区对象分配给attribute变量  gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);  参数2表示每个顶点的分量个数（1到4）； false数据不需要做归一化处理； 0指定相邻两个顶点间的间隔；0指定顶点在缓冲区起始位置的偏移量。
+  4) 把缓冲区对象分配给attribute变量  gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+     1. 第1个参数location：指定attribute变量， 这里是a_Position
+     2. 第2个参数size：每个顶点的分量个数（1到4）， 这里是2；
+     3. 第3个参数type：分量的数据类型，这里是gl.FLOAT
+     4. 第4个参数normalize：false数据不需要做归一化处理；
+     5. 第5个参数stride: 指定相邻两个顶点间间隔的字节数，这里是0。0表示相邻两个顶点是紧密排列的，OpenGL将自动推算出stride的值。
+        - stride是相对于一组属性来说的，而不是对于属性的每一个成分来说的。以具有3个分量的顶点属性为例，有x、y、z三个成分，将x、y、z看做一组，stride是每一组之间的步幅。
+     6. 第6个参数offset：指定顶点在缓冲区起始位置的偏移量，这里是0
+       
      - gl.vertexAttrib3f(a_Position, 0.0, -0.5, 0.0)  *一次只能向attribute变量传输1个顶点的数据* 顶点数据多时，要传输多次，效率低。
      - gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0) 可以 *一次性将整个缓冲区对象（多个顶点数据）传给着色器的attribute变量* , 效率高很多
 
@@ -353,7 +361,8 @@ function initVertexBuffers(gl) {
     }
     // gl.vertexAttrib3f(a_Position, 0.0, -0.5, 0.0)  *一次只能向attribute变量传输1个顶点的数据* 顶点数据多时，要传输多次，效率低。
     // gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0) 可以 *一次性将整个缓冲区对象（多个顶点数据）传给着色器的attribute变量* , 效率高很多
-    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0); // 参数2表示每个顶点的分量个数（1到4）； false数据不需要做归一化处理； 0指定相邻两个顶点间的间隔；0指定顶点在缓冲区起始位置的偏移量。
+    // 本例stride的值是0，0表示相邻两个顶点是紧密排列的，OpenGL将自动算出stride的值。这里我们也可以直接手动改成8，因为2个float表示一个顶点的属性，2个float就是8个byte
+    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0); // 参数2表示每个顶点的分量个数（1到4）；false数据不需要做归一化处理；0表示相邻两个顶点是紧密排列的，OpenGL将自动算出stride的值。0指定顶点在缓冲区起始位置的偏移量。
 
     gl.enableVertexAttribArray(a_Position); // 激活attribute变量，使顶点着色器能够访问缓冲区的数据。
 
