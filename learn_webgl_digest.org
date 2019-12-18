@@ -116,7 +116,7 @@ ctx.fillRect(120, 10, 150, 150);        // Fill a rectangle with the color
 [[file:webgl/webgl_coord.png]]
 
 
-* 从程序传递数据给着色器：attribute变量、uniform变量和varying变量
+* 从程序传递数据给着色器变量：attribute变量、uniform变量和varying变量
 ** attribute变量
 - attribute变量：只能在vertex shader中使用的变量, 一般用来表示顶点的数据如：顶点坐标，纹理坐标，顶点颜色等。
 - 在顶点着色器里，必须要把attribute变量声明为一个全局变量。
@@ -278,7 +278,8 @@ function click(ev, gl, canvas, a_Position, u_FragColor) {
      - gl.vertexAttrib3f(a_Position, 0.0, -0.5, 0.0)  *一次只能向attribute变量传输1个顶点的数据* 顶点数据多时，要传输多次，效率低。
      - gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0) 可以 *一次性将整个缓冲区对象（多个顶点数据）传给着色器的attribute变量* , 效率高很多
 
-  5) 激活attribute变量，使顶点着色器能够访问缓冲区的数据。   gl.enableVertexAttribArray(a_Position)
+  5) 激活attribute变量，使顶点着色器能够访问缓冲区的数据。 gl.enableVertexAttribArray(a_Position)
+     - 注意：只有遇到函数调用gl.drawArrays(mode, first, count)才会真正开始触发把缓冲区的数据传递给着色器变量
 
 - gl.drawArrays(mode, first, count) 触发绘制开始执行：先把缓冲区中的数据传递给attribute|uniform|varying变量， 然后着色器开始执行。先逐顶点的执行顶点着色器vertex shader...再逐片元的执行片元着色器fragment shader。
 
@@ -323,6 +324,7 @@ function main() {
     gl.clearColor(0, 0, 0, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
+    // 遇到函数调用gl.drawArrays(mode, first, count)才会真正开始触发把缓冲区的数据传递给着色器变量
     gl.drawArrays(gl.POINTS, 0, n); // n的值是3，代表有3个顶点，所以虽然该函数仅调用了一次，但顶点着色器会被触发执行3次。
     // gl.drawArrays(gl.TRIANGLES, 0, n); // gl.TRIANGLES表示绘制三角形：从缓冲区第一个顶点开始，执行顶点着色器3次（n为3），用这3个点绘制出一个三角形。
 
