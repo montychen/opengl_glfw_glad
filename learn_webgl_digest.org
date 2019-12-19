@@ -12,7 +12,9 @@ WebGL使用在HTML5中新引入的<canvas>标签来定义绘图区域；传统�
 
 * 图像管线Graphics pipeline： 顶点着色器、光栅化、片元着色器
 - vertex shader顶点着色器（确定顶点的位置）：针对每个顶点都执行一次该着色器（逐顶点操作），它最重要的功能是执行顶点的坐标变换，输出的是归一化后的坐标NDC（-1.0， 1.0）。顶点指的是二维或三维空间总的一个点的位置坐标。
-- rasterizaiton光栅化（生成片元fragment）：它将图元primitive离散成片元fragment，屏幕外的片元将被丢弃。片元指的是显示在屏幕上的一个像素，包括像素的位置、颜色和其它信息。
+- primitive assembly图元装配：将孤立的顶点装配成图元，图元类型由gl.drawArrays函数的第1个参数决定：GL_POINTS、GL_LINE...、GL_TRIANGLE...
+- rasterizaiton光栅化（生成片元fragment）：显示在屏幕上的图元，实际上是由屏幕上离散的像素组成的。所以光栅化其实就是将图元primitive转换成屏幕上的像素（片元fragment），屏幕外（视椎体外）不可见的片元将被丢弃。
+  - 片元指的是屏幕上的一个像素，包括像素的位置坐标（gl_FragCoord）、颜色和其它信息。
 - fragment shader片元着色器（确定片元的颜色）：针对每个片元都执行一次该着色器（逐片元操作），它主要用来计算每个片元（像素）的颜色值，使其显示在屏幕上。
 
 * 在canvas绘图的4个步骤
