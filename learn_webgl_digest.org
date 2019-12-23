@@ -426,64 +426,59 @@ function initVertexBuffers(gl) {
    
 * 纹理映射 texture mapping 又称纹理贴图
 - 纹理贴图： 就是将一张真实世界的图片（就像一张贴纸）贴到一个几何图形的表面上去，这样这个几何图形的表面看上去就是这张图片。 这张图片就是 *纹理texture* 或者叫 纹理图像。
-- 纹理贴图的作用就是根据纹理图片，为光栅化后的片元涂上合适的颜色。组成纹理图像的像素又被称为 *纹素(texels, texture elements)*, 每一个纹素的颜色都是RGB或RGBA格式。如图：
+- 纹理贴图的作用就是根据纹理图片，*为光栅化后的片元* 涂上合适的颜色。
+- 纹素：组成纹理图像的像素又被称为 *纹素(texels, texture elements)*, 每一个纹素的颜色都是RGB或RGBA格式。
+- Sampler取样：从纹理图像中获取纹素颜色的过程，即输入纹理坐标，返回颜色值。实际上，由于纹理像素也是有大小的，取样处的纹理坐标很可能不落在某个像素中心，所以取样通常并不是直接取纹理图像某个像素的颜色，而是通过附件的若干个像素共同计算而得。
 #+ATTR_latex: :width 700   #+ATTR_HTML: :width 700  #+ATTR_ORG: :width 700
 [[file:webgl/texel.png]]
 
-** 为了实现纹理贴图我们需要做3件事：
-1. 将一张贴图加载到OpenGL中
-2. 提供纹理坐标和顶点（将纹理对应匹配到顶点上）
-3. 并使用纹理坐标从纹理中进行取样操作取得像素颜色。
 
-- Sampler取样：从纹理图像中获取纹素颜色的过程，即输入纹理坐标，返回颜色值。实际上，由于纹理像素也是有大小的，取样处的纹理坐标很可能不落在某个像素中心，所以取样通常并不是直接取纹理图像某个像素的颜色，而是通过附件的若干个像素共同计算而得。
-  
-** 纹理贴图，需要4步：
-1. 准备好图片，准备贴到几何图形上的图片。
-2. 配置映射方式，使用纹理坐标texture coordinates将纹理图像映射到几何图形上。
-3. 加载纹理图像
-4. 抽取纹素，把颜色赋给片元，在片元着色器中，将相应的纹素从纹理中抽取出来，并将纹素的颜色赋给片元。
-
-
-** 纹理贴图需要顶点着色器和片元着色器二者软的配合：
+** 纹理贴图需要顶点着色器和片元着色器二者的配合：
 1. 首先在顶点着色器中将纹理坐标映射到顶点上。通过纹理图像的纹理坐标与几何体的顶点坐标间的映射关系，来确定将那些纹理图像贴上去。app传入顶点坐标和对应的纹理坐标
 #+ATTR_latex: :width 700   #+ATTR_HTML: :width 700  #+ATTR_ORG: :width 700
 [[file:webgl/texture_vertex_map.png]]
-1. 然后在片元着色器中，根据每个片元的纹理坐标从纹理图像中抽取纹理颜色，赋给当前片元
 
-   创建纹理和创建顶点缓冲差不多：创建一个纹理、绑定、填充、配置。
+2. 配置纹理
+   1. 创建纹理对象：  var texture = gl.createTexture()
+   2. 加载纹理图像
+   3. 反转纹理图像的y轴。WebGL的纹理坐标系统的t轴方向和PNG、JPG等图片格式的坐标系统的Y轴方向相反，所以要先将图像Y轴反转，方便我们操作坐标。 gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1)
+      - gl.pixelStorei(pname, param)，  第一个参数pname有以下2个取值，第二个参数指定 0（false)或者非 0（true)整数。
+        1. gl.UNPACK_FLIP_Y_WEBGL 对图像进行Y轴反转， 默认为0（false）
+        2. glUNPACK_PREMULTIPLY_ALPHA_WEBGL 将图像RGB颜色值的每一个分量乘以A， 默认值为false
+           #+ATTR_latex: :width 600   #+ATTR_HTML: :width 600  #+ATTR_ORG: :width 600
+           [[file:webgl/flip_y_webgl.png]]
+   4. 激活纹理单元    gl.activeTexture(gl.TEXTURE0)  激活0号纹理单元·
+      - webgl通过纹理单元texture unit的机制来在同一个几何体平面上同时使用多个纹理，每个纹理单元有一个单元编号（gl.TEXTURE0 。。。 gl.TEXTURE8），来管理一张纹理图像，即使只是用一张纹理贴图，也要为其指定一个纹理单元，默认至少支持8个纹理单元
+      - 实际上，在webgl中，你没法直接操作纹理对象，必须通过将纹理对象绑定到纹理单元上，然后通过操作纹理单元来操作纹理对象；
+   5. 把纹理对象绑定到目标区域  gl.bindTexture(gl.TEXTURE_2D, texture)   webgl支持两种纹理 gl.TEXTURE_2D 二维纹理;  gl.TEXTURE_CUBE_MAP 立方体纹理
+   6. 配置纹理对象的参数  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR) 默认每个纹理参数都有默认值，通常你可以不用手动显示的调用这个函数，使用默认值就可以。
+   7. 把纹理图像分配给纹理对象  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image)  把jpg纹理图像image（gl.RGB颜色格式），分配给2D的纹理对象。
+      - 纹理图像的颜色格式：如果是jpg就用用gl.RGB； 如果是PNG就要用gl.RGBA;  gl.UNSIGNED_BYTE 表示每个颜色分量占据1个字节
+   8. 通过纹理编号，将纹理单元传递给片元着色器    gl.uniform1i(u_Sampler, 0);   将0号纹理传递给着色器中的取样器
 
-2. 反转纹理图像的y轴。WebGL的纹理坐标系统的t轴方向和PNG、JPG等图片格式的坐标系统的Y轴方向相反，所以要先将图像Y轴反转，方便我们操作坐标。 gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1)
-   - gl.pixelStorei(pname, param)，  第一个参数pname有以下2个取值，第二个参数指定 0（false)或者非 0（true)整数。
-     1. gl.UNPACK_FLIP_Y_WEBGL 对图像进行Y轴反转， 默认为0（false）
-     2. glUNPACK_PREMULTIPLY_ALPHA_WEBGL 将图像RGB颜色值的每一个分量乘以A， 默认值为false
-        #+ATTR_latex: :width 600   #+ATTR_HTML: :width 600  #+ATTR_ORG: :width 600
-        [[file:webgl/flip_y_webgl.png]]
+3. 在片元着色器，从纹理单元对应的采样器u_Sampler，和纹理坐标，从纹理图像中抽取纹理颜色，赋给当前片元  gl_FragColor = texture2D(u_Sampler, v_TexCoord)
 
-3. 激活纹理单元    gl.activeTexture(gl.TEXTURE0)  激活0号纹理单元·
-   - webgl通过纹理单元texture unit的机制来在同一个几何体平面上同时使用多个纹理，每个纹理单元有一个单元编号（gl.TEXTURE0 。。。 gl.TEXTURE8），来管理一张纹理图像，即使只是用一张纹理贴图，也要为其指定一个纹理单元，默认至少支持8个纹理单元
-   - 实际上，在webgl中，你没法直接操作纹理对象，必须通过将纹理对象绑定到纹理单元上，然后通过操作纹理单元来操作纹理对象；
 
-4. 把纹理对象绑定到目标区域  gl.bindTexture(gl.TEXTURE_2D, texture)   webgl支持两种类型的纹理 gl.TEXTURE_2D 二维纹理;  gl.TEXTURE_CUBE_MAP 立方体纹理
 
-5. 配置纹理对象的参数  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-   - gl.texParameteri(target, pname, param) ，将param的值赋给绑定到目标的纹理对象的pname参数上。参数：
-     - 第1个参数target： 指定纹理的类型，gl.TEXTURE_2D二维纹理  或者 gl.TEXTURE_CUBE_MAP立方体纹理
-     - 第2个参数pname：纹理参数的名字，决定了获取纹素颜色的方式；
-       - 放大方法：gl.TEXTURE_MAG_FILTER，表示当纹理的绘制范围比纹理本身更大时，获取纹素颜色的方式；比如说：你将16*16的纹理图像映射到32*32像素的空间时，纹理的尺寸就变成了原来的两倍，被放大了，该参数决定了如何填充这些放大的空隙部分。
-       - 缩小方法：gl.TEXTURE_MIN_FILTER，表示当纹理的绘制范围比纹理本身小的时，获取纹素颜色的方式；比如说：你将32*32的纹理图像映射到16*16像素的空间时，纹理的尺寸就只有原来的一半，变小了，需要剔除纹理图像中的部分像素。该参数决定了剔除的方法。
-       - 水平填充方法：gl.TEXTURE_WRAP_S， 表示如何对纹理图像左侧或者右侧的区域进行填充；
-       - 垂直填充方法：gl.TEXTURE_WRAP_T，表示如何对纹理图像上方和下方的区域进行填充；
-     - 第3个参数param：是纹理参数的值：
-       - 可赋给 gl.TEXTURE_MAP_FILTER 和 gl.TEXTURE_MIN_FILTER 参数的值
-         - gl.NEAREST: 使用原纹理上距离映射后像素中心最近的那个像素的颜色值，作为新像素的值。
-         - gl.LINEAR: 使用距离新像素中心最近的四个像素的颜色值的加权平均，作为新像素的值（和gl.NEAREST相比，该方法图像质量更好，但也会有较大的开销。）
-     - 可赋给 gl.TEXTURE_WRAP_S 和 gl.TEXTURE_WRAP_T 的常量：
-       - gl.REPEAT: 平铺式的重复纹理
-       - gl.MIRRORED_REPEAT: 镜像对称的重复纹理
-       - gl.CLAMP_TO_EDGE: 使用纹理图像边缘值
+  
+** 配置纹理对象的参数gl.texParameteri(target, pname, param) ，将param的值赋给绑定到目标的纹理对象的pname参数上。默认每个纹理参数都有默认值，通常你可以不用手动显示的调用这个函数，使用默认值就可以。
+- 第1个参数target： 指定纹理的类型，有两个值
+  - gl.TEXTURE_2D二维纹理
+  - gl.TEXTURE_CUBE_MAP立方体纹理
+- 第2个参数pname：纹理参数的名字，决定了获取纹素颜色的方式；
+  - 放大方法：gl.TEXTURE_MAG_FILTER，当绘制范围比纹理本身大时，如将16*16的纹理映射到32*32像素的空间时，纹理的尺寸不够，该参数决定了如何填充这些放大的空隙。默认值：gl.LINEAR
+  - 缩小方法：gl.TEXTURE_MIN_FILTER，当的绘制范围比纹理本身小时，如将32*32的纹理映射到16*16像素的空间时，纹理的尺寸比需要的大了，需要剔除纹理图像中的部分像素。该参数决定了剔除的方法。默认：gl.NEAREST_MIPMAP_LINEAR
+  - 水平填充方法：gl.TEXTURE_WRAP_S，如何对纹理图像左侧或者右侧的区域进行填充；默认值：gl.REPEAT
+  - 垂直填充方法：gl.TEXTURE_WRAP_T，如何对纹理图像上方和下方的区域进行填充；默认值：gl.REPEAT
+- 第3个参数param：是纹理参数的值：
+  - 可以赋给 gl.TEXTURE_MAP_FILTER 和 gl.TEXTURE_MIN_FILTER 的值有2个
+    1. gl.NEAREST: 使用原纹理上距离映射后像素中心最近的那个像素的颜色值，作为新像素的值。
+    2. gl.LINEAR: 使用距离新像素中心最近的四个像素的颜色值的加权平均，作为新像素的值（和gl.NEAREST相比，该方法图像质量更好，但也会有较大的开销。）
+  - 可以赋给 gl.TEXTURE_WRAP_S 和 gl.TEXTURE_WRAP_T 的值3个：
+    1. gl.REPEAT: 平铺式的重复纹理
+    2. gl.MIRRORED_REPEAT: 镜像对称的重复纹理
+    3. gl.CLAMP_TO_EDGE: 使用纹理图像边缘值
 
-   6. 分配给纹理对象  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image); // 配置纹理图像
 
-      g
 
 ** 例子：纹理贴图
