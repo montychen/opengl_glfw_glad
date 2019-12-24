@@ -15,7 +15,15 @@ WebGL使用在HTML5中新引入的<canvas>标签来定义绘图区域；传统�
 - primitive assembly图元装配：将孤立的顶点装配成图元，图元类型由gl.drawArrays函数的第1个参数决定：GL_POINTS、GL_LINE...、GL_TRIANGLE...
 - rasterizaiton光栅化（生成片元fragment）：显示在屏幕上的图元，实际上是由屏幕上离散的像素组成的。所以光栅化其实就是将图元primitive转换成屏幕上的像素（片元fragment），屏幕外（视椎体外）不可见的片元将被丢弃。
   - 片元指的是屏幕上的一个像素，包括像素的位置坐标（gl_FragCoord）、颜色和其它信息。
-- fragment shader片元着色器（确定片元的颜色）：针对每个片元都执行一次该着色器（逐片元操作），它主要用来计算每个片元（像素）的颜色值，使其显示在屏幕上。
+- fragment shader片元着色器（确定片元的颜色）：针对每个片元都执行一次该着色器（逐片元操作）来计算每个片元（像素）的颜色值，并将每个片元的颜色值写入颜色缓冲区中，等到图形中所有的片元处理完毕画布上就得到了最后的图像。
+#+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
+[[file:webgl/webgl_pipeline2.png]]
+
+
+* 颜色缓冲区Color Buffer
+- gl.clear(gl.COLOR_BUFFER_BIT)  在绘制开始前，经常见到调用函数 *清空画布* 的代码gl.clear(gl.COLOR_BUFFER_BIT)，清空画布的绘图区实际上就是用之前定义好的背景颜色将颜色缓冲的的颜色清除。
+- 颜色缓冲区中存放着需要显示到画布上的像素的颜色数据， 它属于帧缓存的一部分，与深度缓存、模板缓存等一起决定着最终画布上图像的显示信息。
+
 
 * 在canvas绘图的4个步骤
 ** 1、在html中定义canvas，并用id属性为其指定唯一标识符；加载JS文件，同时在<body>的onload属性指定JS执行的入口函数
@@ -125,7 +133,7 @@ ctx.fillRect(120, 10, 150, 150);        // Fill a rectangle with the color
 #+ATTR_latex: :width 500   #+ATTR_HTML: :width 500  #+ATTR_ORG: :width 500
 [[file:webgl/texture_coord.png]]
 
-* 从程序传递数据给着色器变量：attribute变量、uniform变量和varying变量
+* 从app传递数据给着色器：attribute变量、uniform变量和varying变量
 ** attribute变量
 - attribute变量：只能在vertex shader中使用的变量, 一般用来表示顶点的数据如：顶点坐标，纹理坐标，顶点颜色等。
 - 在顶点着色器里，必须要把attribute变量声明为一个全局变量。
