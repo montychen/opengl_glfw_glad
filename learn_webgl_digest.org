@@ -482,3 +482,133 @@ function initVertexBuffers(gl) {
 
 
 ** 例子：纹理贴图
+#+begin_src javascript
+// 纹理贴图需要顶点着色器和片元着色器的配合：首先在顶点着色器中提供纹理坐标和顶点，将纹理对应匹配到顶点上
+var VSHADER_SOURCE =
+    'attribute vec4 a_Position;\n' + // 接收从app传递过来的顶点坐标
+    'attribute vec2 a_TexCoord;\n' + // 接收从app传递过来的纹理坐标
+    'varying vec2 v_TexCoord;\n' +   // 通过varying 变量，把接收到的纹理坐标传递给片元着色器
+    'void main() {\n' +
+    '  gl_Position = a_Position;\n' +
+    '  v_TexCoord = a_TexCoord;\n' +
+    '}\n';
+
+// 在片元着色器中，根据每个片元的纹理坐标从纹理图像中抽取纹理颜色，赋给当前片元
+var FSHADER_SOURCE =
+    '#ifdef GL_ES\n' +
+    'precision mediump float;\n' +
+    '#endif\n' +
+    'uniform sampler2D u_Sampler;\n' + // 获取纹素颜色的取样器：即输入纹理坐标，返回颜色值。 sampler2D类型对应gl.TEXTURE_2D； samplerCube类型对应gl.TEXTURE_CUBE_MAP
+    //
+    'varying vec2 v_TexCoord;\n' + // 声明同名同类型的varying变量，接收从顶点着色器传递过来的纹理坐标。
+    'void main() {\n' +
+    '  gl_FragColor = texture2D(u_Sampler, v_TexCoord);\n' + // 从纹理单元对应的采样器u_Sampler，和纹理坐标来获取纹素的颜色
+    '}\n';
+
+function main() {
+    var canvas = document.getElementById('webgl');
+
+    var gl = getWebGLContext(canvas);
+    if (!gl) {
+        console.log('Failed to get the rendering context for WebGL');
+        return;
+    }
+
+    if (!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) {
+        console.log('Failed to intialize shaders.');
+        return;
+    }
+
+    var n = initVertexBuffers(gl);
+    if (n < 0) {
+        console.log('Failed to set the vertex information');
+        return;
+    }
+
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+
+    // Set texture
+    if (!initTextures(gl, n)) {
+        console.log('Failed to intialize the texture.');
+        return;
+    }
+}
+
+// 纹理贴图需要顶点着色器和片元着色器的配合：首先在顶点着色器中提供纹理坐标和顶点，将纹理对应匹配到顶点上
+function initVertexBuffers(gl) {
+    var verticesTexCoords = new Float32Array([
+        -0.5,  0.5,   0.0, 1.0,  // 成对的记录每个顶点的顶点坐标和纹理坐标，将纹理坐标映射到顶点上。前两个是顶点坐标，后两个是纹理坐标
+        -0.5, -0.5,   0.0, 0.0,
+        0.5,  0.5,   1.0, 1.0,
+        0.5, -0.5,   1.0, 0.0,
+    ]);
+    var n = 4; // 有4个顶点
+
+    var vertexTexCoordBuffer = gl.createBuffer();
+    if (!vertexTexCoordBuffer) {
+        console.log('Failed to create the buffer object');
+        return -1;
+    }
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexTexCoordBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, verticesTexCoords, gl.STATIC_DRAW);   // 把顶点坐标、纹理坐标写入缓冲区对象
+
+    var FSIZE = verticesTexCoords.BYTES_PER_ELEMENT;
+    var a_Position = gl.getAttribLocation(gl.program, 'a_Position');
+    if (a_Position < 0) {
+        console.log('Failed to get the storage location of a_Position');
+        return -1;
+    }
+    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, FSIZE * 4, 0); // 把顶点坐标分配给a_Position并激活
+    gl.enableVertexAttribArray(a_Position);
+
+    var a_TexCoord = gl.getAttribLocation(gl.program, 'a_TexCoord');
+    if (a_TexCoord < 0) {
+        console.log('Failed to get the storage location of a_TexCoord');
+        return -1;
+    }
+    gl.vertexAttribPointer(a_TexCoord, 2, gl.FLOAT, false, FSIZE * 4, FSIZE * 2);//把纹理坐标分配给a_TextCoord并激活。
+    gl.enableVertexAttribArray(a_TexCoord);
+
+    return n;
+}
+
+// 加载纹理图像
+function initTextures(gl, n) {
+    var texture = gl.createTexture();   // 创建纹理对象
+    if (!texture) {
+        console.log('Failed to create the texture object');
+        return false;
+    }
+
+    var u_Sampler = gl.getUniformLocation(gl.program, 'u_Sampler'); // 获取u_Sampler的存储位置
+    if (!u_Sampler) {
+        console.log('Failed to get the storage location of u_Sampler');
+        return false;
+    }
+    var image = new Image();  // 创建一个Image
+    if (!image) {
+        console.log('Failed to create the image object');
+        return false;
+    }
+    image.onload = function(){ loadTexture(gl, n, texture, u_Sampler, image); }; // 注册当浏览器加载完图像后的回调函数
+    image.src = '../resources/sky.jpg'; // 让浏览器开始加载纹理图片
+
+    return true;
+}
+
+// 浏览器加载完图像后的回调函数，配置纹理
+function loadTexture(gl, n, texture, u_Sampler, image) {
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1); // 反转纹理图像的y轴：Flip the image's y axis
+    gl.activeTexture(gl.TEXTURE0); // 激活0号纹理单元，WebGL至少支持8个纹理单元
+    gl.bindTexture(gl.TEXTURE_2D, texture); // 把纹理对象绑定到目标区域，webgl支持两种纹理 gl.TEXTURE_2D 二维纹理;  gl.TEXTURE_CUBE_MAP 立方体纹理
+
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); // 配置纹理参数
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image); // 把jpg纹理图像image（gl.RGB颜色格式），分配给2D的纹理对象。
+
+    gl.uniform1i(u_Sampler, 0);   // 通过纹理编号，将纹理单元0传递给片元着色器
+
+    gl.clear(gl.COLOR_BUFFER_BIT);   // Clear <canvas>
+
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, n); // Draw the rectangle
+}
+#+end_src
