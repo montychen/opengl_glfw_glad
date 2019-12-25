@@ -446,10 +446,14 @@ function initVertexBuffers(gl) {
 #+ATTR_latex: :width 500   #+ATTR_HTML: :width 500  #+ATTR_ORG: :width 500
 [[file:webgl/texture_sample_data.jpg]]
 
-*** 例1：用整个纹理填充这个绘图区域：在定义顶点数据和纹理坐标的时候，注意纹理坐标要与顶点一一对应
-#+ATTR_latex: :width 600   #+ATTR_HTML: :width 600  #+ATTR_ORG: :width 600
+*** 例1：用整个纹理填充这个绘图区域：定义顶点数据和纹理坐标时，注意纹理坐标要与顶点一一对应
+#+ATTR_latex: :width 500   #+ATTR_HTML: :width 500  #+ATTR_ORG: :width 500
 [[file:webgl/texture_sample_full.png]]
 
+*** 例2：用部分纹理填充这个绘图区域：注意纹理坐标要与顶点一一对应
+- 修改一下上例中纹理坐标，只取部分纹理(左下角部分），看看有什么效果，顶点坐标不变，只是修改纹理坐标如下：
+#+ATTR_latex: :width 500   #+ATTR_HTML: :width 500  #+ATTR_ORG: :width 500
+[[file:webgl/texture_sample_part.png]]
 
 
 ** 纹理贴图：需要顶点着色器和片元着色器配合：
