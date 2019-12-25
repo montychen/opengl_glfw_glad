@@ -104,14 +104,14 @@ function main() {
 #+end_src
 
 
-* WebGL坐标
+* WebGL坐标、纹理坐标
 ** canvas的坐标
 - 原点（0，0）在左上角， x轴正向朝右， y轴正向朝下。例如：定义的canvas宽高（400，400）， 在用如下代码绘制的矩形fillRect(120, 10, 150, 150)，效果如下图所示：
 #+begin_src javascript
 ctx.fillStyle = 'rgba(0, 0, 255, 1.0)'; // Set color to blue
 ctx.fillRect(120, 10, 150, 150);        // Fill a rectangle with the color
 #+end_src
-#+ATTR_latex: :width 500   #+ATTR_HTML: :width 500  #+ATTR_ORG: :width 500
+#+ATTR_latex: :width 300   #+ATTR_HTML: :width 300  #+ATTR_ORG: :width 300
 [[file:webgl/canvas_coord.png]]
 
 ** 浏览器客户区坐标 client area
@@ -125,12 +125,13 @@ ctx.fillRect(120, 10, 150, 150);        // Fill a rectangle with the color
 #+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
 [[file:webgl/webgl_coord.png]]
 
-** 纹理坐标texture coordinates
+** 纹理坐标texture coordinates：纹理通常来说就是一张图片
 - 纹理坐标：原点（0.0， 0.0）在左下角，  x轴正向朝右， y轴正向朝上。坐标值和图像大小无关，不管是128*128还是128*256的图像，其右上角坐标始终是（1.0，1.0）
-- 纹理坐标就是纹理图像上的坐标，纹理坐标是二维的，为了和广泛使用的xy坐标区分开来， 习惯用s和t来命名纹理坐标（st坐标系统），取值范围从0.0到1.0。
+- 纹理坐标就是纹理图像上的坐标，纹理坐标是二维的，为了和广泛使用的xy坐标区分开来， 习惯用s和t来命名纹理坐标（st坐标系统）。
+- 不论图片尺寸有多大，长和宽各是多少，纹理坐标总是从0到1之间取值。 
 - 通过纹理坐标可以在纹理图像上获取纹素的颜色。
 
-#+ATTR_latex: :width 500   #+ATTR_HTML: :width 500  #+ATTR_ORG: :width 500
+#+ATTR_latex: :width 400   #+ATTR_HTML: :width 400  #+ATTR_ORG: :width 400
 [[file:webgl/texture_coord.png]]
 
 * 从app传递数据给着色器：attribute变量、uniform变量和varying变量
@@ -432,7 +433,7 @@ function initVertexBuffers(gl) {
   - 行主序是指以行为优先单位，在内存中逐行存储。
 
    
-* 纹理映射 texture mapping 又称纹理贴图
+* 纹理映射 texture mapping 又称纹理贴图： 纹理通常来说就是一张图片
 - 纹理贴图： 就是将一张真实世界的图片（就像一张贴纸）贴到一个几何图形的表面上去，这样这个几何图形的表面看上去就是这张图片。 这张图片就是 *纹理texture* 或者叫 纹理图像。
 - 纹理贴图的作用就是根据纹理图片，*为光栅化后的片元* 涂上合适的颜色。
 - 纹素：组成纹理图像的像素又被称为 *纹素(texels, texture elements)*, 每一个纹素的颜色都是RGB或RGBA格式。
@@ -440,16 +441,23 @@ function initVertexBuffers(gl) {
 #+ATTR_latex: :width 700   #+ATTR_HTML: :width 700  #+ATTR_ORG: :width 700
 [[file:webgl/texel.png]]
 
+** 纹理贴图：纹理坐标和顶点坐标映射
+- 在本例中，我们绘制了一个最简单正方形，然后把同样是正方形的纹理图片贴在上面。正方形用了两个三角形来绘制，坐标和索引如下图所示，右侧显示的为纹理坐标：
+#+ATTR_latex: :width 500   #+ATTR_HTML: :width 500  #+ATTR_ORG: :width 500
+[[file:webgl/texture_sample_data.jpg]]
 
-** 纹理贴图需要顶点着色器和片元着色器二者的配合：
+*** 例1：用整个纹理填充这个绘图区域：在定义顶点数据和纹理坐标的时候，注意纹理坐标要与顶点一一对应
+#+ATTR_latex: :width 600   #+ATTR_HTML: :width 600  #+ATTR_ORG: :width 600
+[[file:webgl/texture_sample_full.png]]
+
+
+
+** 纹理贴图：需要顶点着色器和片元着色器配合：
 1. 首先在顶点着色器中将纹理坐标映射到顶点上。通过纹理图像的纹理坐标与几何体的顶点坐标间的映射关系，来确定将那些纹理图像贴上去。app传入顶点坐标和对应的纹理坐标
-#+ATTR_latex: :width 700   #+ATTR_HTML: :width 700  #+ATTR_ORG: :width 700
-[[file:webgl/texture_vertex_map.png]]
-
 2. 配置纹理
    1. 创建纹理对象：  var texture = gl.createTexture()
    2. 加载纹理图像
-   3. 反转纹理图像的y轴。WebGL的纹理坐标系统的t轴方向和PNG、JPG等图片格式的坐标系统的Y轴方向相反，所以要先将图像Y轴反转，方便我们操作坐标。 gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1)
+   3. 反转图片的y轴，让图片坐标和纹理坐标一致。WebGL的纹理坐标系统的t轴方向和PNG、JPG等图片格式的坐标系统的Y轴方向相反，所以要先将图片Y轴反转，让图片坐标和纹理坐标一致，方便我们映射坐标。 gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1)
       - gl.pixelStorei(pname, param)，  第一个参数pname有以下2个取值，第二个参数指定 0（false)或者非 0（true)整数。
         1. gl.UNPACK_FLIP_Y_WEBGL 对图像进行Y轴反转， 默认为0（false）
         2. glUNPACK_PREMULTIPLY_ALPHA_WEBGL 将图像RGB颜色值的每一个分量乘以A， 默认值为false
@@ -460,7 +468,7 @@ function initVertexBuffers(gl) {
       - 实际上，在webgl你没法直接操作纹理对象，必须通过将纹理对象绑定到纹理单元上，然后通过操作纹理单元来操作纹理对象；
    5. 把纹理对象绑定到目标区域  gl.bindTexture(gl.TEXTURE_2D, texture)   webgl支持两种纹理 gl.TEXTURE_2D 二维纹理;  gl.TEXTURE_CUBE_MAP 立方体纹理
    6. 配置纹理对象的参数，每次调用配置一个参数，为了配置多个参数可以调用多次 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR) 默认每个纹理参数都有默认值，通常你可以不用手动显示的调用这个函数，使用默认值就可以。
-   7. 把纹理图像分配给纹理对象  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image)  把jpg纹理图像image（gl.RGB颜色格式），分配给2D的纹理对象。
+   7. 把纹理图像分配给纹理对象  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image)  把jpg纹理图像gl.RGB颜色格式，分配给2D的纹理对象。
       - 纹理图像的颜色格式：如果是jpg就用用gl.RGB； 如果是PNG就要用gl.RGBA;  gl.UNSIGNED_BYTE 表示每个颜色分量占据1个字节
    8. 通过纹理编号，将纹理单元传递给片元着色器    gl.uniform1i(u_Sampler, 0);   将0号纹理传递给着色器中的取样器
 
@@ -484,8 +492,8 @@ function initVertexBuffers(gl) {
     2. gl.LINEAR: 使用距离新像素中心最近的四个像素的颜色值的加权平均，作为新像素的值（和gl.NEAREST相比，该方法图像质量更好，但也会有较大的开销。）
   - 可以赋给 gl.TEXTURE_WRAP_S 和 gl.TEXTURE_WRAP_T 的值3个：
     1. gl.REPEAT: 平铺式的重复纹理
-    2. gl.MIRRORED_REPEAT: 镜像对称的重复纹理
-    3. gl.CLAMP_TO_EDGE: 使用纹理图像边缘值
+    2. gl.MIRRORED_REPEAT: 纹理镜像重复填充
+    3. gl.CLAMP_TO_EDGE: 使用纹理边缘的像素填充
 
 
 
@@ -620,3 +628,9 @@ function loadTexture(gl, n, texture, u_Sampler, image) {
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, n); // Draw the rectangle
 }
 #+end_src
+
+
+* 投影矩阵projection matrix、视锥体frustum、裁剪坐标clipping coordinates
+- 视锥体（frustum），它包含六个平面（近平面、远平面、上平面、下平面、右平面和左平面）
+- 裁剪坐标（clipping coordinates）：位于这个视锥体以外的顶点都会被剪裁掉，所得的坐标结果成为裁剪坐标（clipping coordinates）
+- 视锥体的形状决定了3D到2D的投影类型，如果近平面和远平面尺寸一致，那么物体上的顶点不论远近都以统一的方式投影在屏幕上，这就是正交投影orthographic projection。否则就是透视投影perspective projection。简单来说，正交投影没有近大远小的效果，而透视投影则有。
