@@ -457,6 +457,20 @@ function initVertexBuffers(gl) {
 #+ATTR_latex: :width 500   #+ATTR_HTML: :width 500  #+ATTR_ORG: :width 500
 [[file:webgl/texture_sample_part.png]]
 
+*** 例3：纹理不足覆盖整个矩形，空白区域的水平&垂直填充
+#+begin_src javascript
+var verticesTexCoords = new Float32Array([
+    // Vertex coordinate, Texture coordinate
+    -0.5,  0.5,   -0.3, 1.7,
+    -0.5, -0.5,   -0.3, -0.2,
+    0.5,  0.5,   1.7, 1.7,
+    0.5, -0.5,   1.7, -0.2
+]);
+#+end_src
+- 由于纹理图像不足以覆盖整个矩形，所以你可以看到，在那些本该空白的区域（红色框框外），纹理又重复出现了。之所以会这样，是因为在本例子中，gl.TEXTURE_WRAP_S和gl.TEXTURE_WRAP_T使用的都是默认值gl.REPEAT
+#+ATTR_latex: :width 650   #+ATTR_HTML: :width 650  #+ATTR_ORG: :width 650
+[[file:webgl/texture_sample_blank.png]]
+
 
 ** 纹理贴图步骤：需要顶点着色器和片元着色器配合：
 - 首先在顶点着色器中将纹理坐标映射到顶点上。通过纹理图像的纹理坐标与几何体的顶点坐标间的映射关系，来确定将那些纹理图像贴上去。app传入顶点坐标和对应的纹理坐标
