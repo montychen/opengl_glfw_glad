@@ -440,6 +440,7 @@ function initVertexBuffers(gl) {
 - 纹理贴图的作用就是根据纹理图片，*为光栅化后的片元* 涂上合适的颜色。
 - 纹素：组成纹理图像的像素又被称为 *纹素(texels, texture elements)*, 每一个纹素的颜色都是RGB或RGBA格式。
 - Sampler取样：从纹理图像中获取纹素颜色的过程，即输入纹理坐标，返回颜色值。实际上，由于纹理像素也是有大小的，取样处的纹理坐标很可能不落在某个像素中心，所以取样通常并不是直接取纹理图像某个像素的颜色，而是通过附件的若干个像素共同计算而得。
+- webgl通过 *纹理单元texture unit的机制来在同一个几何体平面上同时使用多个纹理*
 #+ATTR_latex: :width 700   #+ATTR_HTML: :width 700  #+ATTR_ORG: :width 700
 [[file:webgl/texel.png]]
 
@@ -471,7 +472,171 @@ var verticesTexCoords = new Float32Array([
 #+ATTR_latex: :width 650   #+ATTR_HTML: :width 650  #+ATTR_ORG: :width 650
 [[file:webgl/texture_sample_blank.png]]
 
+*** 例子4：通过纹理单元的机制在同一个几何体平面上同时使用多个纹理
+#+begin_src javascript
+// Vertex shader program
+var VSHADER_SOURCE =
+    'attribute vec4 a_Position;\n' +
+    'attribute vec2 a_TexCoord;\n' +
+    'varying vec2 v_TexCoord;\n' +
+    'void main() {\n' +
+    '  gl_Position = a_Position;\n' +
+    '  v_TexCoord = a_TexCoord;\n' +
+    '}\n';
 
+// Fragment shader program
+var FSHADER_SOURCE =
+    '#ifdef GL_ES\n' +
+    'precision mediump float;\n' +
+    '#endif\n' +
+    'uniform sampler2D u_Sampler0;\n' + // 在同一个几何体平面上同时使用多个纹理，所以这里定义了两个纹理采样器
+    'uniform sampler2D u_Sampler1;\n' + // sampler2D类型对应gl.TEXTURE_2D； samplerCube类型对应gl.TEXTURE_CUBE_MAP
+    'varying vec2 v_TexCoord;\n' +
+    'void main() {\n' +
+    '  vec4 color0 = texture2D(u_Sampler0, v_TexCoord);\n' + // 从两个纹理中取出纹素颜色
+    '  vec4 color1 = texture2D(u_Sampler1, v_TexCoord);\n' + // 从纹理单元对应的采样器u_Sampler，和纹理坐标来获取纹素的颜色
+    '  gl_FragColor = color0 * color1;\n' +  // 用两个纹素color0和color1来计算最终片元的颜色。有多种可能的方法，这里用颜色矢量的分量乘法
+    '}\n';          // color0(r0,g0,b0,a0) * color1(r1,g1,b1,a1)  = color(r0*r1, g0*g1, b0*b1, a0*a1)
+
+function main() {
+    // Retrieve <canvas> element
+    var canvas = document.getElementById('webgl');
+
+    // Get the rendering context for WebGL
+    var gl = getWebGLContext(canvas);
+    if (!gl) {
+        console.log('Failed to get the rendering context for WebGL');
+        return;
+    }
+
+    // Initialize shaders
+    if (!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) {
+        console.log('Failed to intialize shaders.');
+        return;
+    }
+
+    // Set the vertex information
+    var n = initVertexBuffers(gl);
+    if (n < 0) {
+        console.log('Failed to set the vertex information');
+        return;
+    }
+
+    // Specify the color for clearing <canvas>
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+
+    // Set texture
+    if (!initTextures(gl, n)) {
+        console.log('Failed to intialize the texture.');
+        return;
+    }
+}
+
+function initVertexBuffers(gl) {
+    var verticesTexCoords = new Float32Array([
+        // Vertex coordinate, Texture coordinate
+        -0.5,  0.5,   0.0, 1.0,
+        -0.5, -0.5,   0.0, 0.0,
+        0.5,  0.5,   1.0, 1.0,
+        0.5, -0.5,   1.0, 0.0,
+    ]);
+    var n = 4; // The number of vertices
+
+    // Create a buffer object
+    var vertexTexCoordBuffer = gl.createBuffer();
+    if (!vertexTexCoordBuffer) {
+        console.log('Failed to create the buffer object');
+        return -1;
+    }
+
+    // Write the positions of vertices to a vertex shader
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexTexCoordBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, verticesTexCoords, gl.STATIC_DRAW);
+
+    var FSIZE = verticesTexCoords.BYTES_PER_ELEMENT;
+    //Get the storage location of a_Position, assign and enable buffer
+    var a_Position = gl.getAttribLocation(gl.program, 'a_Position');
+    if (a_Position < 0) {
+        console.log('Failed to get the storage location of a_Position');
+        return -1;
+    }
+    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, FSIZE * 4, 0);
+    gl.enableVertexAttribArray(a_Position);  // Enable the assignment of the buffer object
+
+    // Get the storage location of a_TexCoord
+    var a_TexCoord = gl.getAttribLocation(gl.program, 'a_TexCoord');
+    if (a_TexCoord < 0) {
+        console.log('Failed to get the storage location of a_TexCoord');
+        return -1;
+    }
+    gl.vertexAttribPointer(a_TexCoord, 2, gl.FLOAT, false, FSIZE * 4, FSIZE * 2);
+    gl.enableVertexAttribArray(a_TexCoord);  // Enable the buffer assignment
+
+    return n;
+}
+
+function initTextures(gl, n) {
+    var texture0 = gl.createTexture(); // 创建两个纹理对象
+    var texture1 = gl.createTexture();
+    if (!texture0 || !texture1) {
+        console.log('Failed to create the texture object');
+        return false;
+    }
+
+    // Get the storage location of u_Sampler0 and u_Sampler1
+    var u_Sampler0 = gl.getUniformLocation(gl.program, 'u_Sampler0');
+    var u_Sampler1 = gl.getUniformLocation(gl.program, 'u_Sampler1');
+    if (!u_Sampler0 || !u_Sampler1) {
+        console.log('Failed to get the storage location of u_Sampler');
+        return false;
+    }
+
+    var image0 = new Image();     // 使用两个纹理，所以这里创建两个Image对象
+    var image1 = new Image();
+    if (!image0 || !image1) {
+        console.log('Failed to create the image object');
+        return false;
+    }
+    // Register the event handler to be called when image loading is completed
+    image0.onload = function(){ loadTexture(gl, n, texture0, u_Sampler0, image0, 0); }; // 最后一个参数0，表示纹理单元0
+    image1.onload = function(){ loadTexture(gl, n, texture1, u_Sampler1, image1, 1); }; // 最后一个参数1，表示纹理单元1
+    image0.src = '../resources/circle.gif'; // 加载两个纹理图像
+    image1.src = '../resources/sky.jpg';
+
+    return true;
+}
+
+// 因为纹理图像的加载时异步的，我们没法预测那个先完成，所以定义这两个变量来标记两个纹理单元是否已经就绪
+var g_texUnit0 = false, g_texUnit1 = false;
+function loadTexture(gl, n, texture, u_Sampler, image, texUnit) {
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);// Flip the image's y-axis
+    // Make the texture unit active
+    if (texUnit == 0) {           // 检测纹理单元编号texUnit
+        gl.activeTexture(gl.TEXTURE0); // 激活0号纹理单元，WebGL至少支持8个纹理单元
+        g_texUnit0 = true;
+    } else {
+        gl.activeTexture(gl.TEXTURE1);  // 激活1号纹理单元，WebGL至少支持8个纹理单元
+        g_texUnit1 = true;
+    }
+    // Bind the texture object to the target
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+
+    // Set texture parameters
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    // Set the image to texture
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+
+    gl.uniform1i(u_Sampler, texUnit);  // 通过纹理编号，将纹理单元0传递给片元着色器
+
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    if (g_texUnit0 && g_texUnit1) {           // 确认两个纹理已经就绪后，开始绘制
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, n);   // Draw the rectangle
+    }
+}
+#+end_src
+
+   
 ** 纹理贴图步骤：需要顶点着色器和片元着色器配合：
 - 首先在顶点着色器中将纹理坐标映射到顶点上。通过纹理图像的纹理坐标与几何体的顶点坐标间的映射关系，来确定将那些纹理图像贴上去。app传入顶点坐标和对应的纹理坐标
 - 创建纹理对象：  var texture = gl.createTexture()
@@ -482,7 +647,7 @@ var verticesTexCoords = new Float32Array([
     - glUNPACK_PREMULTIPLY_ALPHA_WEBGL 将图像RGB颜色值的每一个分量乘以A， 默认值为false
       #+ATTR_latex: :width 600   #+ATTR_HTML: :width 600  #+ATTR_ORG: :width 600
       [[file:webgl/flip_y_webgl.png]]
-- 激活纹理单元    gl.activeTexture(gl.TEXTURE0)  激活0号纹理单元· webgl通过纹理单元texture unit的机制来在同一个几何体平面上同时使用多个纹理。
+- 激活纹理单元    gl.activeTexture(gl.TEXTURE0)  激活0号纹理单元· webgl通过 *纹理单元texture unit的机制来在同一个几何体平面上同时使用多个纹理* 。
   - 每个纹理单元有一个单元编号（gl.TEXTURE0 。。。 gl.TEXTURE8），来管理一张纹理图像，即使只是用一张纹理贴图，也要为其指定一个纹理单元，默认至少支持8个纹理单元
   - 实际上，在webgl你没法直接操作纹理对象，必须通过将纹理对象绑定到纹理单元上，然后通过操作纹理单元来操作纹理对象；
 - 把纹理对象绑定到目标区域  gl.bindTexture(gl.TEXTURE_2D, texture)   webgl支持两种纹理 gl.TEXTURE_2D 二维纹理;  gl.TEXTURE_CUBE_MAP 立方体纹理
@@ -510,6 +675,7 @@ var verticesTexCoords = new Float32Array([
     1. gl.REPEAT: 平铺式的重复纹理
     2. gl.MIRRORED_REPEAT: 纹理镜像重复填充
     3. gl.CLAMP_TO_EDGE: 使用纹理边缘的像素填充
+
 
 
 
