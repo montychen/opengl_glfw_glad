@@ -680,7 +680,10 @@ function loadTexture(gl, n, texture, u_Sampler, image, texUnit) {
 
 
 ** 例子：纹理贴图
-#+begin_src javascript
+:: test1
+:: test2
+:: test3
+#+begin_src javascript -n
 // 纹理贴图需要顶点着色器和片元着色器的配合：首先在顶点着色器中提供纹理坐标和顶点，将纹理对应匹配到顶点上
 var VSHADER_SOURCE =
     'attribute vec4 a_Position;\n' + // 接收从app传递过来的顶点坐标
