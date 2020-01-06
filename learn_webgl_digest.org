@@ -17,6 +17,7 @@ WebGL使用HTML5中新引入的<canvas>标签来定义绘图区域；传统的<i
 - rasterizaiton光栅化（生成片元fragment）：显示在屏幕上的图元，实际上是由屏幕上离散的像素组成的。所以光栅化其实就是将图元primitive转换成屏幕上的像素（片元fragment），屏幕外（视椎体外）不可见的片元将被丢弃。
   - 片元指的是屏幕上的一个像素，包括像素的位置坐标（gl_FragCoord）、颜色和其它信息。
 - fragment shader片元着色器（确定片元的颜色）：针对每个片元都执行一次该着色器（逐片元操作）来计算每个片元（像素）的颜色值，并将每个片元的颜色值写入颜色缓冲区中，等到图形中所有的片元处理完毕画布上就得到了最后的图像。
+- GLSL: OpenGL着色语言（OpenGL Shading Language）是用来在OpenGL中进行着色编程的语言
 #+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
 [[file:webgl/webgl_pipeline2.png]]
 
@@ -428,6 +429,24 @@ function initVertexBuffers(gl) {
 #+ATTR_latex: :width 300   #+ATTR_HTML: :width 300  #+ATTR_ORG: :width 300
 [[file:webgl/z_rotation.png]]
 
+** 分量 & swizzling混合
+- 向量的分量可以通过vec.x这种方式获取，这里x是指这个向量的第一个分量。你可以分别使用.x、.y、.z和.w来获取它们的第1、2、3、4个分量。GLSL也允许你对颜色使用rgba，或是对纹理坐标使用stpq访问相同的分量。
+  - x, y, z, w:  顶点坐标的分量
+  - r, g, b, a:  颜色分量
+  - s, t, p, q   纹理坐标分量
+- swizzling混合：它可以使用得到的分量进行“任意搭配”去访问向量各个位置的数据，这也是它被称作swizzle的原因。
+#+begin_src javascript
+vec4 v4 = vec4(1.0, 2.0, 3.0, 4.0);
+float f;
+f = v4.x; // 设f为 1.0
+f = v4.w; // 设f为 4.0
+
+vec2 v2;
+v2 = v4.xy  // 设v2为（1.0， 2.0）
+v2 = v4.yw  // 设v2为（2.0， 4.0）可以省略任意分量
+v2 = v4.yy  // 设v2为（2.0， 2.0）可以重复任意分量
+v2 = v4.wx  // 设v2为（4.0， 1.0）可以逆序
+#+end_src
 ** 矩阵matrix
 - 矩阵乘法不符合交换规律，也就是说 A ✖️ B 和 B ✖️ A 并不相等， 而且只有在矩阵的列数和矢量的行数相等时，才可以将两者相乘
 - OpenGL API接受的矩阵要求是 *列主序* 。列主序是指以列为优先单位，在内存中逐列存储。 行主序是指以行为优先单位，在内存中逐行存储。
