@@ -435,7 +435,7 @@ function initVertexBuffers(gl) {
   - r, g, b, a:  颜色分量
   - s, t, p, q   纹理坐标分量
 - 分量重组swizzling：分量可以进行“任意搭配组合”去访问向量各个位置的数据，这也是它被称作swizzle的原因。
-#+begin_src javascript
+  #+begin_src javascript
 vec4 v4 = vec4(1.0, 2.0, 3.0, 4.0);
 float f;
 f = v4.x; // 设f为 1.0
@@ -446,7 +446,7 @@ v2 = v4.xy  // 设v2为（1.0， 2.0）
 v2 = v4.yw  // 设v2为（2.0， 4.0）可以省略任意分量
 v2 = v4.yy  // 设v2为（2.0， 2.0）可以重复任意分量
 v2 = v4.wx  // 设v2为（4.0， 1.0）可以逆序
-#+end_src
+  #+end_src
 - 分量重组swizzling也可以用在赋值表达式（=）的左值
   #+begin_src javascript
 vec4 v4 = vec4(1.0, 2.0, 3.0, 4.0);
