@@ -486,6 +486,11 @@ v4.xw = vec2(5.0, 6.0);  // v4 = (5.0, 2.0, 3.0, 6.0) x和w分量的值变了
 
 
 * 变换矩阵transformation matrix： 移动、旋转和缩放
+#+begin_quote
+- 矩阵乘法是不遵守交换律的，这意味着它们的顺序很重要。
+- 当矩阵相乘时，在最右边的矩阵是第一个与向量相乘的，所以你应该从右向左读这个乘法。
+- 在组合矩阵时，先进行缩放操作，然后是旋转，最后才是位移，否则它们会（消极地）互相影响。
+#+end_quote
 ** 单位矩阵(Identity Matrix): 主对角线元素为1，其余元素为0, 可简记为I
 #+ATTR_latex: :width 400   #+ATTR_HTML: :width 400  #+ATTR_ORG: :width 400
 [[file:webgl/identity_matrix.png]]
@@ -509,6 +514,7 @@ v4.xw = vec2(5.0, 6.0);  // v4 = (5.0, 2.0, 3.0, 6.0) x和w分量的值变了
 - OpenGL API接受的矩阵要求是 *列主序* 。列主序是指以列为优先单位，在内存中逐列存储。 行主序是指以行为优先单位，在内存中逐行存储。
 #+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
 [[file:webgl/column_order.png]]
+
 
    
 * 纹理映射 texture mapping 又称纹理贴图： 纹理通常来说就是一张图片
