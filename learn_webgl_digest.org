@@ -414,12 +414,10 @@ function initVertexBuffers(gl) {
 [[file:webgl/drawarrays_mode.png]]
 
 
-* 向量
-- 向量最基本的定义就是一个方向。或者说，向量有一个方向(Direction)和大小(Magnitude，也叫做强度或长度)。 *由于向量表示的是方向，起始于何处并不会改变它的值* 。下图可以看到向量v¯和w¯是相等的，尽管他们的起始点不同。
-- 向量一般表征着一个点的运动，一个向量同时储存其潜在变化的方向和大小。因为向量只储存了方向和大小，那么平移并不会改变向量的值，所以所有平移的向量（方向和大小不变）都是相等的。
-- 由于向量是一个方向，很难用位置(Position)表示出来。为了直观，通常设定方向的原点为(0, 0, 0)，然后指向一个方向，对应一个点，使其变为位置向量(Position Vector)。比如位置向量(3, 5)在图像中的起点是(0, 0)，并指向(3, 5)
+* 向量: 既有方向又有大小的量
+- 向量表示的是方向，起始于何处并不会改变它的值，没有固定的起点，只要方向相同，大小相等，就认为两向量是相同的，但为了用数值坐标来表示向量，习惯将起始点放到原点（0，0，0）。下图可以看到向量v和w是相等的，尽管他们的起始点不同。
 - 单位向量(Unit Vector)：它的长度是1，如果只关心方向不关心长度的时候，单位向量特别有用。比如，在计算光照模型时，我们往往需要得到顶点的法线方向和光源方向，此时我们不关心这些向量有多长
-#+ATTR_latex: :width 300   #+ATTR_HTML: :width 300  #+ATTR_ORG: :width 300
+#+ATTR_latex: :width 250   #+ATTR_HTML: :width 250  #+ATTR_ORG: :width 250
 [[file:webgl/vectors.png]]
 ** 向量与标量运算: +，-，·或÷，其中·是乘号。注意－和÷运算时不能颠倒（标量-/÷向量），因为颠倒的运算是没有定义的。
 #+begin_quote
@@ -444,6 +442,15 @@ a-b：可以得到由b点前往a点的方向向量；具体是由减向量b的�
 #+ATTR_latex: :width 200   #+ATTR_HTML: :width 200  #+ATTR_ORG: :width 200
 [[file:webgl/vector_sub_vector.png]]
 
+** 向量间相乘： 分为点乘(Dot Product)v ⋅ k 和 叉乘(Cross Product)v × k
+- 点乘v ⋅ k = |v||k|cosθ = cosθ  (如果v¯和k¯都是单位向量，它们的长度会等于1), 点乘的结果是一个标量，可以计算向量v和k之间的夹角θ
+  - v ⋅ k = 0，两个向量正交 Orthogonal，  90度的余弦值是0
+  - v ⋅ k = 1，两个向量平行 Parallel，0度的余弦值是1
+  - v ⋅ k > 0, 方向基本相同，夹角在0°到90°之间
+  - v ⋅ k < 0, 方向基本相反，夹角在90°到180°之间
+- 叉乘v × k，在3D空间中有定义，它需要两个不平行向量作为输入，生成一个正交于两个输入向量的 *法向量* 。如果输入的两个向量也是正交的，那么叉乘之后将会产生3个互相正交的向量
+#+ATTR_latex: :width 200   #+ATTR_HTML: :width 200  #+ATTR_ORG: :width 200
+[[file:webgl/vectors_crossproduct.png]]
 
 ** 齐次坐标（Homogeneous coordinates）
 - 在三维顶点坐标(x,y,z)引入一个新的分量w，得到向量(x,y,z,w)。向量的w分量也叫齐次坐标。
@@ -479,6 +486,10 @@ v4.xw = vec2(5.0, 6.0);  // v4 = (5.0, 2.0, 3.0, 6.0) x和w分量的值变了
 
 
 * 变换矩阵transformation matrix： 移动、旋转和缩放
+** 单位矩阵(Identity Matrix): 主对角线元素为1，其余元素为0, 可简记为I
+#+ATTR_latex: :width 400   #+ATTR_HTML: :width 400  #+ATTR_ORG: :width 400
+[[file:webgl/identity_matrix.png]]
+
 ** 平移
 在顶点着色器中（而非片元着色器），逐顶点的对每个顶点坐标的分量（x，y，z）都加上一个常量（平移距离）。
 如果齐次坐标的最后一个分量是1.0，那么它的前三个分量就可以表示一个点的三维坐标。
