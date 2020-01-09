@@ -571,8 +571,8 @@ var FSHADER_SOURCE =
     '#ifdef GL_ES\n' +
     'precision mediump float;\n' +
     '#endif\n' +
-    'uniform sampler2D u_Sampler0;\n' + // 在同一个几何体平面上同时使用多个纹理，所以这里定义了两个纹理采样器
-    'uniform sampler2D u_Sampler1;\n' + // sampler2D类型对应gl.TEXTURE_2D； samplerCube类型对应gl.TEXTURE_CUBE_MAP
+    'uniform sampler2D u_Sampler0;\n' + // 在同一个几何体平面上同时使用多个纹理，所以这里定义了两个纹理采样器，采样器变量只能是uniform变量
+    'uniform sampler2D u_Sampler1;\n' + // 有2种采样器类型：sampler2D类型对应gl.TEXTURE_2D； samplerCube类型对应gl.TEXTURE_CUBE_MAP
     'varying vec2 v_TexCoord;\n' +
     'void main() {\n' +
     '  vec4 color0 = texture2D(u_Sampler0, v_TexCoord);\n' + // 从两个纹理中取出纹素颜色
@@ -778,8 +778,7 @@ var FSHADER_SOURCE =
     '#ifdef GL_ES\n' +
     'precision mediump float;\n' +
     '#endif\n' +
-    'uniform sampler2D u_Sampler;\n' + // 获取纹素颜色的取样器：即输入纹理坐标，返回颜色值。 sampler2D类型对应gl.TEXTURE_2D； samplerCube类型对应gl.TEXTURE_CUBE_MAP
-    //
+    'uniform sampler2D u_Sampler;\n' + // 获取纹素颜色的取样器：即输入纹理坐标，返回颜色值。 有2中采样器类型：sampler2D类型对应gl.TEXTURE_2D； samplerCube类型对应gl.TEXTURE_CUBE_MAP。 采样器变量只能是uniform变量
     'varying vec2 v_TexCoord;\n' + // 声明同名同类型的varying变量，接收从顶点着色器传递过来的纹理坐标。
     'void main() {\n' +
     '  gl_FragColor = texture2D(u_Sampler, v_TexCoord);\n' + // 从纹理单元对应的采样器u_Sampler，和纹理坐标来获取纹素的颜色
@@ -885,7 +884,7 @@ function loadTexture(gl, n, texture, u_Sampler, image) {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); // 配置纹理参数
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image); // 把jpg纹理图像image（gl.RGB颜色格式），分配给2D的纹理对象。
 
-    gl.uniform1i(u_Sampler, 0);   // 通过纹理编号，将纹理单元0传递给片元着色器
+    gl.uniform1i(u_Sampler, 0);   // 通过纹理编号，将纹理单元0传递给片元着色器， 取样器接收的是纹理编号。
 
     gl.clear(gl.COLOR_BUFFER_BIT);   // Clear <canvas>
 
