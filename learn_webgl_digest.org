@@ -124,7 +124,7 @@ ctx.fillRect(120, 10, 150, 150);        // Fill a rectangle with the color
 ** WebGL/OpenGL坐标 也叫 右手坐标系(Right-handed Coordinate System)： 伸开右手，大拇指指向X轴正方向，食指指向Y轴正方向，其他三个手指指向Z轴正方向。
 - 当我们看向屏幕，原点（0.0，0.0，0.0）在屏幕的中间，X轴正向朝右， Y轴正向朝上，Z轴垂直于屏幕正向朝外（从屏幕指向你的后面）。
 
-#+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
+#+ATTR_latex: :width 700   #+ATTR_HTML: :width 700  #+ATTR_ORG: :width 700
 [[file:webgl/webgl_coord.png]]
 
 ** 纹理坐标texture coordinates：纹理通常来说就是一张图片
@@ -144,7 +144,7 @@ ctx.fillRect(120, 10, 150, 150);        // Fill a rectangle with the color
 - 应用程序通过glGetAttribLocation函数来获得某个attribute 变量存储位置， 然后通过glVertexAttrib**函数赋值。
 
 ** uniform变量
-- 用来向vertex或fragment着色器中传递不变的数据，就像C语言里的const常量，它不能被shader程序修改（shader只能用，不能改）。如果想从app传递数据给片元着色器，只就要使用uniform变量。
+- 用来向vertex或fragment着色器中传递不变的数据，就像C语言里的const常量，它不能被shader程序修改（shader只能用，不能改）。如果想从app传递数据给片元着色器，就要使用uniform变量。
 - 如果uniform变量在vertex和fragment着色器两者之间的声明方式完全一样，则它可以在vertex和fragment共享使用。相当于一个被vertex和fragment shader共享的全局变量
 - uniform变量一般用来表示：变换矩阵，材质，光照参数和颜色等信息。
 - 应用程序通过glGetUniformLocation函数函数来获得存储位置，再通过函数glUniform**（）函数赋值
@@ -897,3 +897,16 @@ function loadTexture(gl, n, texture, u_Sampler, image) {
 - 视锥体（frustum），它包含六个平面（近平面、远平面、上平面、下平面、右平面和左平面）
 - 裁剪坐标（clipping coordinates）：位于这个视锥体以外的顶点都会被剪裁掉，所得的坐标结果成为裁剪坐标（clipping coordinates）
 - 视锥体的形状决定了3D到2D的投影类型，如果近平面和远平面尺寸一致，那么物体上的顶点不论远近都以统一的方式投影在屏幕上，这就是正交投影orthographic projection。否则就是透视投影perspective projection。简单来说，正交投影没有近大远小的效果，而透视投影则有。
+
+* 确定观察者状态：视点eye point、观察目标点look-at point、上方向up direction
+#+begin_quote
+3D和2D图形最显著的区别就是，三维物体具有深度，也就是Z轴。为了确定观察者的状态，需要3项信息
+#+ATTR_latex: :width 500   #+ATTR_HTML: :width 500  #+ATTR_ORG: :width 500
+[[file:webgl/camera.png]]
+
+ 1. 视点：观察者的位置，视线的起点。习惯用（eyeX, eyeY, eyeZ)表示
+ 2. 观察目标点：被观察物体所在的点，习惯用（atX, atY, atZ）表示。可以用来确定视线，视线从视点出发，穿过观察目标并继续延伸。
+ 3. 上方向：如果仅仅确定了视点和目标点，观察者还是可能以视线为轴旋转的，如下图所示。所以，为了将观察者固定住，还需要指定上方向。习惯用（upX, upY, upZ)表示。
+#+ATTR_latex: :width 500   #+ATTR_HTML: :width 500  #+ATTR_ORG: :width 500
+[[file:webgl/camera_up.png]]
+#+end_quote
