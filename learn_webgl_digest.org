@@ -899,14 +899,13 @@ function loadTexture(gl, n, texture, u_Sampler, image) {
 - 视锥体的形状决定了3D到2D的投影类型，如果近平面和远平面尺寸一致，那么物体上的顶点不论远近都以统一的方式投影在屏幕上，这就是正交投影orthographic projection。否则就是透视投影perspective projection。简单来说，正交投影没有近大远小的效果，而透视投影则有。
 
 * 确定观察者状态：视点eye point、观察目标点look-at point、上方向up direction
-#+begin_quote
 3D和2D图形最显著的区别就是，三维物体具有深度，也就是Z轴。为了确定观察者的状态，需要3项信息
 #+ATTR_latex: :width 500   #+ATTR_HTML: :width 500  #+ATTR_ORG: :width 500
 [[file:webgl/camera.png]]
-
- 1. 视点：观察者的位置，视线的起点。习惯用（eyeX, eyeY, eyeZ)表示
- 2. 观察目标点：被观察物体所在的点，习惯用（atX, atY, atZ）表示。可以用来确定视线，视线从视点出发，穿过观察目标并继续延伸。
- 3. 上方向：如果仅仅确定了视点和目标点，观察者还是可能以视线为轴旋转的，如下图所示。所以，为了将观察者固定住，还需要指定上方向。习惯用（upX, upY, upZ)表示。
+#+begin_quote
+1. 视点：观察者的位置，视线的起点。习惯用（eyeX, eyeY, eyeZ)表示
+2. 观察目标点：被观察物体所在的点，习惯用（atX, atY, atZ）表示。可以用来确定视线，视线从视点出发，穿过观察目标并继续延伸。
+3. 上方向：如果仅仅确定了视点和目标点，观察者还是可能以视线为轴旋转的，如下图所示。所以，为了将观察者固定住，还需要指定上方向。习惯用（upX, upY, upZ)表示。
+#+end_quote
 #+ATTR_latex: :width 500   #+ATTR_HTML: :width 500  #+ATTR_ORG: :width 500
 [[file:webgl/camera_up.png]]
-#+end_quote
