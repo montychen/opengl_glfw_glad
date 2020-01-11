@@ -414,109 +414,6 @@ function initVertexBuffers(gl) {
 [[file:webgl/drawarrays_mode.png]]
 
 
-* 向量: 既有方向又有大小的量
-- 向量表示的是方向，起始于何处并不会改变它的值，没有固定的起点，只要方向相同，大小相等，就认为两向量是相同的，但为了用数值坐标来表示向量，习惯将起始点放到原点（0，0，0）。下图可以看到向量v和w是相等的，尽管他们的起始点不同。
-- 单位向量(Unit Vector)：它的长度是1，如果只关心方向不关心长度的时候，单位向量特别有用。比如，在计算光照模型时，我们往往需要得到顶点的法线方向和光源方向，此时我们不关心这些向量有多长
-#+ATTR_latex: :width 250   #+ATTR_HTML: :width 250  #+ATTR_ORG: :width 250
-[[file:webgl/vectors.png]]
-** 向量与标量运算: +，-，·或÷，其中·是乘号。注意－和÷运算时不能颠倒（标量-/÷向量），因为颠倒的运算是没有定义的。
-#+begin_quote
-标量(Scalar)只是一个数字。当把一个向量加/减/乘/除一个标量，我们可以简单的把向量的每个分量分别和这个标量进行相应的运算。对于加法来说会像这样:
-#+end_quote
-#+ATTR_latex: :width 600   #+ATTR_HTML: :width 600  #+ATTR_ORG: :width 600
-[[file:webgl/vector_add.png]]
-
-** 向量间加减：对应位置的值可以组合而产生一个新向量
-- 公式：u + v = < u.x , u.y  > + < v.x , v.y > = < u.x + v.x , u.y + v.y > 即将一个向量中的每一个分量加上另一个向量的对应分量
-#+begin_quote
-向量的加法满足平行四边形法则和三角形法则. 具体地，两个向量 a和b相加，得到的是另一个新向量. 这个新向量可以表示为a和b的起点重合后，以它们为邻边构成的平行四边形的一条对角线（以共同的起点为起点的那一条，见下图左）
-或者表示为将 a的终点和 b的起点重合后，从a的起点指向 b的终点的这一新向量：
-#+end_quote
-
-#+ATTR_latex: :width 400   #+ATTR_HTML: :width 400  #+ATTR_ORG: :width 400
-[[file:webgl/vector_add_vector.png]]
-
-#+begin_quote
-a-b：可以得到由b点前往a点的方向向量；具体是由减向量b的终点指向被减向量a终点得到的新向量。减法可以判断量物体之前的距离，同上得到新向量后，取向量模即是两点之间的距离
-#+end_quote
-#+ATTR_latex: :width 200   #+ATTR_HTML: :width 200  #+ATTR_ORG: :width 200
-[[file:webgl/vector_sub_vector.png]]
-
-** 向量间相乘： 分为点乘(Dot Product)v ⋅ k 和 叉乘(Cross Product)v × k
-- 点乘v ⋅ k = |v||k|cosθ = cosθ  (如果v¯和k¯都是单位向量，它们的长度会等于1), 点乘的结果是一个标量，可以计算向量v和k之间的夹角θ
-  - v ⋅ k = 0，两个向量正交 Orthogonal，  90度的余弦值是0
-  - v ⋅ k = 1，两个向量平行 Parallel，0度的余弦值是1
-  - v ⋅ k > 0, 方向基本相同，夹角在0°到90°之间
-  - v ⋅ k < 0, 方向基本相反，夹角在90°到180°之间
-- 叉乘v × k，在3D空间中有定义，它需要两个不平行向量作为输入，生成一个正交于两个输入向量的 *法向量* 。如果输入的两个向量也是正交的，那么叉乘之后将会产生3个互相正交的向量
-#+ATTR_latex: :width 200   #+ATTR_HTML: :width 200  #+ATTR_ORG: :width 200
-[[file:webgl/vectors_crossproduct.png]]
-
-** 齐次坐标（Homogeneous coordinates）
-- 在三维顶点坐标(x,y,z)引入一个新的分量w，得到向量(x,y,z,w)。向量的w分量也叫齐次坐标。
-- 想要从齐次向量得到3D向量，我们可以把x、y和z坐标分别除以w坐标。我们通常不会注意这个问题，因为w分量通常是1.0。
-  - 若w==1，则向量(x, y, z, 1)为空间中的点。
-  - 若w==0，则向量(x, y, z, 0)为方向。 此时，这个向量就不能位移，”平移一个方向”是毫无意义的。
-#+begin_quote
-齐次坐标使得我们可以用同一个公式对点和方向作运算。它允许我们在3D向量上进行位移（如果没有w分量我们是不能位移向量的）
-#+end_quote
-** 分量的重组swizzling
-- 向量的分量可以通过vec.x这种方式获取，这里x是指这个向量的第一个分量。你可以分别使用.x、.y、.z和.w来获取它们的第1、2、3、4个分量。GLSL也允许你对颜色使用rgba，或是对纹理坐标使用stpq访问相同的分量。
-  - x, y, z, w:  顶点坐标的分量
-  - r, g, b, a:  颜色分量
-  - s, t, p, q   纹理坐标分量
-- 分量重组swizzling：分量可以进行“任意搭配组合”去访问向量各个位置的数据，这也是它被称作swizzle的原因。
-  #+begin_src javascript
-vec4 v4 = vec4(1.0, 2.0, 3.0, 4.0);
-float f;
-f = v4.x; // 设f为 1.0
-f = v4.w; // 设f为 4.0
-
-vec2 v2;
-v2 = v4.xy  // 设v2为（1.0， 2.0）
-v2 = v4.yw  // 设v2为（2.0， 4.0）可以省略任意分量
-v2 = v4.yy  // 设v2为（2.0， 2.0）可以重复任意分量
-v2 = v4.wx  // 设v2为（4.0， 1.0）可以逆序
-  #+end_src
-- 分量重组swizzling也可以用在赋值表达式（=）的左值
-  #+begin_src javascript
-vec4 v4 = vec4(1.0, 2.0, 3.0, 4.0);
-v4.xw = vec2(5.0, 6.0);  // v4 = (5.0, 2.0, 3.0, 6.0) x和w分量的值变了
-  #+end_src
-
-
-* 变换矩阵transformation matrix： 缩放、旋转、移动
-#+begin_quote
-- 矩阵乘法是不遵守交换律的，这意味着它们的顺序很重要。
-- 当矩阵相乘时，在最右边的矩阵是第一个与向量相乘的，所以你应该从右向左读这个乘法。
-- 缩旋移：在组合矩阵时，先进行缩放操作，然后是旋转，最后才是位移，否则它们会（消极地）互相影响。
-#+end_quote
-** 单位矩阵(Identity Matrix): 主对角线元素为1，其余元素为0, 可简记为I
-#+ATTR_latex: :width 400   #+ATTR_HTML: :width 400  #+ATTR_ORG: :width 400
-[[file:webgl/identity_matrix.png]]
-
-** 旋转
-- 在OpenGL的右手坐标系下，旋转规则是： 确定旋转轴后，右手握成拳头，拇指指向旋转轴的正方向，其余手指的弯曲方向即为旋转的正方向，跟手指弯曲方向一致的旋转记为正向，相反则为负向。
-  - 例如： Z轴正旋转或者Z轴逆时针旋转，就是大拇指指向Z轴，其余手指弯曲的方向就是Z轴旋转正方向。这个正方向，其实是逆时针方向，所以一般规定逆时针为正就是这么来的，也就是说，旋转方向可以用旋转角度值的正负来表示。
-  - 为了描述旋转（比如：绕Z轴，逆时针旋转了β角度），必须指明3个要素：
-    - 旋转轴（图像将围绕旋转轴旋转）
-    - 转转角度（图形旋转经过的角度）
-    - 旋转方向（顺时针or逆时针）： 在调用旋转相关函数时，一般不会传入一个表示旋转方向的参数。因为我们如果旋转的角度是正值，那就是逆时针旋转，原因如上所述。
-
-#+ATTR_latex: :width 300   #+ATTR_HTML: :width 300  #+ATTR_ORG: :width 300
-[[file:webgl/z_rotation.png]]
-
-** 平移
-在顶点着色器中（而非片元着色器），逐顶点的对每个顶点坐标的分量（x，y，z）都加上一个常量（平移距离）。
-如果齐次坐标的最后一个分量是1.0，那么它的前三个分量就可以表示一个点的三维坐标。
-** 矩阵matrix
-- 矩阵乘法不符合交换规律，也就是说 A ✖️ B 和 B ✖️ A 并不相等， 而且只有在矩阵的列数和矢量的行数相等时，才可以将两者相乘
-- OpenGL API接受的矩阵要求是 *列主序* 。列主序是指以列为优先单位，在内存中逐列存储。 行主序是指以行为优先单位，在内存中逐行存储。
-#+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
-[[file:webgl/column_order.png]]
-
-
-   
 * 纹理映射 texture mapping 又称纹理贴图： 纹理通常来说就是一张图片
 - 纹理贴图： 就是将一张真实世界的图片（就像一张贴纸）贴到一个几何图形的表面上去，这样这个几何图形的表面看上去就是这张图片。 这张图片就是 *纹理texture* 或者叫 纹理图像。
 - 纹理贴图的作用就是根据纹理图片，*为光栅化后的片元* 涂上合适的颜色。
@@ -718,7 +615,7 @@ function loadTexture(gl, n, texture, u_Sampler, image, texUnit) {
 }
 #+end_src
 
-   
+
 ** 纹理贴图步骤：需要顶点着色器和片元着色器配合：
 - 首先在顶点着色器中将纹理坐标映射到顶点上。通过纹理图像的纹理坐标与几何体的顶点坐标间的映射关系，来确定将那些纹理图像贴上去。app传入顶点坐标和对应的纹理坐标
 - 创建纹理对象：  var texture = gl.createTexture()
@@ -762,7 +659,7 @@ function loadTexture(gl, n, texture, u_Sampler, image, texUnit) {
 
 
 ** 例子：纹理贴图
-#+begin_src javascript 
+#+begin_src javascript
 // 纹理贴图需要顶点着色器和片元着色器的配合：首先在顶点着色器中提供纹理坐标和顶点，将纹理对应匹配到顶点上
 var VSHADER_SOURCE =
     'attribute vec4 a_Position;\n' + // 接收从app传递过来的顶点坐标
@@ -893,6 +790,145 @@ function loadTexture(gl, n, texture, u_Sampler, image) {
 #+end_src
 
 
+* 向量: 既有方向又有大小的量
+- 向量表示的是方向，起始于何处并不会改变它的值，没有固定的起点，只要方向相同，大小相等，就认为两向量是相同的，但为了用数值坐标来表示向量，习惯将起始点放到原点（0，0，0）。下图可以看到向量v和w是相等的，尽管他们的起始点不同。
+- 单位向量(Unit Vector)：它的长度是1，如果只关心方向不关心长度的时候，单位向量特别有用。比如，在计算光照模型时，我们往往需要得到顶点的法线方向和光源方向，此时我们不关心这些向量有多长
+#+ATTR_latex: :width 250   #+ATTR_HTML: :width 250  #+ATTR_ORG: :width 250
+[[file:webgl/vectors.png]]
+** 向量与标量运算: +，-，·或÷，其中·是乘号。注意－和÷运算时不能颠倒（标量-/÷向量），因为颠倒的运算是没有定义的。
+#+begin_quote
+标量(Scalar)只是一个数字。当把一个向量加/减/乘/除一个标量，我们可以简单的把向量的每个分量分别和这个标量进行相应的运算。对于加法来说会像这样:
+#+end_quote
+#+ATTR_latex: :width 600   #+ATTR_HTML: :width 600  #+ATTR_ORG: :width 600
+[[file:webgl/vector_add.png]]
+
+** 向量间加减：对应位置的值可以组合而产生一个新向量
+- 公式：u + v = < u.x , u.y  > + < v.x , v.y > = < u.x + v.x , u.y + v.y > 即将一个向量中的每一个分量加上另一个向量的对应分量
+#+begin_quote
+向量的加法满足平行四边形法则和三角形法则. 具体地，两个向量 a和b相加，得到的是另一个新向量. 这个新向量可以表示为a和b的起点重合后，以它们为邻边构成的平行四边形的一条对角线（以共同的起点为起点的那一条，见下图左）
+或者表示为将 a的终点和 b的起点重合后，从a的起点指向 b的终点的这一新向量：
+#+end_quote
+
+#+ATTR_latex: :width 400   #+ATTR_HTML: :width 400  #+ATTR_ORG: :width 400
+[[file:webgl/vector_add_vector.png]]
+
+#+begin_quote
+a-b：可以得到由b点前往a点的方向向量；具体是由减向量b的终点指向被减向量a终点得到的新向量。减法可以判断量物体之前的距离，同上得到新向量后，取向量模即是两点之间的距离
+#+end_quote
+#+ATTR_latex: :width 200   #+ATTR_HTML: :width 200  #+ATTR_ORG: :width 200
+[[file:webgl/vector_sub_vector.png]]
+
+** 向量间相乘： 分为点乘(Dot Product)v ⋅ k 和 叉乘(Cross Product)v × k
+- 点乘v ⋅ k = |v||k|cosθ = cosθ  (如果v¯和k¯都是单位向量，它们的长度会等于1), 点乘的结果是一个标量，可以计算向量v和k之间的夹角θ
+  - v ⋅ k = 0，两个向量正交 Orthogonal，  90度的余弦值是0
+  - v ⋅ k = 1，两个向量平行 Parallel，0度的余弦值是1
+  - v ⋅ k > 0, 方向基本相同，夹角在0°到90°之间
+  - v ⋅ k < 0, 方向基本相反，夹角在90°到180°之间
+- 叉乘v × k，在3D空间中有定义，它需要两个不平行向量作为输入，生成一个正交于两个输入向量的 *法向量* 。如果输入的两个向量也是正交的，那么叉乘之后将会产生3个互相正交的向量
+#+ATTR_latex: :width 200   #+ATTR_HTML: :width 200  #+ATTR_ORG: :width 200
+[[file:webgl/vectors_crossproduct.png]]
+
+** 齐次坐标（Homogeneous coordinates）
+- 在三维顶点坐标(x,y,z)引入一个新的分量w，得到向量(x,y,z,w)。向量的w分量也叫齐次坐标。
+- 想要从齐次向量得到3D向量，我们可以把x、y和z坐标分别除以w坐标。我们通常不会注意这个问题，因为w分量通常是1.0。
+  - 若w==1，则向量(x, y, z, 1)为空间中的点。
+  - 若w==0，则向量(x, y, z, 0)为方向。 此时，这个向量就不能位移，”平移一个方向”是毫无意义的。
+#+begin_quote
+齐次坐标使得我们可以用同一个公式对点和方向作运算。它允许我们在3D向量上进行位移（如果没有w分量我们是不能位移向量的）
+#+end_quote
+** 分量的重组swizzling
+- 向量的分量可以通过vec.x这种方式获取，这里x是指这个向量的第一个分量。你可以分别使用.x、.y、.z和.w来获取它们的第1、2、3、4个分量。GLSL也允许你对颜色使用rgba，或是对纹理坐标使用stpq访问相同的分量。
+  - x, y, z, w:  顶点坐标的分量
+  - r, g, b, a:  颜色分量
+  - s, t, p, q   纹理坐标分量
+- 分量重组swizzling：分量可以进行“任意搭配组合”去访问向量各个位置的数据，这也是它被称作swizzle的原因。
+  #+begin_src javascript
+vec4 v4 = vec4(1.0, 2.0, 3.0, 4.0);
+float f;
+f = v4.x; // 设f为 1.0
+f = v4.w; // 设f为 4.0
+
+vec2 v2;
+v2 = v4.xy  // 设v2为（1.0， 2.0）
+v2 = v4.yw  // 设v2为（2.0， 4.0）可以省略任意分量
+v2 = v4.yy  // 设v2为（2.0， 2.0）可以重复任意分量
+v2 = v4.wx  // 设v2为（4.0， 1.0）可以逆序
+  #+end_src
+- 分量重组swizzling也可以用在赋值表达式（=）的左值
+  #+begin_src javascript
+vec4 v4 = vec4(1.0, 2.0, 3.0, 4.0);
+v4.xw = vec2(5.0, 6.0);  // v4 = (5.0, 2.0, 3.0, 6.0) x和w分量的值变了
+  #+end_src
+
+
+* 变换矩阵transformation matrix： 缩放、旋转、移动
+#+begin_quote
+- 矩阵乘法不符合交换规律，也就是说 A ✖️ B 和 B ✖️ A 并不相等， 而且只有在矩阵的列数和矢量的行数相等时，才可以将两者相乘
+- 当矩阵相乘时，在最右边的矩阵是第一个与向量相乘的，所以你应该从右向左读这个乘法。
+- 三维图形学中我们只用到4x4矩阵，它能对顶点(x,y,z,w)作变换。这一变换是用 *矩阵左乘顶点* 来实现的: 矩阵 x 顶点 = 变换后的顶点
+- 实际中我们不用GLSL计算变换矩阵, 而是在C++中用glm::translate()算出矩阵，然后把它传给GLSL。在GLSL中只做一次乘法.
+#+end_quote
+
+#+begin_src c++
+// 用C++，GLM表示：
+glm::mat4 myMatrix;
+glm::vec4 myVector;
+// fill myMatrix and myVector somehow
+glm::vec4 transformedVector = myMatrix * myVector; // 记住: 矩阵左乘顶点
+
+
+// 用GLSL表示：
+mat4 myMatrix;
+vec4 myVector;
+// fill myMatrix and myVector somehow
+vec4 transformedVector = myMatrix * myVector; // 实际中我们不用GLSL计算变换矩阵, 在C++中用glm::translate()算出矩阵，然后把它传给GLSL。在GLSL中只做一次乘法.
+#+end_src
+
+- OpenGL API接受的矩阵要求是 *列主序* 。列主序是指以列为优先单位，在内存中逐列存储。 行主序是指以行为优先单位，在内存中逐行存储。
+#+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
+[[file:webgl/column_order.png]]
+
+** 单位矩阵(Identity Matrix): 主对角线元素为1，其余元素为0, 可简记为I。
+- 在c++，用glm构造一个单位矩阵 glm::mat4(1.0);
+  #+begin_src c++
+glm::mat4 myIdentityMatrix = glm::mat4(1.0);
+  #+end_src
+#+ATTR_latex: :width 400   #+ATTR_HTML: :width 400  #+ATTR_ORG: :width 400
+[[file:webgl/identity_matrix.png]]
+
+** 缩放矩阵 Scale
+- 例如把一个向量（点或方向皆可）沿各方向放大2倍，缩放矩阵可以用c++这么定义
+  #+begin_src c++
+glm::mat4 myScalingMatrix = glm::scale(2.0f, 2.0f ,2.0f); // 把一个向量沿各方向放大2倍
+  #+end_src
+** 旋转 Rotate
+- 在OpenGL的右手坐标系下，旋转规则是： 确定旋转轴后，右手握成拳头，拇指指向旋转轴的正方向，其余手指的弯曲方向即为旋转的正方向，跟手指弯曲方向一致的旋转记为正向，相反则为负向。
+  - 例如： Z轴正旋转或者Z轴逆时针旋转，就是大拇指指向Z轴，其余手指弯曲的方向就是Z轴旋转正方向。这个正方向，其实是逆时针方向，所以一般规定逆时针为正就是这么来的，也就是说，旋转方向可以用旋转角度值的正负来表示。
+  - 为了描述旋转（比如：绕Z轴，逆时针旋转了β角度），必须指明3个要素：
+    - 旋转轴（图像将围绕旋转轴旋转）
+    - 转转角度（图形旋转经过的角度）
+    - 旋转方向（顺时针or逆时针）： 在调用旋转相关函数时，一般不会传入一个表示旋转方向的参数。因为我们如果旋转的角度是正值，那就是逆时针旋转，原因如上所述。
+
+#+ATTR_latex: :width 300   #+ATTR_HTML: :width 300  #+ATTR_ORG: :width 300
+[[file:webgl/z_rotation.png]]
+
+** 平移 Translate
+- 若想把某向量(x,y,z,1),沿X轴方向平移10个单位，可以这样用C++，GLM表示：
+  #+begin_src c++
+glm::mat4 myMatrix = glm::translate(glm::mat4(), glm::vec3(10.0f, 0.0f, 0.0f)); // 沿X轴方向平移10个单位，
+glm::vec4 myVector(...);
+glm::vec4 transformedVector = myMatrix * myVector;
+  #+end_src
+
+** 累积变换（缩旋移）：在组合矩阵时，正确的顺序是：先缩放、再旋转、最后才是平移，否则它们会（消极地）互相影响。
+#+begin_quote
+TransformedVector = TranslationMatrix * RotationMatrix * ScaleMatrix * OriginalVector;
+#+end_quote
+#+begin_src c++
+glm::mat4 myModelMatrix = myTranslationMatrix * myRotationMatrix * myScaleMatrix;
+glm::vec4 myTransformedVector = myModelMatrix * myOriginalVector;
+#+end_src
+
 * 投影矩阵projection matrix、视锥体frustum、裁剪坐标clipping coordinates
 - 视锥体（frustum），它包含六个平面（近平面、远平面、上平面、下平面、右平面和左平面）
 - 裁剪坐标（clipping coordinates）：位于这个视锥体以外的顶点都会被剪裁掉，所得的坐标结果成为裁剪坐标（clipping coordinates）
@@ -910,9 +946,16 @@ function loadTexture(gl, n, texture, u_Sampler, image) {
 #+begin_quote
 为了确定相机视角，需要3项信息：
 1. 视点：观察者的位置，视线的起点。习惯用（eyeX, eyeY, eyeZ)表示
-2. 观察目标点：被观察物体所在的点，习惯用（atX, atY, atZ）表示。可以用来确定视线，视线从视点出发，穿过观察目标并继续延伸。
+2. 观察目标点：被观察物体所在的点，习惯用（atX, atY, atZ）表示。可以用来确定视线(at - eye)，视线从视点出发，穿过观察目标并继续延伸
 3. 上方向：如果仅仅确定了视点和目标点，观察者还是可能以视线为轴旋转的，如下图所示。所以，为了将观察者固定住，还需要指定上方向。习惯用（upX, upY, upZ)表示。
 #+end_quote
 #+ATTR_latex: :width 500   #+ATTR_HTML: :width 500  #+ATTR_ORG: :width 500
 [[file:webgl/camera_up.png]]
 
+** 视图矩阵View Matrix：将顶点有世界坐标系转到到相机坐标系下的变化矩阵。通过视点、观察目标点、上方向来创建出视图矩阵
+#+begin_quote
+Matrix4.setLookAt(eyeX, eyeY, eyeZ, atX, atY, atZ, upX, upY, upZ) 创建出视图矩阵
+- eyeX,eyeY, eyeZ: 指定视点
+- atX, atY, atZ: 观察目标点
+- upX, upY, upZ: 指定上方向，
+#+end_quote
