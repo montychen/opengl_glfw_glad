@@ -3,7 +3,6 @@ WebGL使用HTML5中新引入的<canvas>标签来定义绘图区域；传统的<i
 #+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
 [[file:webgl/webgl_opengl.png]]
 
-- 2011年3月发布基于OpenGL ES 2.0的 WebGL 1.0;  2017年1月发布基于OpenGL ES 3.0的WebGL 2.0。
 - 截止2019年12月，iOS和Android上的浏览器都已经支持WebGL 1.0, 但都还不支持WebGL 2.0。 PC上，Chrome和firefox都支持WebGL 2.0, safari只支持WebGL 1.0
 - 在浏览器输入 https://webglreport.com/ 可查看该浏览器对WebGL的支持情况。
 - WebGL渲染过程
@@ -829,7 +828,11 @@ a-b：可以得到由b点前往a点的方向向量；具体是由减向量b的�
 [[file:webgl/vectors_crossproduct.png]]
 
 ** 齐次坐标（Homogeneous coordinates）
-- 在三维顶点坐标(x,y,z)引入一个新的分量w，得到向量(x,y,z,w)。向量的w分量也叫齐次坐标。
+#+begin_quote
+在3D世界中表示一个点的方式是：（x, y, z）;然而在3D世界中表示一个向量的方式也是：（x, y, z）;如果我们只给一个三元组（x, y, z）鬼知道这是向量还是点，毕竟点与向量还是有很大区别的，点只表示位置，向量没有位置只有大小和方向。
+
+为了区分点和向量我们给它加上一维，用（x, y, z, w）这种四元组的方式来表达坐标，我们规定（x, y, z, 0）表示一个向量，（x, y, z, 1）或（x', y', z', 2）等w不为0时来表示点。这种用n+1维坐标表示n维坐标的方式称为齐次坐标。
+#+end_quote
 - 想要从齐次向量得到3D向量，我们可以把x、y和z坐标分别除以w坐标。我们通常不会注意这个问题，因为w分量通常是1.0。
   - 若w==1，则向量(x, y, z, 1)为空间中的点。
   - 若w==0，则向量(x, y, z, 0)为方向。 此时，这个向量就不能位移，”平移一个方向”是毫无意义的。
@@ -920,7 +923,7 @@ glm::vec4 myVector(...);
 glm::vec4 transformedVector = myMatrix * myVector;
   #+end_src
 
-** 累积变换（缩旋移）：在组合矩阵时，正确的顺序是：先缩放、再旋转、最后才是平移，否则它们会（消极地）互相影响。
+** 累积变换（缩转移）：在组合矩阵时，正确的顺序是：先缩放、再旋转、最后才是平移，否则它们会（消极地）互相影响。
 #+begin_quote
 TransformedVector = TranslationMatrix * RotationMatrix * ScaleMatrix * OriginalVector;
 #+end_quote
@@ -934,11 +937,11 @@ glm::vec4 myTransformedVector = myModelMatrix * myOriginalVector;
 - 裁剪坐标（clipping coordinates）：位于这个视锥体以外的顶点都会被剪裁掉，所得的坐标结果成为裁剪坐标（clipping coordinates）
 - 视锥体的形状决定了3D到2D的投影类型，如果近平面和远平面尺寸一致，那么物体上的顶点不论远近都以统一的方式投影在屏幕上，这就是正交投影orthographic projection。否则就是透视投影perspective projection。简单来说，正交投影没有近大远小的效果，而透视投影则有。
 
-* 相机视角：视点eye point、观察目标点look-at point、上方向up direction
+* 相机视角&视图矩阵view matrix：视点eye point、观察目标点look-at point、上方向up direction
 #+begin_quote
 一个物体要在OpenGL中被渲染出现，需要经过经典的 *MVP变换* :
-1. 主要是从物体坐标系，通过Model Matrix，变换到世界坐标系.
-2. 然后通过View Matrix，也叫相机坐标系，转换为某个视角所看到的内容.
+1. 从物体坐标系，通过Model Matrix，变换到世界坐标系.
+2. 然后通过View Matrix，将顶点从世界坐标系转到到相机坐标系, 表示观察世界的方式。
 3. 最后通过projection Matrix，做仿射变换，最后还有一步OpenGL隐藏的剪裁步骤，裁减掉不在投影区域内的像素点。
 #+end_quote
 #+ATTR_latex: :width 500   #+ATTR_HTML: :width 500  #+ATTR_ORG: :width 500
@@ -952,10 +955,14 @@ glm::vec4 myTransformedVector = myModelMatrix * myOriginalVector;
 #+ATTR_latex: :width 500   #+ATTR_HTML: :width 500  #+ATTR_ORG: :width 500
 [[file:webgl/camera_up.png]]
 
-** 视图矩阵View Matrix：将顶点有世界坐标系转到到相机坐标系下的变化矩阵。通过视点、观察目标点、上方向来创建出视图矩阵
+** 视图矩阵View Matrix：将顶点从世界坐标系转到到相机坐标系下的变化矩阵。通过视点、观察目标点、上方向创建视图矩阵
 #+begin_quote
-Matrix4.setLookAt(eyeX, eyeY, eyeZ, atX, atY, atZ, upX, upY, upZ) 创建出视图矩阵
+Matrix4.setLookAt(eyeX, eyeY, eyeZ, atX, atY, atZ, upX, upY, upZ) 创建视图矩阵
 - eyeX,eyeY, eyeZ: 指定视点
 - atX, atY, atZ: 观察目标点
 - upX, upY, upZ: 指定上方向，
 #+end_quote
+* 模型视图矩阵model view matrix
+- 模型视图矩阵 = 视图矩阵 ✖️ 模型矩阵    #模型矩阵指的是：缩放矩阵、者旋转矩阵、平移矩阵
+- 模型矩阵的累积变换（缩转移）：在组合矩阵时，正确的顺序是：先缩放、再旋转、最后才是平移，否则它们会（消极地）互相影响。
+- TransformedVector = TranslationMatrix * RotationMatrix * ScaleMatrix * OriginalVector;
