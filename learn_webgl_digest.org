@@ -804,26 +804,24 @@ function loadTexture(gl, n, texture, u_Sampler, image) {
 ** 向量间加减：对应位置的值可以组合而产生一个新向量
 - 公式：u + v = < u.x , u.y  > + < v.x , v.y > = < u.x + v.x , u.y + v.y > 即将一个向量中的每一个分量加上另一个向量的对应分量
 #+begin_quote
-向量的加法满足平行四边形法则和三角形法则. 具体地，两个向量 a和b相加，得到的是另一个新向量. 这个新向量可以表示为a和b的起点重合后，以它们为邻边构成的平行四边形的一条对角线（以共同的起点为起点的那一条，见下图左）
+- a+b: 向量的加法满足平行四边形法则和三角形法则. 具体地，两个向量 a和b相加，得到的是另一个新向量. 这个新向量可以表示为a和b的起点重合后，以它们为邻边构成的平行四边形的一条对角线（以共同的起点为起点的那一条，见下图左）
 或者表示为将 a的终点和 b的起点重合后，从a的起点指向 b的终点的这一新向量：
+- a-b：可以得到由b点前往a点的方向向量；具体是由减向量b的终点指向被减向量a终点得到的新向量。减法可以判断量物体之前的距离，同上得到新向量后，取向量模即是两点之间的距离
 #+end_quote
 
 #+ATTR_latex: :width 400   #+ATTR_HTML: :width 400  #+ATTR_ORG: :width 400
 [[file:webgl/vector_add_vector.png]]
 
-#+begin_quote
-a-b：可以得到由b点前往a点的方向向量；具体是由减向量b的终点指向被减向量a终点得到的新向量。减法可以判断量物体之前的距离，同上得到新向量后，取向量模即是两点之间的距离
-#+end_quote
 #+ATTR_latex: :width 200   #+ATTR_HTML: :width 200  #+ATTR_ORG: :width 200
 [[file:webgl/vector_sub_vector.png]]
 
 ** 向量间相乘： 分为点乘(Dot Product)v ⋅ k 和 叉乘(Cross Product)v × k
+- 叉乘v × k，在3D空间中有定义，它需要两个不平行向量作为输入，生成一个正交于两个输入向量的 *法向量* 。如果输入的两个向量也是正交的，那么叉乘之后将会产生3个互相正交的向量
 - 点乘v ⋅ k = |v||k|cosθ = cosθ  (如果v¯和k¯都是单位向量，它们的长度会等于1), 点乘的结果是一个标量，可以计算向量v和k之间的夹角θ
   - v ⋅ k = 0，两个向量正交 Orthogonal，  90度的余弦值是0
   - v ⋅ k = 1，两个向量平行 Parallel，0度的余弦值是1
   - v ⋅ k > 0, 方向基本相同，夹角在0°到90°之间
   - v ⋅ k < 0, 方向基本相反，夹角在90°到180°之间
-- 叉乘v × k，在3D空间中有定义，它需要两个不平行向量作为输入，生成一个正交于两个输入向量的 *法向量* 。如果输入的两个向量也是正交的，那么叉乘之后将会产生3个互相正交的向量
 #+ATTR_latex: :width 200   #+ATTR_HTML: :width 200  #+ATTR_ORG: :width 200
 [[file:webgl/vectors_crossproduct.png]]
 
@@ -868,17 +866,28 @@ v4.xw = vec2(5.0, 6.0);  // v4 = (5.0, 2.0, 3.0, 6.0) x和w分量的值变了
 #+begin_quote
 𝑣1=𝑃∗𝑉∗𝑀∗𝑣0 = (𝑃∗𝑉∗𝑀)∗𝑣0    #这个P*V*M矩阵的乘积简称为MVP矩阵。
 
+注：矩阵相乘有一个性质  M*(A*B) = (M*A) *B
+
 模型视图矩阵model view matrix：我们在2D屏幕上显示三维物体，就像用相机拍摄图像一样。在三维世界中有一个假想的相机，我们在屏幕上看到的场景都是在相机坐标系下表示的，要把世界坐标系中的点转化成相机坐标系的点。
 1. 从物体坐标系，通过模型矩阵Model Matrix，变换到世界坐标系.
 2. 然后通过视图矩阵View matrix，将顶点从世界坐标系转到到相机坐标系, 表示观察世界的方式。
 
 投影矩阵Projection matrix：通过模型视图变换，3d场景中的物体已经能够用相机空间坐标来表达，接下来我们处理的是如何来模拟人眼的近大远小效果。相机坐标系中的物体还是处于3d世界中，要做出近大远小的效果还需要继续变换。这个变换被称为透视投影，
 它的特点是所有投影线都从空间一点投射，离视点近的物体投影大，离视点小的物体投影小，小到极点称为灭点。
-3. 最后通过projection Matrix，做仿射变换，最后还有一步OpenGL隐藏的剪裁步骤，裁减掉不在投影区域内的像素点。
+1. 最后通过projection Matrix，做仿射变换，最后还有一步OpenGL隐藏的剪裁步骤，裁减掉不在投影区域内的像素点。
 #+end_quote
 
-** 模型矩阵Model matrix： 模型变换包括 S缩放、R旋转、T移动
+** 模型矩阵Model matrix 包括3个变换： S缩放、R旋转、T移动
+
 #+begin_quote
+考虑一个点v0，先进行了一次平移变换T，又进行了一次旋转变换R，结合上面矩阵的性质，可知变换后的点v1为：
+
+v1 = R*(T*vo) = (R*T)*v0
+
+*模型矩阵Model matrix*：旋转矩阵R和平移矩阵T的乘积R·T也是一个4×4的矩阵，这个矩阵代表了一次平移变换和一次旋转变换效果的叠加；如果这个点还要进行变换，只要将新的变换矩阵按照顺序 *左乘* 这个矩阵，得到的新矩阵能够表示之前所有变换效果的叠加，
+将最初的点坐标v0左乘这个矩阵就能得到一系列变换后最终的点坐标，这个矩阵称为 *模型矩阵Model matrix*。一个模型矩阵乘以另一个模型矩阵得到的还是一个模型矩阵，表示先进行右侧模型矩阵代表的变换，再进行左侧模型矩阵代表的
+变换这一过程的效果之和，因此模型矩阵的乘法又可以认为是闭合的。模型矩阵之所以称之为“模型矩阵”，是因为该矩阵与点的位置没有关系，仅仅包含了一系列变换的信息。
+
 - 矩阵乘法不符合交换规律，也就是说 A ✖️ B 和 B ✖️ A 并不相等， 而且只有在矩阵的列数和矢量的行数相等时，才可以将两者相乘
 - 当矩阵相乘时，在最右边的矩阵是第一个与向量相乘的，所以你应该从右向左读这个乘法。
 - 三维图形学中我们只用到4x4矩阵，它能对顶点(x,y,z,w)作变换。这一变换是用 *矩阵左乘顶点* 来实现的: 矩阵 x 顶点 = 变换后的顶点
@@ -929,11 +938,6 @@ glm::vec4 myVector(...);
 glm::vec4 transformedVector = myMatrix * myVector;
   #+end_src
 
-*** 累积变换（缩转移）：在组合矩阵时，正确的顺序是：先缩放、再旋转、最后才是平移，否则它们会（消极地）互相影响。
-#+begin_quote
-TransformedVector = TMatrix * RMatrix * SMatrix * OriginalVector;  # opengl矩阵的运算顺序是从右往左进行，在最右边的矩阵是第一个与向量相乘的
-#+end_quote
-
 ** 视图矩阵View matrix：视点eye point、观察目标点look-at point、上方向up direction
 #+begin_quote
 为了确定相机视角，需要3项信息：
@@ -944,11 +948,11 @@ TransformedVector = TMatrix * RMatrix * SMatrix * OriginalVector;  # opengl矩�
 #+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
 [[file:webgl/camera.png]]
 
-- 创建视图矩阵: Matrix4.setLookAt(eyeX, eyeY, eyeZ, atX, atY, atZ, upX, upY, upZ) 创建视图矩阵
-  - eyeX,eyeY, eyeZ: 指定视点
-  - atX, atY, atZ: 观察目标点
-  - upX, upY, upZ: 指定上方向
-   
+*** 创建视图矩阵: Matrix4.setLookAt(eyeX, eyeY, eyeZ, atX, atY, atZ, upX, upY, upZ)
+- eyeX,eyeY, eyeZ: 指定视点
+- atX, atY, atZ: 观察目标点
+- upX, upY, upZ: 指定上方向
+
 ** 投影矩阵Projection matrix、视锥体frustum、裁剪坐标clipping coordinates
 - 视锥体（frustum），它包含六个平面（近平面、远平面、上平面、下平面、右平面和左平面）
 - 裁剪坐标（clipping coordinates）：位于这个视锥体以外的顶点都会被剪裁掉，所得的坐标结果成为裁剪坐标（clipping coordinates）
