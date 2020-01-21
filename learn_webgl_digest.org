@@ -1,12 +1,20 @@
 * WebGL和画布canvas
+*计算机图形硬件系统*
+
+OpenGL被当作客户端-服务器系统来实现的，应用程序是客户端，图形硬件厂商提供的OpenGL实现是服务器。如图所示，客户端程序需要调用OpenGL的接口实现3D渲染，那么OpenGL命令和数据会缓存在RAM中，在一定条件下，
+会将这些命令和数据通过CPU时钟发送到VRAM，在GPU的控制下，使用VRAM中的数据和命令，完成图形的渲染，并将结果存入帧缓冲区中，*帧缓冲区中的帧最终会被发送到显示器上* ，显示出结果。在现代的图形硬件系统中，
+还支持不通过CPU时钟直接将数据由RAM发送至VRAM或直接将数据由帧缓冲区发送至RAM（例如OpenGL中的VBO，PBO）。
+#+ATTR_latex: :width 600   #+ATTR_HTML: :width 600  #+ATTR_ORG: :width 600
+[[file:webgl/computer_grap.jpg]]
+
 WebGL使用HTML5中新引入的<canvas>标签来定义绘图区域；传统的<img>标签只能用来显示图片，不能进行实时绘制和渲染；<canvas>允许Javascript动态的绘制图形，没有WebGL, Javascript只能在<canvas>绘制二维图形，有了WebGL,就可以在上面绘制三维图形。
-#+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
+#+ATTR_latex: :width 700   #+ATTR_HTML: :width 700  #+ATTR_ORG: :width 700
 [[file:webgl/webgl_opengl.png]]
 
 - 截止2019年12月，iOS和Android上的浏览器都已经支持WebGL 1.0, 但都还不支持WebGL 2.0。 PC上，Chrome和firefox都支持WebGL 2.0, safari只支持WebGL 1.0
 - 在浏览器输入 https://webglreport.com/ 可查看该浏览器对WebGL的支持情况。
 - WebGL渲染过程
-#+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
+#+ATTR_latex: :width 700   #+ATTR_HTML: :width 700  #+ATTR_ORG: :width 700
 [[file:webgl/webgl_pipeline.png]]
 
 
