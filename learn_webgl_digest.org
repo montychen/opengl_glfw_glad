@@ -1,5 +1,6 @@
 * WebGL和画布canvas
 *计算机图形硬件系统*
+
 OpenGL被当作客户端-服务器系统来实现的，应用程序是客户端，图形硬件厂商提供的OpenGL实现是服务器。如图所示，客户端程序需要调用OpenGL的接口实现3D渲染，那么OpenGL命令和数
 据会缓存在RAM中，在一定条件下，会将这些命令和数据通过CPU时钟发送到VRAM，在GPU的控制下，使用VRAM中的数据和命令，完成图形的渲染，并将结果存入帧缓冲区中，*帧缓冲区中的帧
 最终会被发送到显示器上* ，显示出结果。在现代的图形硬件系统中，还支持不通过CPU时钟直接将数据由RAM发送至VRAM或直接将数据由帧缓冲区发送至RAM（例如OpenGL中的VBO，PBO）。
@@ -19,14 +20,17 @@ Javascript只能在<canvas>绘制二维图形，有了WebGL,就可以在上面�
 
 
 * 图像管线Graphics pipeline： 顶点着色器、光栅化、片元着色器
+*图形渲染管线*
+
+顶点、像素等数据需要通过不同阶段的处理，才能产生最后的可视图像，就像是工厂里的生产线，所以称为图形渲染管线。顶点着色器和图元装配又可以细分出一条渲染管线，称为顶点处理管线。
+#+ATTR_latex: :width 700   #+ATTR_HTML: :width 700  #+ATTR_ORG: :width 700
+[[file:webgl/webgl_pipeline2.png]]
 - vertex shader顶点着色器（确定顶点的位置）：针对每个顶点都执行一次该着色器（逐顶点操作），它最重要的功能是执行顶点的坐标变换，输出的是归一化后的坐标NDC（-1.0， 1.0）。顶点指的是二维或三维空间总的一个点的位置坐标。
 - primitive assembly图元装配：将孤立的顶点装配成图元，图元类型由gl.drawArrays函数的第1个参数决定：GL_POINTS、GL_LINE...、GL_TRIANGLE...
 - rasterizaiton光栅化（生成片元fragment）：显示在屏幕上的图元，实际上是由屏幕上离散的像素组成的。所以光栅化其实就是将图元primitive转换成屏幕上的像素（片元fragment），屏幕外（视椎体外）不可见的片元将被丢弃。
   - 片元指的是屏幕上的一个像素，包括像素的位置坐标（gl_FragCoord）、颜色和其它信息。
 - fragment shader片元着色器（确定片元的颜色）：针对每个片元都执行一次该着色器（逐片元操作）来计算每个片元（像素）的颜色值，并将每个片元的颜色值写入颜色缓冲区中，等到图形中所有的片元处理完毕画布上就得到了最后的图像。
 - GLSL: OpenGL着色语言（OpenGL Shading Language）是用来在OpenGL中进行着色编程的语言
-#+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
-[[file:webgl/webgl_pipeline2.png]]
 
 
 * 颜色缓冲区Color Buffer
