@@ -1,3 +1,14 @@
+* WebGPU介绍
+WebGPU是最新的Web 3D图形API，是WebGL的升级版。 由 W3C GPU for the Web 社区组开发
+
+在浏览器封装了现代图形API（Dx12、Vulkan、Metal），提供给Web 3D程序员WebGPU API。
+- WebGPU与WebGL2的区别很大，两者不容易兼容
+- WebGPU是标准，各大浏览器都会支持。不像WebGL2，苹果直接不支持。
+- 在所有主流的操作系统上支持 GPU 通用计算
+    - Vulkan: Windows 7/8, Linux, Chrome OS, Android and Android WebView
+    - Metal: Mac, iOS
+    - Direct3D 12: Windows 10
+
 * WebGL和画布canvas
 *计算机图形硬件系统*
 
