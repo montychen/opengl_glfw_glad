@@ -5,9 +5,11 @@ WebGPU是最新的Web 3D图形API，是WebGL的升级版。 由 W3C GPU for the 
 - WebGPU与WebGL2的区别很大，两者不容易兼容
 - WebGPU是标准，各大浏览器都会支持。不像WebGL2，苹果直接不支持。
 - 在所有主流的操作系统上支持 GPU 通用计算
-    - Vulkan: Windows 7/8, Linux, Chrome OS, Android and Android WebView
-    - Metal: Mac, iOS
-    - Direct3D 12: Windows 10
+  - Vulkan: Windows 7/8, Linux, Chrome OS, Android and Android WebView
+  - Metal: Mac, iOS
+  - Direct3D 12: Windows 10
+
+
 
 * WebGL和画布canvas
 *计算机图形硬件系统*
@@ -840,13 +842,16 @@ function loadTexture(gl, n, texture, u_Sampler, image) {
 
 ** 向量间相乘： 分为点乘(Dot Product)v ⋅ k 和 叉乘(Cross Product)v × k
 - 叉乘v × k，在3D空间中有定义，它需要两个不平行向量作为输入，生成一个正交于两个输入向量的 *法向量* 。如果输入的两个向量也是正交的，那么叉乘之后将会产生3个互相正交的向量
+  - 根据叉乘的结果，还可以判断一个向量是在另一个向量的左边，还是右边。 更进一步，还可以利用叉乘的结果，来判断一个点是否在一个三角形内。
+#+ATTR_latex: :width 200   #+ATTR_HTML: :width 200  #+ATTR_ORG: :width 200
+[[file:webgl/vectors_crossproduct.png]]
+
 - 点乘v ⋅ k = |v||k|cosθ = cosθ  (如果v¯和k¯都是单位向量，它们的长度会等于1), 点乘的结果是一个标量，可以计算向量v和k之间的夹角θ
   - v ⋅ k = 0，两个向量正交 Orthogonal，  90度的余弦值是0
   - v ⋅ k = 1，两个向量平行 Parallel，0度的余弦值是1
   - v ⋅ k > 0, 方向基本相同，夹角在0°到90°之间
   - v ⋅ k < 0, 方向基本相反，夹角在90°到180°之间
-#+ATTR_latex: :width 200   #+ATTR_HTML: :width 200  #+ATTR_ORG: :width 200
-[[file:webgl/vectors_crossproduct.png]]
+  - 点乘的几何意义是：是一条边向另一条边的投影乘以另一条边的长度: v.k 是k在v上面的投影
 
 ** 齐次坐标（Homogeneous coordinates）
 #+begin_quote
