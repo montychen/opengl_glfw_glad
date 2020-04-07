@@ -20,7 +20,7 @@ glGenObject(1, &objectId);
 glBindObject(GL_WINDOW_TARGET, objectId);
 
 // 设置当前绑定到 GL_WINDOW_TARGET 的对象的一些选项
-glSetObjectOption(GL_WINDOW_TARGET, GL_OPTION_WINDOW_WIDTH, 800);
+glSetObjectOption(GL_WINDOW_TARGET, GL_OPTION_WINDOW_WIDTH, 6500);
 glSetObjectOption(GL_WINDOW_TARGET, GL_OPTION_WINDOW_HEIGHT, 600);
 
 // 将目标位置的对象id设回0，解绑这个对象。将上下文对象设回默认.
@@ -28,3 +28,12 @@ glSetObjectOption(GL_WINDOW_TARGET, GL_OPTION_WINDOW_HEIGHT, 600);
 glBindObject(GL_WINDOW_TARGET, 0);
   #+end_src
   - 使用对象的一个好处是在程序中，我们不止可以定义一个对象，并设置它们的选项，每个对象都可以是不同的设置。在我们执行一个使用OpenGL状态的操作的时候，只需要绑定含有需要的设置的对象即可。比如说我们有一些作为3D模型数据（一栋房子或一个人物）的容器对象，在我们想绘制其中任何一个模型的时候，只需绑定一个包含对应模型数据的对象就可以了（当然，我们需要先创建并设置对象的选项）。
+
+* 图形管线 PipeLine
+
+#+ATTR_latex: :width 650   #+ATTR_HTML: :width 6500  #+ATTR_ORG: :width 6500
+[[file:OpenGL/pipeline.png]]
+
+
+#+ATTR_latex: :width 650   #+ATTR_HTML: :width 6500  #+ATTR_ORG: :width 6500
+[[file:OpenGL/pipeline1.png]]
