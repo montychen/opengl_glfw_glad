@@ -31,6 +31,17 @@ glBindObject(GL_WINDOW_TARGET, 0);
 
 * 图形管线 PipeLine
 
+** 图形管线的3个阶段: 应用、几何、光栅
+#+ATTR_latex: :width 650   #+ATTR_HTML: :width 6500  #+ATTR_ORG: :width 6500
+[[file:OpenGL/pipeline_3stage.jpg]]
+
+#+ATTR_latex: :width 650   #+ATTR_HTML: :width 6500  #+ATTR_ORG: :width 6500
+[[file:OpenGL/pipeline_3stage_all.jpg]]
+
+#+ATTR_latex: :width 650   #+ATTR_HTML: :width 6500  #+ATTR_ORG: :width 6500
+[[file:OpenGL/pipeline_3stage_2.jpg]]
+
+** 图形管线分工
 #+ATTR_latex: :width 650   #+ATTR_HTML: :width 6500  #+ATTR_ORG: :width 6500
 [[file:OpenGL/pipeline.png]]
 
