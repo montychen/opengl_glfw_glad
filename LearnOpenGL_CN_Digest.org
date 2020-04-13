@@ -48,3 +48,20 @@ glBindObject(GL_WINDOW_TARGET, 0);
 
 #+ATTR_latex: :width 650   #+ATTR_HTML: :width 6500  #+ATTR_ORG: :width 6500
 [[file:OpenGL/pipeline1.png]]
+
+** GLSL和OpenGL的通信
+*** uniform、inout
+*Uniform* 是一种从CPU应用向GPU着色器发送数据的一种方式。Uniform是全局的，在某一着色器里声明了它，其他着色器就可以使用它。
+#+ATTR_latex: :width 650   #+ATTR_HTML: :width 6500  #+ATTR_ORG: :width 6500
+[[file:OpenGL/glsl_opengl.jpg]]
+
+*** VBO & VAO & EBO
+*VBO* 是显卡高速显存的缓冲区，用来保存顶点的信息。 顶点缓冲对象VBO是在显卡存储空间中开辟出的一块内存缓存区，用于存储顶点的各类属性信息，
+如顶点坐标，顶点法向量，顶点颜色数据等。在渲染时，可以直接从VBO中取出顶点的各类属性数据，由于VBO在显存而不是在内存中，不需要从CPU传输数据，
+处理效率更高。
+
+*VAO* 保存了所有顶点数据属性的状态结合，它存储了顶点数据的格式以及顶点数据所需的VBO对象的引用。VAO本身并没有存储顶点的相关属性数据，
+这些信息是存储在VBO中的，VAO相当于是对很多个VBO的引用，把一些VBO组合在一起作为一个对象统一管理。
+
+*EBO* 也是一个缓冲，它专门储存顶点的索引，是为了解决同一顶点重复调用的问题，可以减少内存浪费提高执行效率。当需要使用重复顶点的时候，
+可以通过顶点索引来调用顶点，而不是重复记录。
