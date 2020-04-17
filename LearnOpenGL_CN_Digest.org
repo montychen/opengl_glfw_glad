@@ -79,7 +79,7 @@ VAO相当于是对很多个VBO的引用，把一些VBO组合在一起作为一�
 
 
 * 变换 Transformation: 几何变换 -> 投影 -> 裁剪 -> 视口变换
-*MVP* 几何单元（比如三角形）在经过: M模型矩阵变换、V视角矩阵变换、P投影矩阵变化以及透视除法后，坐标都变换到归一化的NDC坐标系下[-1， 1] 。在知道输出屏幕大小的情况下，通过视口变换可将x/y变换到窗口大小下（x∈【0，width】 y∈【0，height】z不变）。至此我们即将所有三角形投射到raster_space中。
+*MVP* 几何单元（比如三角形）在经过: M模型矩阵变换、V视角矩阵变换、P投影矩阵变化以及透视除法后，坐标都变换到归一化的NDC坐标系下[-1， 1] 。在知道输出 屏幕大小的情况下，通过视口变换可将x/y变换到窗口大小下（x∈【0，width】 y∈【0，height】z不变）。至此我们即将所有三角形投射到raster_space中。
 
 #+ATTR_latex: :width 700   #+ATTR_HTML: :width 700  #+ATTR_ORG: :width 700
 [[file:OpenGL/MVP.jpg]]
@@ -91,12 +91,17 @@ VAO相当于是对很多个VBO的引用，把一些VBO组合在一起作为一�
 2. *裁剪坐标再通过透视除法被变换到标准化设备坐标NDC* ，这一步是用裁剪坐标的w分量除裁剪坐标(x/w, y/w, z/w, w/w)实现的。
 
 *** 视锥体frustum、裁剪坐标clipping coordinates
-不管是正交投影orthographic还是透视投影，最终都是将视景体内的物体投影在近平面上，这也是 3D 坐标转换到 2D 坐标的关键一步。 在用opengl绘制一张图片的时候经常会遇到图片被拉伸的问题，为了解决该问题，关键就是让近平面的宽高比和视口宽高比保持一致，并且以较短的一边作为 1 的标准，让图像保持居中。
 - 视锥体（frustum），它包含六个平面（近平面、远平面、上平面、下平面、右平面和左平面）
 - 裁剪坐标（clipping coordinates）：位于这个视锥体以外的顶点都会被剪裁掉，所得的坐标结果成为裁剪坐标（clipping coordinates）
 - 视锥体的形状决定了3D到2D的投影类型，如果近平面和远平面尺寸一致，那么物体上的顶点不论远近都以统一的方式投影在屏幕上，这是正交投影orthographic projection。否则就是透视投影perspective projection。简单来说， *透视投影有近大远小的效果* ，而正交投影没有。
 #+ATTR_latex: :width 500   #+ATTR_HTML: :width 500  #+ATTR_ORG: :width 500
 [[file:webgl/frustum.png]]
+
+*** 图像变形
+不管是正交投影orthographic还是透视投影，最终都是将视景体内的物体投影在近平面上，这也是 3D 坐标转换到 2D 坐标的关键一步。 在用opengl绘制一张图片 的时候经常会遇到图片被拉伸的问题，为了解决该问题，关键就是让 *近平面的宽高比和视口宽高比保持一致* ，并且以较短的一边作为 1 的标准，让图像保持居中。
+
+#+ATTR_latex: :width 650   #+ATTR_HTML: :width 650  #+ATTR_ORG: :width 650
+[[file:OpenGL/viewport_wh.png]]
 
 
 ** 裁剪: 把视椎体外不可见的部分裁剪掉
