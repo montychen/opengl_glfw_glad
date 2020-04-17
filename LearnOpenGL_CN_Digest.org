@@ -134,6 +134,21 @@ glm::mat4 myIdentityMatrix = glm::mat4(1.0);
 #+ATTR_latex: :width 400   #+ATTR_HTML: :width 400  #+ATTR_ORG: :width 400
 [[file:webgl/identity_matrix.png]]
 
+** 视点 or 相机位置
+在一个场景中，我们希望改变观察者的位置和观察角度。用于改变观察者方位和角度的变换，就是视图变换。默认情况下， *视点或者说相机位于原点(0,0,0)， 且视线朝着-Z方向。 也就是说，只有在z<0的地方绘图，才有可能被观察到* 。
+
+创建视图矩阵: Matrix4.setLookAt(eyeX, eyeY, eyeZ, atX, atY, atZ, upX, upY, upZ)*
+- eyeX,eyeY, eyeZ: 指定视点
+- atX, atY, atZ: 观察目标点
+- upX, upY, upZ: 指定上方向
+
+为了确定相机视角，需要3项信息：
+1. 视点：观察者的位置，视线的起点。习惯用（eyeX, eyeY, eyeZ)表示
+2. 观察目标点：被观察物体所在的点，习惯用（atX, atY, atZ）表示。可以用来确定视线(at - eye)，视线从视点出发，穿过观察目标并继续延伸
+3. 上方向：如果仅仅确定了视点和目标点，观察者还是可能以视线为轴旋转的，如下图所示。所以，为了将观察者固定住，还需要指定上方向。习惯用（upX, upY, upZ)表示。
+#+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
+[[file:webgl/camera.png]]
+
 
 * 坐标&旋转
 ** OpenGL坐标
@@ -165,6 +180,9 @@ glm::mat4 myIdentityMatrix = glm::mat4(1.0);
 
 #+ATTR_latex: :width 300   #+ATTR_HTML: :width 300  #+ATTR_ORG: :width 300
 [[file:webgl/z_rotation.png]]
+
+
+* frame buffer & Depth Buffer(Z-Buffer)
 
 * OpenGL函数
 ** glLoadIdentity()，glPushMatrix()，glPopMatrix()
