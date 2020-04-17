@@ -156,7 +156,9 @@ glm::mat4 myIdentityMatrix = glm::mat4(1.0);
 [[file:webgl/z_rotation.png]]
 
 * OpenGL函数
-** glLoadIdentity()，glPushMatrix()，glPopMatrix() - glLoadIdentity()的作用就是把当前矩阵设为为单位矩阵. - glPushMatrix、glPopMatrix相当于堆栈里的入栈和出栈。 *Push起到保护环境、Pop起到恢复环境的作用* 。这2个函数可以嵌套使用。调用glPushMatrix就是把 当前矩阵做一个副本放入堆栈，然后不管你之后做了多少变换，这时调用glPopMatrix，当前矩阵就可以恢复到你调用glPushMatrix之前的那个状态。例如当前的 坐标系原点在电脑屏幕的左上方。现在调用glPushMatrix，然后再调用一堆平移、旋转代码等等，然后再画图。那些平移和旋转都是基于坐上角为原点进行变化的。 而且都会改变坐标的位置，经过了这些变化后，你的坐标肯定不再左上角了。如果想恢复怎么办？这时调用glPopMatrix从栈里取出一个“状态”，这个状态就是 你调用glPushMatrix之前的那个状态。
+** glLoadIdentity()，glPushMatrix()，glPopMatrix()
+- glLoadIdentity()的作用就是把当前矩阵设为为单位矩阵.
+- glPushMatrix、glPopMatrix相当于堆栈里的入栈和出栈。 *Push起到保护环境、Pop起到恢复环境的作用* 。这2个函数可以嵌套使用。调用glPushMatrix就是把 当前矩阵做一个副本放入堆栈，然后不管你之后做了多少变换，这时调用glPopMatrix，当前矩阵就可以恢复到你调用glPushMatrix之前的那个状态。例如当前的 坐标系原点在电脑屏幕的左上方。现在调用glPushMatrix，然后再调用一堆平移、旋转代码等等，然后再画图。那些平移和旋转都是基于坐上角为原点进行变化的。 而且都会改变坐标的位置，经过了这些变化后，你的坐标肯定不再左上角了。如果想恢复怎么办？这时调用glPopMatrix从栈里取出一个“状态”，这个状态就是 你调用glPushMatrix之前的那个状态。
 ** glMatrixMode(GLenum mode); 设置当前矩阵是什么矩阵：
 OpenGL里面的操作，很多是对矩阵的操作，比如位移，旋转，缩放。glMatrixMode就是用来指定接下来将要对那类矩阵进行操作，由参数mode来指定
 - GL_MODELVIEW对模型视景矩阵操作: 接下来的语句描绘一个以模型为基础的适应，这样来设置参数，接下来用到的就是像gluLookAt()这样的函数
