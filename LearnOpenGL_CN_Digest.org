@@ -183,16 +183,14 @@ glm::mat4 myIdentityMatrix = glm::mat4(1.0);
 
 
 * 帧缓冲Frame buffer & 深度缓冲Depth Buffer(Z-Buffer)消隐算法 & 颜色缓冲Color Buffer
-*Frame buffer： 存储每个可见像素的光强和颜色。Frame buffer是显卡硬件的一部分，包含了完整的帧数据.
+Frame buffer 存储每个可见像素的光强和颜色。Frame buffer是显卡硬件的一部分，包含了完整的帧数据.
 - *Frame buffer包含color buffer，stencil buffer，depth buffer等若干buffer。 只有color buffer用于最后的像素显示，其他的都是用来辅助fragment的处理* 。 Frame buffer 中至少要有：颜色缓冲区ColorBuffer，另外可选的有：深度缓冲区DepthBuffer，模板缓冲区StencilBuffer。
-
 - OpenGL允许我们定义我们自己的帧缓冲，也就是说我们能够定义我们自己的颜色缓冲，甚至是深度缓冲和模板缓冲。
 
-
-*深度测试Depth Testing*: 当片元Fragment想要输出它的颜色时，OpenGL会将它的深度值和z缓冲进行比较，如果当前片元在其它片元之后，它会被丢弃，否则将会覆盖。
-- Z-Buffer(也叫Depth Bffer深度缓冲): 存储每个可见像素的深度值, 这是z坐标经过投影变换后的一个介于0.0和1.0之间的深度值
-  1. 在像素级上以近物来取代远物，和绘制的先后顺序无关，前面的像素挡住后面的，后面的不可见。 也叫消隐Visible surface detection。
-  2. 近处的物体有很大的深度精度； 远处的物体，由于深度精度不够很容易导致像素的前后关系判断失误，不能正确消隐，导致远处的物体产生闪烁现象
+Z-Buffer(也叫Depth Bffer深度缓冲): 存储每个可见像素的深度值, 这是z坐标经过投影变换后的一个介于0.0和1.0之间的深度值
+  - 在像素级上以近物来取代远物，和绘制的先后顺序无关，前面的像素挡住后面的，后面的不可见。 也叫消隐Visible surface detection。
+  - *深度测试Depth Testing*: 当片元Fragment想要输出它的颜色时，OpenGL会将它的深度值和z缓冲进行比较，如果当前片元在其它片元之后，它会被丢弃，否则将会覆盖。
+  - 近处的物体有很大的深度精度； 远处的物体，由于深度精度不够很容易导致像素的前后关系判断失误，不能正确消隐，导致远处的物体产生闪烁现象
      
 * OpenGL函数
 ** glLoadIdentity()，glPushMatrix()，glPopMatrix()
