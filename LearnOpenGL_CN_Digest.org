@@ -85,10 +85,10 @@ VAO相当于是对很多个VBO的引用，把一些VBO组合在一起作为一�
 [[file:OpenGL/MVP.jpg]]
 
 ** 几何变换：通过旋转、平移、缩放来调整后位置
-** 投影: 裁剪clipping(frustum culling视椎体剔除) + 透视除法生成NDC。
+** 投影: 裁剪clipping(frustum culling视椎体剔除) + 透视除法生成NDC[-1, 1]
 *投影矩阵(projection matrix)* :显示器是二维的, 一个3D场景需要被投影到屏幕上成为一个2D图像，这称为投影变换，需要用到投影矩阵，投影干两件事:
 1. 投影矩阵会创建一个视椎体对物体坐标进行 *裁剪clipping(即frustum culling视椎体剔除)* 。实现方式就是投影矩阵先把顶点坐标从eye coordinates观察空间变换到裁剪坐标clip coordinate, 然后再把视椎体外不可见的部分裁剪掉 。
-2. *裁剪坐标再通过透视除法被变换到标准化设备坐标NDC* ，这一步是用裁剪坐标的w分量除裁剪坐标(x/w, y/w, z/w, w/w)实现的。
+2. *裁剪坐标再通过透视除法被变换到标准化设备坐标NDC[-1, 1]* ，这一步是用裁剪坐标的w分量除裁剪坐标(x/w, y/w, z/w, w/w)实现的。
 
 *** 视锥体frustum、裁剪坐标clipping coordinates
 - 视锥体（frustum），它包含六个平面（近平面、远平面、上平面、下平面、右平面和左平面）
@@ -137,7 +137,7 @@ glm::mat4 myIdentityMatrix = glm::mat4(1.0);
 ** 视点 or 相机位置
 在一个场景中，我们希望改变观察者的位置和观察角度。用于改变观察者方位和角度的变换，就是视图变换。默认情况下， *视点或者说相机位于原点(0,0,0)， 且视线朝着-Z方向。 也就是说，只有在z<0的地方绘图，才有可能被观察到* 。
 
-创建视图矩阵: Matrix4.setLookAt(eyeX, eyeY, eyeZ, atX, atY, atZ, upX, upY, upZ)*
+创建视图矩阵: Matrix4.setLookAt(eyeX, eyeY, eyeZ, atX, atY, atZ, upX, upY, upZ)
 - eyeX,eyeY, eyeZ: 指定视点
 - atX, atY, atZ: 观察目标点
 - upX, upY, upZ: 指定上方向
@@ -182,8 +182,18 @@ glm::mat4 myIdentityMatrix = glm::mat4(1.0);
 [[file:webgl/z_rotation.png]]
 
 
-* frame buffer & Depth Buffer(Z-Buffer)
+* 帧缓冲Frame buffer & 深度缓冲Depth Buffer(Z-Buffer)消隐算法 & 颜色缓冲Color Buffer
+*Frame buffer： 存储每个可见像素的光强和颜色。Frame buffer是显卡硬件的一部分，包含了完整的帧数据.
+- *Frame buffer包含color buffer，stencil buffer，depth buffer等若干buffer。 只有color buffer用于最后的像素显示，其他的都是用来辅助fragment的处理* 。 Frame buffer 中至少要有：颜色缓冲区ColorBuffer，另外可选的有：深度缓冲区DepthBuffer，模板缓冲区StencilBuffer。
 
+- OpenGL允许我们定义我们自己的帧缓冲，也就是说我们能够定义我们自己的颜色缓冲，甚至是深度缓冲和模板缓冲。
+
+
+*深度测试Depth Testing*: 当片元Fragment想要输出它的颜色时，OpenGL会将它的深度值和z缓冲进行比较，如果当前片元在其它片元之后，它会被丢弃，否则将会覆盖。
+- Z-Buffer(也叫Depth Bffer深度缓冲): 存储每个可见像素的深度值, 这是z坐标经过投影变换后的一个介于0.0和1.0之间的深度值
+  1. 在像素级上以近物来取代远物，和绘制的先后顺序无关，前面的像素挡住后面的，后面的不可见。 也叫消隐Visible surface detection。
+  2. 近处的物体有很大的深度精度； 远处的物体，由于深度精度不够很容易导致像素的前后关系判断失误，不能正确消隐，导致远处的物体产生闪烁现象
+     
 * OpenGL函数
 ** glLoadIdentity()，glPushMatrix()，glPopMatrix()
 - glLoadIdentity()的作用就是把当前矩阵设为为单位矩阵.
