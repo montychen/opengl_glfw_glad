@@ -1040,3 +1040,10 @@ function setMVPMatrix(gl,canvas) {
     gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix.elements);
 }
 #+end_src
+
+*  test org table 中英文是否对齐
+| aa      | name               | age        | note     | 备注   |
+| 不妥bbb | 带我看迪塞尔落地尅 | addaiekdai | 借贷而开 | 开发贷 |
+| 测试    |                    |            |          | aaa    |
+| 陈卓仪  | sa硫报价           | dasi       | 30       | kkkkkk |
+| ]       |                    |            |          |        |

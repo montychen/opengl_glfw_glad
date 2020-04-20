@@ -210,3 +210,20 @@ glMatrixMode（GL_MODELVIEW ）；//设置当前矩阵为模型视景矩阵
 gluPerspective(45.0f, (GLfloat)cx/(GLfloat)cy, 0.1f, 100.0f)；  //对图像进行透视投影，以将三维物体显示在二维平面上
 
 #+end_src
+** 配置纹理对象的参数glTexParameteri(target, pname, param) ，将param的值赋给绑定到目标的纹理对象的pname参数上。默认每个纹理参数都有默认值，通常你可以不用手动显示的调用这个函数，使用默认值就可以。
+- 第1个参数target： 指定纹理的类型，有两个值
+  - gl.TEXTURE_2D二维纹理
+  - gl.TEXTURE_CUBE_MAP立方体纹理
+- 第2个参数pname：纹理参数的名字，决定了获取纹素颜色的方式；
+  + 放大方法：gl.TEXTURE_MAG_FILTER，当绘制范围比 *纹理本身大* 时，如将16*16的纹理映射到32*32像素的空间时，纹理的尺寸不够，该参数决定了如何填充这些放大的空隙。默认值：gl.LINEAR
+  + 缩小方法：gl.TEXTURE_MIN_FILTER，当的绘制范围比 *纹理本身小* 时，如将32*32的纹理映射到16*16像素的空间时，纹理的尺寸比需要的大了，需要剔除纹理图像中的部分像素。该参数决定了剔除的方法。默认：gl.NEAREST_MIPMAP_LINEAR
+  + 水平填充方法：gl.TEXTURE_WRAP_S，如何对纹理图像左侧或者右侧的区域进行填充；默认值：gl.REPEAT
+  + 垂直填充方法：gl.TEXTURE_WRAP_T，如何对纹理图像上方和下方的区域进行填充；默认值：gl.REPEAT
+- 第3个参数param：是纹理参数的值：
+  - 可以赋给 gl.TEXTURE_MAG_FILTER 和 gl.TEXTURE_MIN_FILTER 的值有2个
+    1. gl.NEAREST: 使用原纹理上距离映射后像素中心最近的那个像素的颜色值，作为新像素的值。
+    2. gl.LINEAR: 使用距离新像素中心最近的四个像素的颜色值的加权平均，作为新像素的值（和gl.NEAREST相比，该方法图像质量更好，但也会有较大的开销。）
+  - 可以赋给 gl.TEXTURE_WRAP_S 和 gl.TEXTURE_WRAP_T 的值3个：
+    1. gl.REPEAT: 平铺式的重复纹理
+    2. gl.MIRRORED_REPEAT: 纹理镜像重复填充
+    3. gl.CLAMP_TO_EDGE: 使用纹理边缘的像素填充

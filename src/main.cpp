@@ -1,4 +1,5 @@
 #include <glad/glad.h>  // 在包含GLFW的头文件之前包含了GLAD的头文件。GLAD的头文件包含了OpenGL头文件（如GL/gl.h），所以需要在其它依赖OpenGL头文件之前包含GLAD。
+// note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
 #include <GLFW/glfw3.h>
 
 #include <iostream>
@@ -40,7 +41,7 @@ int main()
     // --------------------
     GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "大军的东东LearnOpenGL", NULL, NULL);
     if (window == NULL)
-    {
+        {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
         return -1;
