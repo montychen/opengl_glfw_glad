@@ -175,6 +175,36 @@ Z-Buffer(也叫Depth Bffer深度缓冲): 存储每个可见像素的深度值, �
 
 
 
+* Phong光照模型 = ambient环境光 + diffuse漫反射 + specular镜面反射/高光
+** 环境光(Ambient light)：模拟间接光照。
+习惯上用一个常量来模拟 *环境光 = 物体表面的光的反射系数K ️✖ 光的颜色or强度I*
+#+ATTR_latex: :width 550   #+ATTR_HTML: :width 550  #+ATTR_ORG: :width 550
+[[file:OpenGL/ambient.jpg]]
+
+把环境光照添加到场景里非常简单。我们用光的颜色乘以一个很小的常量环境因子，再乘以物体的颜色，然后将最终结果作为片段的颜色：
+#+begin_src c++
+float ambientStrength = 0.1;                 //  物体表面的光的反射系数
+vec3 ambient = ambientStrength * lightColor; // 这个就是环境光
+
+vec3 result = ambient * objectColor;
+FragColor = vec4(result, 1.0);
+#+end_src
+
+** 漫反射(Diffuse reflection): 光源直接照射物体产生的效果。（大但不光亮）
+粗糙表面的光向四周均匀的反射： 点光源来自一个方向，漫反射和光的入射角度有关，和反射的角度无关，反射光是均匀的反射到各个方向，也就是和视点无关，
+入射光垂直照射物体表面，反射光最强；也就是说物体越正对着光源的部分，就会越亮。
+
+*漫反射 =  光的颜色or强度I ✖ 物体表面的光的反射系数K  ✖ (N.L)*
+- I 光的颜色or亮度
+- K 物体表面的光的反射系数
+- L = 点光源向量 - P点向量 = 从P点指点向光源的向量
+- N 法向量：垂直于P点的向量。
+
+#+ATTR_latex: :width 650   #+ATTR_HTML: :width 650  #+ATTR_ORG: :width 650
+[[file:OpenGL/diffuse.png]]
+** 高光 or 镜面反射(Specular reflection)：光源直接照射物体产生的效果。（小而亮）
+光滑的表面，在点光源的照射下， 会产生一块特别亮的区域（高光点）。入射角等于反射角
+
 * OpenGL函数
 ** GLSL和OpenGL的通信
 *** uniform、inout
