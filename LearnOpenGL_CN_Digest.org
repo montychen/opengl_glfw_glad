@@ -67,7 +67,9 @@ glBindObject(GL_WINDOW_TARGET, 0);
 [[file:webgl/texture_coord.png]]
 
 
-** 矩阵
+** 向量： 向量相乘可以交换位置；点乘和叉乘
+
+** 矩阵： 矩阵相乘不能交换位置
 *** OpenGL API接受的矩阵要求是 *列主序*
 在实际编程语言中，我们使用的一维数组来存储4x4矩阵的16个元素。所谓的行存储和列存储的区分就在于数组的前四个元素存储的是矩阵的第一列还是第一行；表示列的称为列存储，表示行的成为行存储。
 #+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
@@ -175,35 +177,90 @@ Z-Buffer(也叫Depth Bffer深度缓冲): 存储每个可见像素的深度值, �
 
 
 
-* Phong光照模型 = ambient环境光 + diffuse漫反射 + specular镜面反射/高光
-** 环境光(Ambient light)：模拟间接光照。
-习惯上用一个常量来模拟 *环境光 = 物体表面的光的反射系数K ️✖ 光的颜色or强度I*
-#+ATTR_latex: :width 550   #+ATTR_HTML: :width 550  #+ATTR_ORG: :width 550
-[[file:OpenGL/ambient.jpg]]
+* Phong光照模型 = ambient + diffuse + specular
+*结合Phong光照模型，最终作用于物体的光照效果就是 = （ambient + diffuse + specular）  ✖  物体的基本色*
 
-把环境光照添加到场景里非常简单。我们用光的颜色乘以一个很小的常量环境因子，再乘以物体的颜色，然后将最终结果作为片段的颜色：
+** 环境光(Ambient light)：模拟间接光照。
+环境光给予物体各个点的光照强度相同，且没有方向之分，所以在只有环境光的情况下，同一物体各点的明暗程度均一样，因此，只有环境光是不能产生具有真实感的图形效果。环境光指的是那些被多次反射后，从各个角度间接照射物体的光，理想的环境光有如下特性：强度一致，没有空间或方向性； 习惯用一个颜色常量来模拟：
+
+*环境光 = 入射光颜色向量I ️✖ 物体表面光的反射系数K*
+
+#+ATTR_latex: :width 650   #+ATTR_HTML: :width 650  #+ATTR_ORG: :width 650
+[[file:OpenGL/ambient.png]]
+
+*** 例：把环境光照添加到场景里： 用光的颜色乘以一个很小的常量环境因子，再乘以物体的颜色，然后将最终结果作为片段的颜色：
 #+begin_src c++
 float ambientStrength = 0.1;                 //  物体表面的光的反射系数
-vec3 ambient = ambientStrength * lightColor; // 这个就是环境光
+vec3 ambient = ambientStrength * lightColor; // 这个就是环境光, lightColor是入射光颜色向量
 
-vec3 result = ambient * objectColor;
+vec3 result = ambient * objectColor;         // 计算出：环境光作用于物体的效果， objectColor 是物体的基本色
 FragColor = vec4(result, 1.0);
 #+end_src
 
+
 ** 漫反射(Diffuse reflection): 光源直接照射物体产生的效果。（大但不光亮）
-粗糙表面的光向四周均匀的反射： 点光源来自一个方向，漫反射和光的入射角度有关，和反射的角度无关，反射光是均匀的反射到各个方向，也就是和视点无关，
+漫反射：指的是粗糙表面等强度均匀的向四周反射光。 漫反射和光的入射角度有关，和反射的角度无关，反射光是均匀的反射到各个方向，也就是和视点无关，
 入射光垂直照射物体表面，反射光最强；也就是说物体越正对着光源的部分，就会越亮。
 
-*漫反射 =  光的颜色or强度I ✖ 物体表面的光的反射系数K  ✖ (N.L)*
-- I 光的颜色or亮度
-- K 物体表面的光的反射系数
-- L = 点光源向量 - P点向量 = 从P点指点向光源的向量
-- N 法向量：垂直于P点的向量。
+*漫反射 =  入射光颜色向量I ✖ 物体表面光的反射系数K  ✖ (L.N)*
+
+*OpenGL的实现：diffuse = K * lightColor * max( dot(N, L),  0)* // 点乘 N.L 光的入射角如果大于等于90度，就没反射光了，应该是黑的，这里做了处理。
+
+- I 入射光颜色向量, 习惯用lightColor表示。
+- K 物体表面光的反射系数
+- L 是从P点指点向光源的单位向量（注意，是由P点指向光源，不要弄反了) = normalize（点光源向量 - P点向量）
+- N 入射点P的单位法向量 = normalize(N)
 
 #+ATTR_latex: :width 650   #+ATTR_HTML: :width 650  #+ATTR_ORG: :width 650
 [[file:OpenGL/diffuse.png]]
+
+
 ** 高光 or 镜面反射(Specular reflection)：光源直接照射物体产生的效果。（小而亮）
-光滑的表面，在点光源的照射下， 会产生一块特别亮的区域（高光点）。入射角等于反射角
+光滑的表面，在点光源的照射下， 会产生一块特别亮的区域（高光点）。原因是：在理想镜面情况下，入射角等于反射角，观察者只能在 反射方向一侧才能看到反射光；但现实是没有完全光滑的表面， 所以实际的反射区域是一个小的角度范围，这个范围就是高光区域。
+
+*镜面反射 =  入射光颜色向量I ✖ 物体表面光的反射系数K  ✖ (V.R)^n*
+
+*OpenGL的镜面反射： specular = K * lightColor * pow( max( dot(V, R),  0),  n)*
+
+反射光向量R的计算还是比较麻烦的，改进后的就是Blinn-phong 反射模型，它省去了计算反射光向量R的两个乘法运算，速度更快。
+*Blinn-Phong镜面反射 = 入射光颜色向量I ✖ 物体表面光的反射系数K  ✖ (N.H)^n*
+
+*OpenGL的Blinn-Phong镜面反射： specular = K * lightColor * pow( max( dot(N, H),  0),  n)*
+
+- I 入射光颜色向量, 习惯用lightColor表示。
+- K 物体表面光的反射系数
+- L 是从P点指点向光源的单位向量（注意，是由P点指向光源，不要弄反了) = normalize（点光源向量 - P点向量）
+- N 入射点P的单位法向量 = normalize(N)
+- n 是物体表面的光滑指数，值越大表示越光滑，反射光越集中，高光区域就越小。n = 10, 20, 30, 80, 160
+- V 表示从P点指向视点的向量，
+- R 代表反射光向量 =  2(N • L)N − L = 2 * max( dot(N, L), 0) * N - L
+- H 二分向量，它是沿L和V的角平线的单位向量 = normalize(L + V)
+
+#+ATTR_latex: :width 650   #+ATTR_HTML: :width 650  #+ATTR_ORG: :width 650
+[[file:OpenGL/specular.jpg]]
+*** 例： 环境光 + 漫反射 + 高光同时作用于物体的效果
+#+begin_src c++
+// ambient
+float ambientStrength = 0.1;                 //  Ka物体表面的光的反射系数
+vec3 ambient = ambientStrength * lightColor; // 这个就是环境光的结果，lightColor是入射光颜色向量
+
+// diffuse
+vec3 norm = normalize(Normal);  // N 法向量：垂直于P点的向量归一化
+vec3 lightDir = normalize(lightPos - FragPos); // L 是从P点指点向光源的单位向量 = 点光源向量 - P点向量
+float diff = max(dot(norm, lightDir), 0.0);    // 点乘 N.L 光照的入射角如果大于等于90度，就没反射光了，应该是黑的，所以这里做了处理。
+vec3 diffuse = diff * lightColor;              // 漫反射的结果
+
+// specular
+float specularStrength = 0.5;   // Ks 物体表面光的反射系数
+vec3 viewDir = normalize(viewPos - FragPos); // V 表示从P点指向视点的向量，
+vec3 reflectDir = reflect(-lightDir, norm);  // 通过GLSL内置函数reflect算出反射光向量R. 光线的入射方向和L的方向是相反的，所以这里对lightDir取反
+float spec = pow( max( dot(viewDir, reflectDir),  0.0), 32);
+vec3 specular = specularStrength * spec * lightColor;
+
+vec3 result = (ambient + diffuse + specular) * objectColor; // 计算出：环境光 + 漫反射 + 高光同时作用于物体的效果
+FragColor = vec4(result, 1.0);
+#+end_src
+
 
 * OpenGL函数
 ** GLSL和OpenGL的通信
