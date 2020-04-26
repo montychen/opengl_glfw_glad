@@ -114,8 +114,8 @@ glm::mat4 myIdentityMatrix = glm::mat4(1.0);
 
 
 ** 帧缓冲Frame buffer & 深度缓冲Depth Buffer(Z-Buffer)消隐算法 & 颜色缓冲Color Buffer
-Frame buffer 存储每个可见像素的光强和颜色。Frame buffer是显卡硬件的一部分，包含了完整的帧数据.
-- *Frame buffer包含color buffer，stencil buffer，depth buffer等若干buffer。 只有color buffer用于最后的像素显示，其他的都是用来辅助fragment的处理* 。 Frame buffer 中至少要有：颜色缓冲区ColorBuffer，另外可选的有：深度缓冲区DepthBuffer，模板缓冲区StencilBuffer。
+Frame buffer 帧缓冲里存储的内容和视口（屏幕）上的每个像素一一对应的，对帧缓冲内容的修改其实就是对视口（屏幕）上显示内容的修改。另外， 对片元Fragment的处理， 就是在利用和修改帧缓冲的数据。Frame buffer是显卡硬件的一部分，包含了完整的帧数据.
+- *Frame buffer包含color buffer，stencil buffer，depth buffer等若干buffer。 只有color buffer用于最后的像素显示，其他的都是用来辅助fragment的处理* 。 而且Frame buffer 中只有颜色缓冲区ColorBuffer是必须要有的，其它的都是可选的，如：深度缓冲区DepthBuffer，模板缓冲区StencilBuffer
 - OpenGL允许我们定义我们自己的帧缓冲，也就是说我们能够定义我们自己的颜色缓冲，甚至是深度缓冲和模板缓冲。
 
 Z-Buffer(也叫Depth Bffer深度缓冲): 存储每个可见像素的深度值, 这是z坐标经过投影变换后的一个介于0.0和1.0之间的深度值
@@ -140,7 +140,7 @@ Z-Buffer(也叫Depth Bffer深度缓冲): 存储每个可见像素的深度值, �
 [[file:OpenGL/pipeline1.png]]
 
 
-** 变换 Transformation: 几何变换 -> 投影裁剪 -> 视口变换
+** 变换 Transformation: 几何变换 -> 投影裁剪NDC -> 视口变换
 *顶点*  : 管线的输入是那些预先定义好的三维空间中的点，而不是直接输入三角形，在后面三维空点的投影到二维屏幕后，再决定那三个点形成一个三角形。
 
 *MVP* 几何单元（比如三角形）在经过: M模型矩阵变换、V视角矩阵变换、P投影矩阵变化以及透视除法后，坐标变换到归一化的NDC坐标系下[-1， 1] 。在知道输出 屏幕大小的情况下，通过视口变换可将x/y变换到窗口大小下（x∈【0，width】 y∈【0，height】z不变）。至此我们即将所有三角形投射到raster_space中。
@@ -167,10 +167,10 @@ Z-Buffer(也叫Depth Bffer深度缓冲): 存储每个可见像素的深度值, �
 [[file:OpenGL/viewport_wh.png]]
 
 
-** 光栅化 Rasterization
-一定要牢记，显示屏是二维的，GPU 所需要做的是将三维的数据，绘制到二维屏幕上。*光栅化* 就是将一个几何图元转变为屏幕栅格上的二维图像的过程，这个二维图像由光栅上离散的点阵构成，每个点都包含了 *颜色、深度和纹理* 数据。将该点和相关信息叫做一个 *片元（fragment）* 。 粗略地讲：根据图形的定义的那些顶点在经过各种矩阵变换后也仅仅是顶点。而由顶点构成的三角形要在屏幕上显示出来，除了需要三个顶点的信息以外，还需要确定这个 *三角形内部的所有像素* 的信息。光栅化就是干这个的。主要有2步：
+** 光栅化 Rasterization： 找出最佳逼近三角形的像素集 + 插值算出三角形内部所有像素点的颜色
+一定要牢记，显示屏是二维的，GPU 所需要做的是将三维的数据，绘制到二维屏幕上。*光栅化* 就是将一个几何图元转变为屏幕栅格上的二维图像的过程，这个二维图像由光栅上离散的点阵构成，每个点都包含了 *颜色、深度和纹理* 数据。将该点和相关信息叫做一个 *片元（fragment）* 。 粗略地讲：根据图形的定义的那些顶点在经过各种矩阵变换后也仅仅是顶点。而由顶点构成的三角形要在屏幕上显示出来，除了需要三个顶点的信息以外，还需要 *插值算出三角形内部的所有像素的颜色* 。光栅化就是干这个的。主要有2步：
 1. 在栅格点阵上找出最佳逼近于图形形状(比如三角形）的像素集。逼近的过程本质可以认为是： *连续量向离散量的转换* 。
-2. 给像素指定合适的颜色值，包括 *插值出三角形内部所有像素点* 的属性值（Z值、颜色、法向、纹理坐标等）。可以通过光照、纹理的计算，来确定像素的颜色值。
+2. 给像素指定合适的颜色值，包括 *插值算出三角形内部所有像素点的颜色* （Z值、法向、纹理坐标等）。可以通过光照、纹理的计算，来确定像素的颜色值。
    #+ATTR_latex: :width 650   #+ATTR_HTML: :width 6500  #+ATTR_ORG: :width 6500
 [[file:OpenGL/rasterization.png]]
 
@@ -204,7 +204,9 @@ FragColor = vec4(result, 1.0);
 
 *漫反射 =  入射光颜色向量I ✖ 物体表面光的反射系数K  ✖ (L.N)*
 
-*OpenGL的实现：diffuse = K * lightColor * max( dot(N, L),  0)* // 点乘 N.L 光的入射角如果大于等于90度，就没反射光了，应该是黑的，这里做了处理。
+*OpenGL的实现：diffuse = K * lightColor * max( dot(N, L),  0)*
+
+点乘 N.L 光的入射角如果大于等于90度，值就等于或者小于0，就没反射光了，应该是黑的，这里做了处理。
 
 - I 入射光颜色向量, 习惯用lightColor表示。
 - K 物体表面光的反射系数
