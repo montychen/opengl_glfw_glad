@@ -54,11 +54,11 @@ glBindObject(GL_WINDOW_TARGET, 0);
 - *OpenGL的窗口坐标：原点在窗体的左下角* 。 X轴正向向右，Y轴正向朝上。
 - 屏幕 > 窗体 > 视口的关系：屏幕包含窗体，窗体显示在屏幕上； 窗体包含视口。
 
-**** 视口ViewPort
+*** 视口ViewPort
 *视口* ：即告诉OpenGL应把渲染之后的图形绘制在窗体的哪个部位。当视口区域是整个窗体时，OpenGL将把渲染结果绘制到整个窗口。函数glViewPort可以用来改变视口区域的位置和大小:
 #+begin_quote
 void glViewport(GLint x, GLint y, GLint width, GLint height)
-- 参数X，Y指定了视口的左下角在窗口中的位置（使用的是OpenglOpenGL的窗口坐标的值，原点在左下角），一般情况下为（0，0），也就是在窗口的左下角。
+- 参数X，Y指定了视口的左下角在窗口中的位置（使用的是OpenGL窗口坐标的值，原点在左下角），一般情况下为（0，0），也就是在窗口的左下角。
 - Width和Height指定了视口的宽度和高度。
 
 例如： glViewport(100, 100, 800, 600); 没把视口的左下角放在窗口的左下角，效果如图所示
