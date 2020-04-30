@@ -62,8 +62,7 @@ void glViewport(GLint x, GLint y, GLint width, GLint height)
 - Width和Height指定了视口的宽度和高度。
 
 例如： glViewport(100, 100, 800, 600); 没把视口的左下角放在窗口的左下角，效果如图所示
-#+ATTR_latex: :width 400   #+ATTR_HTML: :width 400  #+ATTR_ORG: :width 400
-[[file:opengl/viewport.png]]
+[[file:OpenGL/viewport.png]]
 
 #+end_quote
 
