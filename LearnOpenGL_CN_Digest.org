@@ -9,7 +9,7 @@ glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 明确告诉GL
 glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // 如果使用的是Mac系统，需要这行代码；mac默认使用的是比较旧的版本，这行强制系统使用当前硬件支持的最新版本。
 
 GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL); // 创建窗口
-glfwMakeContextCurrent(window);     // 把窗口的Context，设为当前线程的Context：
+glfwMakeContextCurrent(window);     // 把当前线程的Context，设成窗口的Context
 
 #+end_src
  
@@ -55,7 +55,7 @@ glBindObject(GL_WINDOW_TARGET, 0);
 - 屏幕 > 窗体 > 视口的关系：屏幕包含窗体，窗体显示在屏幕上； 窗体包含视口。
 
 *** 视口ViewPort
-*视口* ：即告诉OpenGL应把渲染之后的图形绘制在窗体的哪个部位。当视口区域是整个窗体时，OpenGL将把渲染结果绘制到整个窗口。函数glViewPort可以用来改变视口区域的位置和大小:
+*视口* ：即告诉OpenGL应把 *渲染Render* 之后的图形绘制在窗体的哪个部位。当视口区域是整个窗体时，OpenGL将把渲染结果绘制到整个窗口。函数glViewPort可以用来改变视口区域的位置和大小:
 #+begin_quote
 void glViewport(GLint x, GLint y, GLint width, GLint height)
 - 参数X，Y指定了视口的左下角在窗口中的位置（使用的是OpenGL窗口坐标的值，原点在左下角），一般情况下为（0，0），也就是在窗口的左下角。
@@ -144,12 +144,12 @@ glm::mat4 myIdentityMatrix = glm::mat4(1.0);
 - OpenGL允许我们定义我们自己的帧缓冲，也就是说我们能够定义我们自己的颜色缓冲，甚至是深度缓冲和模板缓冲。
 
 
-*StencilBuffer模版缓冲*: 作用就是限制绘制的图元区域, 过滤丢弃一些片段，只留下想要的东东。 做法是按照窗口宽高创建一个矩阵，矩阵由0,1组成，其中由1组成的区域代表相匹配的图元需要提交到后续流程进行测试和绘制，而由0组成的区域的片元则直接被丢弃，起到一个筛选作用，而这个0,1数值矩阵所在的显存区域则称为模版缓冲区。 例如：我们将模板缓存中的一个矩形区域设置为1，我们的立方体在绘制时，我们将只绘制模板值为1的像素区域，从而达到控制像素绘制与否的目的。
+*Stencil Buffer模版缓冲*: 作用就是限制绘制的图元区域, 过滤丢弃一些片段，只留下想要的东东。 做法是按照窗口宽高创建一个矩阵，矩阵由0,1组成，其中由1组成的区域代表相匹配的图元需要提交到后续流程进行测试和绘制，而由0组成的区域的片元则直接被丢弃，起到一个筛选作用，而这个0,1数值矩阵所在的显存区域则称为模版缓冲区。 例如：我们将模板缓存中的一个矩形区域设置为1，我们的立方体在绘制时，我们将只绘制模板值为1的像素区域，从而达到控制像素绘制与否的目的。
 #+ATTR_latex: :width 650   #+ATTR_HTML: :width 6500  #+ATTR_ORG: :width 6500
 [[file:OpenGL/stencil.png]]
 
 - 模板缓冲区可以为屏幕上的每个像素点保存一个无符号8bit整数。
-- 在渲染的过程中，可以用这个值与一个预先设定的参考值相比较，根据比较的结果来决定是否更新相应的像素点的颜色值。这个比较的过程被称为模板测试。
+- 在渲染Render的过程中，可以用这个值与一个预先设定的参考值相比较，根据比较的结果来决定是否更新相应的像素点的颜色值。这个比较的过程被称为模板测试。
 - 模板测试发生在透明度测试（alpha test）之后，深度测试（depth test）之前。如果模板测试通过，则相应的像素点更新，否则不更新。
 
 *Z-Buffer(也叫DepthBffer深度缓冲)* : 存储每个可见像素的深度值, 这是z坐标经过投影变换后的一个介于0.0和1.0之间的深度值。
