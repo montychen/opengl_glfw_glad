@@ -95,6 +95,104 @@ void glViewport(GLint x, GLint y, GLint width, GLint height)
 - 若w==1，则向量(x, y, z, 1）表示的是空间中的点。
 - 若w==0，则向量(x, y, z, 0) 表示的是方向。 此时，这个向量就不能位移，”平移一个方向”是毫无意义的。
 
+** GLSL着色语言(OpenGL Shading Language)基础
+*** GLSL和OpenGL的通信： uniform、inout
+*Uniform* 是一种从CPU应用向GPU着色器发送数据的一种方式。Uniform是全局的，在某一着色器里声明了它，其他着色器就可以使用它。
+#+ATTR_latex: :width 650   #+ATTR_HTML: :width 650  #+ATTR_ORG: :width 650
+[[file:OpenGL/glsl_opengl.jpg]]
+
+*** 顶点着色器(Vertex Shader)
+#+begin_src glsl
+#version 330 core                   // 声明我们要使用的版本，同样明确表示我们会使用核心模式。
+layout (location = 0) in vec3 aPos; //使用in关键字，在顶点着色器中声明所有的输入顶点属性(Input Vertex Attribute); 通过layout (location = 0)设定了输入变量的位置值
+
+void main()
+{
+    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+}
+#+end_src
+
+*** 片段着色器(Fragment Shader): 片段着色器所做的是计算像素最后的颜色输出。
+#+begin_src glsl
+#version 330 core                // 声明我们要使用的版本，同样明确表示我们会使用核心模式。
+out vec4 FragColor;              // 片段着色器只需要一个输出变量，用out关键字声明输出变量，这里把变量命名为FragColor。
+
+void main()
+{
+    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f); // 颜色用RGBA表示：红色、绿色、蓝色和alpha(透明度，1.0代表完全不透明)。每个分量的值在0.0到1.0之间
+}
+#+end_src
+
+*** 编译着色器
+#+begin_src glsl
+// 1. 编译顶点着色器
+unsigned int vertexShader;                       // 声明一个unsigned int来存储下面创建的着色器ID
+vertexShader = glCreateShader(GL_VERTEX_SHADER); // 着色器类型GL_VERTEX_SHADER，表示我们创建的是一个顶点着色器
+glShaderSource(vertexShader, 1, &vertexShaderSource, NULL); // 把这个着色器源码附加到着色器对象上
+glCompileShader(vertexShader);                              // 编译它
+
+// 2.编译片元着色器
+unsigned int fragmentShader;
+fragmentShader = glCreateShader(GL_FRAGMENT_SHADER); // 创建片元着色器
+glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+glCompileShader(fragmentShader);
+
+// 3. 链接着色器程序: 是多个着色器合并之后并最终链接完成的版本
+unsigned int shaderProgram;
+shaderProgram = glCreateProgram();
+
+glAttachShader(shaderProgram, vertexShader);
+glAttachShader(shaderProgram, fragmentShader);
+glLinkProgram(shaderProgram);   // 把各个着色器链接(Link)为一个着色器程序对象
+
+// 4. 激活这个程序对象, 已激活着色器程序的着色器将在我们发送渲染调用的时候被使用。
+glUseProgram(shaderProgram);
+
+// 5. 在把着色器对象链接到程序对象以后，记得删除着色器对象，我们不再需要它们了
+glDeleteShader(vertexShader);
+glDeleteShader(fragmentShader);
+
+#+end_src
+
+#+begin_quote
+void glShaderSource(	GLuint shader, GLsizei count,  const GLchar **string, const GLint *length)
+- 第一个参数是要编译的着色器对象
+- 第二参数指定了传递的源码字符串数量，这里只有一个。
+- 第三个参数是顶点着色器真正的源码
+- 第四个参数我们先设置为NULL。
+
+#+end_quote
+
+*** VBO & VAO & EBO
+*VBO* (顶点缓冲对象：Vertex Buffer Object)是显卡高速显存的缓冲区，是显卡硬件中的一块内存区域，用于存储顶点的各类属性信息，如顶点坐标，顶点法向量，顶点颜色数据等。 我们可以一次性的发送一大批数据到VBO中，而不是每个顶点发送一次，在渲染时， 直接从VBO中取出顶点数据，由于VBO在显存而不是在内存中，不需要从CPU传输数据，处理效率更高。创建&使用VBO:
+#+begin_src c++
+// VBO缓冲有一个独一无二的ID，所以我们可以使用glGenBuffers函数和一个缓冲ID生成一个VBO对象
+unsigned int VBO;
+glGenBuffers(1, &VBO);
+
+// OpenGL有很多缓冲对象类型，顶点缓冲对象的缓冲类型是GL_ARRAY_BUFFER。使用glBindBuffer函数把新创建的缓冲绑定到GL_ARRAY_BUFFER目标上
+glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+// 调用glBufferData函数，会把之前定义的顶点数据一次性的复制到VBO缓冲区中
+glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+#+end_src
+#+begin_quote
+void glBufferData( GLenum target,  GLsizeiptr size,  const GLvoid * data,  GLenum usage ) 是一个专门用来把用户定义的数据复制到当前绑定缓冲的函数。
+- 第一个参数是目标缓冲的类型：顶点缓冲对象当前绑定到GL_ARRAY_BUFFER目标上。
+- 第二个参数指定传输数据的大小(以字节为单位)；用一个简单的sizeof计算出顶点数据大小就行。
+- 第三个参数是我们希望发送的实际数据。
+- 第四个参数指定了我们希望显卡如何管理给定的数据。它有三种形式：
+  - GL_STATIC_DRAW ：数据不会或几乎不会改变。
+  - GL_DYNAMIC_DRAW：数据会被改变很多。
+  - GL_STREAM_DRAW ：数据每次绘制时都会改变。
+#+end_quote
+
+*VAO* (顶点数组对象Vertex Array Object) 保存了所有顶点数据属性的状态结合，VAO本身并没有存储顶点的相关属性数据，这些信息是存储在VBO中的，
+VAO相当于是对很多个VBO的引用，把一些VBO组合在一起作为一个对象统一管理。
+
+*EBO* (索引缓冲对象：Element Buffer Object)也是一个缓冲，它专门储存顶点的索引，是为了解决同一顶点重复调用的问题，可以减少内存浪费提高执行效率。
+当需要使用重复顶点的时候，可以通过顶点索引来调用顶点，而不是重复记录。
+
 ** 向量： 向量相乘可以交换位置；点乘和叉乘
 
 ** 矩阵： 矩阵相乘不能交换位置
@@ -304,42 +402,6 @@ FragColor = vec4(result, 1.0);
 
 
 * OpenGL函数
-** GLSL和OpenGL的通信
-*** uniform、inout
-*Uniform* 是一种从CPU应用向GPU着色器发送数据的一种方式。Uniform是全局的，在某一着色器里声明了它，其他着色器就可以使用它。
-#+ATTR_latex: :width 650   #+ATTR_HTML: :width 650  #+ATTR_ORG: :width 650
-[[file:OpenGL/glsl_opengl.jpg]]
-
-*** VBO & VAO & EBO
-*VBO* (顶点缓冲对象：Vertex Buffer Object)是显卡高速显存的缓冲区，是显卡硬件中的一块内存区域，用于存储顶点的各类属性信息，如顶点坐标，顶点法向量，顶点颜色数据等。 我们可以一次性的发送一大批数据到VBO中，而不是每个顶点发送一次，在渲染时， 直接从VBO中取出顶点数据，由于VBO在显存而不是在内存中，不需要从CPU传输数据，处理效率更高。创建&使用VBO:
-#+begin_src c++
-// VBO缓冲有一个独一无二的ID，所以我们可以使用glGenBuffers函数和一个缓冲ID生成一个VBO对象
-unsigned int VBO;
-glGenBuffers(1, &VBO);
-
-// OpenGL有很多缓冲对象类型，顶点缓冲对象的缓冲类型是GL_ARRAY_BUFFER。使用glBindBuffer函数把新创建的缓冲绑定到GL_ARRAY_BUFFER目标上
-glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-// 调用glBufferData函数，会把之前定义的顶点数据一次性的复制到VBO缓冲区中
-glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-#+end_src
-#+begin_quote
-*void glBufferData( GLenum target,  GLsizeiptr size,  const GLvoid * data,  GLenum usage )* 是一个专门用来把用户定义的数据复制到当前绑定缓冲的函数。
-- 第一个参数是目标缓冲的类型：顶点缓冲对象当前绑定到GL_ARRAY_BUFFER目标上。
-- 第二个参数指定传输数据的大小(以字节为单位)；用一个简单的sizeof计算出顶点数据大小就行。
-- 第三个参数是我们希望发送的实际数据。
-- 第四个参数指定了我们希望显卡如何管理给定的数据。它有三种形式：
-  - GL_STATIC_DRAW ：数据不会或几乎不会改变。
-  - GL_DYNAMIC_DRAW：数据会被改变很多。
-  - GL_STREAM_DRAW ：数据每次绘制时都会改变。
-#+end_quote
-
-*VAO* (顶点数组对象Vertex Array Object) 保存了所有顶点数据属性的状态结合，VAO本身并没有存储顶点的相关属性数据，这些信息是存储在VBO中的，
-VAO相当于是对很多个VBO的引用，把一些VBO组合在一起作为一个对象统一管理。
-
-*EBO* (索引缓冲对象：Element Buffer Object)也是一个缓冲，它专门储存顶点的索引，是为了解决同一顶点重复调用的问题，可以减少内存浪费提高执行效率。
-当需要使用重复顶点的时候，可以通过顶点索引来调用顶点，而不是重复记录。
-
 ** glLoadIdentity()，glPushMatrix()，glPopMatrix()
 - glLoadIdentity()的作用就是把当前矩阵设为为单位矩阵.
 - glPushMatrix、glPopMatrix相当于堆栈里的入栈和出栈。 *Push起到保护环境、Pop起到恢复环境的作用* 。这2个函数可以嵌套使用。调用glPushMatrix就是把 当前矩阵做一个副本放入堆栈，然后不管你之后做了多少变换，这时调用glPopMatrix，当前矩阵就可以恢复到你调用glPushMatrix之前的那个状态。例如当前的 坐标系原点在电脑屏幕的左上方。现在调用glPushMatrix，然后再调用一堆平移、旋转代码等等，然后再画图。那些平移和旋转都是基于坐上角为原点进行变化的。 而且都会改变坐标的位置，经过了这些变化后，你的坐标肯定不再左上角了。如果想恢复怎么办？这时调用glPopMatrix从栈里取出一个“状态”，这个状态就是 你调用glPushMatrix之前的那个状态。
