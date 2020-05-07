@@ -75,7 +75,10 @@ void glViewport(GLint x, GLint y, GLint width, GLint height)
 #+ATTR_latex: :width 400   #+ATTR_HTML: :width 400  #+ATTR_ORG: :width 400
 [[file:webgl/texture_coord.png]]
 
-
+*** NDC 标准化设备坐标(Normalized Device Coordinates)
+标准化设备坐标NDC是一个x、y和z值在-1.0到1.0的一小段空间。任何落在范围外的坐标都会被丢弃/裁剪，不会显示在你的屏幕上。 和OpenGL的世界坐标系使用的右手坐标系一样： 原点（0.0，0.0，0.0）在屏幕的中间，X轴正向朝右， Y轴正向朝上，Z轴垂直于屏幕正向朝外（从屏幕指向你的后面）；看向屏幕， 我们的视线方向是Z轴的负方向。如下图所示(忽略z轴)：
+#+ATTR_latex: :width 650   #+ATTR_HTML: :width 6500  #+ATTR_ORG: :width 6500
+[[file:OpenGL/ndc.png]]
 *** 齐次坐标（Homogeneous coordinates）: 能用 左乘矩阵 来统一完成所有的坐标变换
 
 *齐次坐标*  就是将一个原本是n维的向量用n+1维来表示。 比如，三维中的点（x, y, z）表示成 （x, y, z, w）。
