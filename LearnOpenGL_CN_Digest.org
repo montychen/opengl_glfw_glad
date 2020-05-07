@@ -77,7 +77,7 @@ void glViewport(GLint x, GLint y, GLint width, GLint height)
 
 *** NDC 标准化设备坐标(Normalized Device Coordinates)
 标准化设备坐标NDC是一个x、y和z值在-1.0到1.0的一小段空间。任何落在范围外的坐标都会被丢弃/裁剪，不会显示在你的屏幕上。 和OpenGL的世界坐标系使用的右手坐标系一样： 原点（0.0，0.0，0.0）在屏幕的中间，X轴正向朝右， Y轴正向朝上，Z轴垂直于屏幕正向朝外（从屏幕指向你的后面）；看向屏幕， 我们的视线方向是Z轴的负方向。如下图所示(忽略z轴)：
-#+ATTR_latex: :width 650   #+ATTR_HTML: :width 6500  #+ATTR_ORG: :width 6500
+#+ATTR_latex: :width 650   #+ATTR_HTML: :width 650  #+ATTR_ORG: :width 650
 [[file:OpenGL/ndc.png]]
 *** 齐次坐标（Homogeneous coordinates）: 能用 左乘矩阵 来统一完成所有的坐标变换
 
@@ -148,7 +148,7 @@ glm::mat4 myIdentityMatrix = glm::mat4(1.0);
 
 
 *Stencil Buffer模版缓冲*: 作用就是限制绘制的图元区域, 过滤丢弃一些片段，只留下想要的东东。 做法是按照窗口宽高创建一个矩阵，矩阵由0,1组成，其中由1组成的区域代表相匹配的图元需要提交到后续流程进行测试和绘制，而由0组成的区域的片元则直接被丢弃，起到一个筛选作用，而这个0,1数值矩阵所在的显存区域则称为模版缓冲区。 例如：我们将模板缓存中的一个矩形区域设置为1，我们的立方体在绘制时，我们将只绘制模板值为1的像素区域，从而达到控制像素绘制与否的目的。
-#+ATTR_latex: :width 650   #+ATTR_HTML: :width 6500  #+ATTR_ORG: :width 6500
+#+ATTR_latex: :width 650   #+ATTR_HTML: :width 650  #+ATTR_ORG: :width 650
 [[file:OpenGL/stencil.png]]
 
 - 模板缓冲区可以为屏幕上的每个像素点保存一个无符号8bit整数。
@@ -170,12 +170,12 @@ glm::mat4 myIdentityMatrix = glm::mat4(1.0);
 * 图形管线 PipeLine
 
 ** 图形管线的3个阶段: 应用、几何、光栅
-#+ATTR_latex: :width 650   #+ATTR_HTML: :width 6500  #+ATTR_ORG: :width 6500
+#+ATTR_latex: :width 650   #+ATTR_HTML: :width 650  #+ATTR_ORG: :width 650
 [[file:OpenGL/pipeline_3stage.jpg]]
 
 
 ** 图形管线分工
-#+ATTR_latex: :width 650   #+ATTR_HTML: :width 6500  #+ATTR_ORG: :width 6500
+#+ATTR_latex: :width 650   #+ATTR_HTML: :width 650  #+ATTR_ORG: :width 650
 [[file:OpenGL/pipeline1.png]]
 
 
@@ -210,7 +210,7 @@ glm::mat4 myIdentityMatrix = glm::mat4(1.0);
 一定要牢记，显示屏是二维的，GPU 所需要做的是将三维的数据，绘制到二维屏幕上。*光栅化* 就是将一个几何图元转变为屏幕栅格上的二维图像的过程，这个二维图像由光栅上离散的点阵构成（屏幕上的点就是像素），每个点都包含了 *颜色、深度和纹理* 数据。将该点和相关信息叫做一个 *片元（fragment）* 。 粗略地讲：根据图形的定义的那些顶点在经过各种矩阵变换后也仅仅是顶点。而由顶点构成的三角形要在屏幕上显示出来，除了需要三个顶点的信息以外，还需要 *插值算出三角形内部的所有像素的颜色* 。光栅化就是干这个的。主要有2步：
 1. 在栅格点阵上找出最佳逼近于图形形状(比如三角形）的像素集。逼近的过程本质可以认为是： *连续量向离散量的转换* 。
 2. 给像素指定合适的颜色值，包括 *插值算出三角形内部所有像素点的颜色* （Z值、法向、纹理坐标等）。可以通过光照、纹理的计算，来确定像素的颜色值。
-   #+ATTR_latex: :width 650   #+ATTR_HTML: :width 6500  #+ATTR_ORG: :width 6500
+   #+ATTR_latex: :width 650   #+ATTR_HTML: :width 650  #+ATTR_ORG: :width 650
 [[file:OpenGL/rasterization.png]]
 
 
@@ -307,13 +307,32 @@ FragColor = vec4(result, 1.0);
 ** GLSL和OpenGL的通信
 *** uniform、inout
 *Uniform* 是一种从CPU应用向GPU着色器发送数据的一种方式。Uniform是全局的，在某一着色器里声明了它，其他着色器就可以使用它。
-#+ATTR_latex: :width 650   #+ATTR_HTML: :width 6500  #+ATTR_ORG: :width 6500
+#+ATTR_latex: :width 650   #+ATTR_HTML: :width 650  #+ATTR_ORG: :width 650
 [[file:OpenGL/glsl_opengl.jpg]]
 
 *** VBO & VAO & EBO
-*VBO* (顶点缓冲对象：Vertex Buffer Object)是显卡高速显存的缓冲区，用来保存顶点的信息。 顶点缓冲对象VBO是在显卡存储空间中开辟出的一块内存缓存区，
-用于存储顶点的各类属性信息，如顶点坐标，顶点法向量，顶点颜色数据等。在渲染时，可以直接从VBO中取出顶点的各类属性数据，由于VBO在显存而不是在内存中，
-不需要从CPU传输数据，处理效率更高。
+*VBO* (顶点缓冲对象：Vertex Buffer Object)是显卡高速显存的缓冲区，是显卡硬件中的一块内存区域，用于存储顶点的各类属性信息，如顶点坐标，顶点法向量，顶点颜色数据等。 我们可以一次性的发送一大批数据到VBO中，而不是每个顶点发送一次，在渲染时， 直接从VBO中取出顶点数据，由于VBO在显存而不是在内存中，不需要从CPU传输数据，处理效率更高。创建&使用VBO:
+#+begin_src c++
+// VBO缓冲有一个独一无二的ID，所以我们可以使用glGenBuffers函数和一个缓冲ID生成一个VBO对象
+unsigned int VBO;
+glGenBuffers(1, &VBO);
+
+// OpenGL有很多缓冲对象类型，顶点缓冲对象的缓冲类型是GL_ARRAY_BUFFER。使用glBindBuffer函数把新创建的缓冲绑定到GL_ARRAY_BUFFER目标上
+glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+// 调用glBufferData函数，会把之前定义的顶点数据一次性的复制到VBO缓冲区中
+glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+#+end_src
+#+begin_quote
+*void glBufferData( GLenum target,  GLsizeiptr size,  const GLvoid * data,  GLenum usage )* 是一个专门用来把用户定义的数据复制到当前绑定缓冲的函数。
+- 第一个参数是目标缓冲的类型：顶点缓冲对象当前绑定到GL_ARRAY_BUFFER目标上。
+- 第二个参数指定传输数据的大小(以字节为单位)；用一个简单的sizeof计算出顶点数据大小就行。
+- 第三个参数是我们希望发送的实际数据。
+- 第四个参数指定了我们希望显卡如何管理给定的数据。它有三种形式：
+  - GL_STATIC_DRAW ：数据不会或几乎不会改变。
+  - GL_DYNAMIC_DRAW：数据会被改变很多。
+  - GL_STREAM_DRAW ：数据每次绘制时都会改变。
+#+end_quote
 
 *VAO* (顶点数组对象Vertex Array Object) 保存了所有顶点数据属性的状态结合，VAO本身并没有存储顶点的相关属性数据，这些信息是存储在VBO中的，
 VAO相当于是对很多个VBO的引用，把一些VBO组合在一起作为一个对象统一管理。
