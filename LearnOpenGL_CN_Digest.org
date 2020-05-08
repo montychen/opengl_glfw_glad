@@ -165,7 +165,7 @@ void glShaderSource(	GLuint shader, GLsizei count,  const GLchar **string, const
 #+end_quote
 
 *** VBO & VAO & EBO
-VBO(顶点缓冲对象：Vertex Buffer Object) :: 是显卡高速显存的缓冲区，是显卡硬件中的一块内存区域，用于存储顶点的各类属性信息，如顶点坐标，顶点法向量，顶点颜色数据等。 我们可以一次性的发送一大批数据到VBO中，而不是每个顶点发送一次，在渲染时， 直接从VBO中取出顶点数据，由于VBO在显存而不是在内存中，不需要从CPU传输数据，处理效率更高。创建&使用VBO:
+VBO(顶点缓冲对象：Vertex Buffer Object)是显卡高速显存的缓冲区，是显卡硬件中的一块内存区域，用于存储顶点的各类属性信息，如顶点坐标，顶点法向量，顶点颜色数据等。 我们可以一次性的发送一大批数据到VBO中，而不是每个顶点发送一次，在渲染时， 直接从VBO中取出顶点数据，由于VBO在显存而不是在内存中，不需要从CPU传输数据，处理效率更高。创建&使用VBO:
 #+begin_src c++
 float vertices[] = {            // 在CPU中：声明三角形的顶点数据
         -0.5f, -0.5f, 0.0f, // left
@@ -190,7 +190,7 @@ glEnableVertexAttribArray(0);
 #+end_src
 
 #+begin_quote
-void glBufferData( GLenum target,  GLsizeiptr size,  const GLvoid * data,  GLenum usage ) :: 用来把用户在CPU中定义的数据传输到GPU缓冲中的函数。
+- void glBufferData( GLenum target,  GLsizeiptr size,  const GLvoid * data,  GLenum usage ) 用来把用户在CPU中定义的数据传输到GPU缓冲中的函数。
 1. 第一个参数是目标缓冲的类型：顶点缓冲对象当前绑定到GL_ARRAY_BUFFER目标上。
 2. 第二个参数指定传输数据的大小(以字节为单位)；用一个简单的sizeof计算出顶点数据大小就行。
 3. 第三个参数是我们希望发送的实际数据。
@@ -200,7 +200,7 @@ void glBufferData( GLenum target,  GLsizeiptr size,  const GLvoid * data,  GLenu
   - GL_STREAM_DRAW ：数据每次绘制时都会改变。
 
    
-void glVertexAttribPointer( GLuint index, GLint size,  GLenum type,  GLboolean normalized,  GLsizei stride,  const GLvoid * pointer ) ::  把VBO中的数据，赋值给某个在顶点着色器中定义的顶点属性(Vertex Attribute)。通过顶点属性变量layout(location = 0)定义的位置索引值，来建立关联。
+- void glVertexAttribPointer( GLuint index, GLint size,  GLenum type,  GLboolean normalized,  GLsizei stride,  const GLvoid * pointer )   把VBO中的数据，赋值给某个在顶点着色器中定义的顶点属性(Vertex Attribute)。通过顶点属性变量layout(location = 0)定义的位置索引值，来建立关联。
 1. 第一个参数index：指定要配置的顶点属性。用位置索引值来指定，也就是在顶点着色器中，定义顶点属性变量时，由layout(location = 0)定义的值。
 2. 第二个参数size：顶点属性的分量个数（1到4）。例如顶点属性如果是vec3类型，那就是有3个分量，所以值就是3。
 3. 第三个参数type：指定顶点属性分量的数据类型。
