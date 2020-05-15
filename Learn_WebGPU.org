@@ -1,3 +1,9 @@
+[[https://webgpu.io/][WebGPU]]不但可以用于Web，作为WebGL后续发展的替代。它还可以用于原生平台，而且跨平台。相较于Metal和DX12，WebGPU的API和Vulkan的相似度最高。
+- 谷歌和Mozilla合作，定义了一个用于原生平台的c接口 [[https://github.com/webgpu-native/webgpu-headers][webgpu.h]]，并同时给出了各自的实现。
+- [[https://github.com/gfx-rs/wgpu][wgpu]] Mozilla的原生实现。firefox上的WebGPU实现，就是用这个wgpu来实现的。
+- [[https://dawn.googlesource.com/dawn][dawn]] 谷歌的原生实现，Chrome的WebGPU实现，也是用dawn来实现的。
+
+
 ccw: counterclockwise 逆时针
 cw: clockwise 顺时针
 
