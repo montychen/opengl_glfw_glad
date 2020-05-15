@@ -3,6 +3,11 @@
 - [[https://github.com/gfx-rs/wgpu][wgpu]] Mozilla的原生实现。firefox上的WebGPU实现，就是用这个wgpu来实现的。
 - [[https://dawn.googlesource.com/dawn][dawn]] 谷歌的原生实现，Chrome的WebGPU实现，也是用dawn来实现的。
 
+  #+begin_quote
+  WebGPU规范副主席 Corentin Wallez， 他也是谷歌WebGUP实现小组的Leader，在2019年DevFest上有个视频介绍WebGPU不错：[[https://www.youtube.com/watch?v=EhWvqaRDz5s&list=LLDobcIfc2f6biSPC36-iQOg&index=2&t=0s][WebGPU: Next-generation 3D graphics on the web (DevFest 2019)
+]]
+  #+end_quote
+
 
 ccw: counterclockwise 逆时针
 cw: clockwise 顺时针
