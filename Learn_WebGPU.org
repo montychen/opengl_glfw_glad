@@ -11,9 +11,18 @@
 
 *背面剔除Backface Culling* : 背面剔除，就是早点丢弃那些被遮挡、观察者看不见背面，提供渲染速度。
 - 当我们观察场景中对象时，一般只能以一定角度来观察，那么对象的某些面我们是看不到的，例如观察一个立方体，最多只能同时看到3个面，有时只能看到1个面，而绘制时如果不采取剔除背面的措施，则要绘制6个面，其中包括一些，我们根本看不到的面。开启背面剔除则能明显改善渲染性能。
-- 视锥剔除Frustum Culling非常的快(如果算法好的话)，而且是在渲染管线(Rendering Pipeline)之前进行的，不像背面剔除Backface Culling那样需要在渲染管线之后一个顶点一个顶点地计算。对于被剪裁掉的物体绘图引擎都不会将其送入显卡，因此视锥剔除对渲染速度有巨大的改善,毕竟什么都不渲染是最快的渲染.
+- 视锥剔除Frustum Culling非常的快(如果算法好的话)，是在渲染管线(Rendering Pipeline)之前进行的，不像背面剔除Backface Culling需要在渲染管线之后一个顶点一个顶点地计算。对于被剪裁掉的物体绘图引擎都不会将其送入显卡，因此视锥剔除对渲染速度有巨大的改善,毕竟什么都不渲染是最快的渲染.
 - 哪个面是 *正面FrontFace或者背面Backface* ？是根据观察者的观察方向，使用顶点绕序(winding order)的方向来确定：从观察者看向屏幕的三角形， 默认的正面是以逆时针的顺序定义 三角形顶点（wgpu::FrontFace::Ccw）。 想要剔除背面就是（wgpu::CullMode::Back）
   - ccw: counterclockwise 逆时针
   - cw: clockwise 顺时针
     #+ATTR_latex: :width 650   #+ATTR_HTML: :width 650  #+ATTR_ORG: :width 650
     [[file:WebGPU/winding_order.jpg]]
+
+
+ColorAttachmen颜色附件：loadOp和storeO表示渲染前和渲染后要做的动作。如下例，渲染前先清屏(Clear)，我们想让渲染后的图像显示到屏幕上，所以将storeOp设置为保存Store
+#+begin_src c++
+load_op: wgpu::LoadOp::Clear    // 渲染前先清屏(Clear)
+store_op: wgpu::StoreOp::Store  // 想让渲染后的图像显示到屏幕上，所以将storeOp设置为保存Store
+clear_color: wgpu::Color {r: 0.1,  g: 0.2,  b: 0.3,  a: 1.0,} // 定义清屏的颜色
+
+#+end_src
