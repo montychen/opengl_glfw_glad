@@ -19,6 +19,12 @@
     [[file:WebGPU/winding_order.jpg]]
 
 
+* 深度偏移Depth Bias
+通过给多边形增加一个z方向深度偏移(depth bias，z_bias),使3D空间的共面多边形看起来好像并不共面，以便它们能够被正确渲染。 这种技术是很有用的， 例如要渲染投射在墙上的阴影，这时候墙和阴影共面，如果没有深度偏移，先渲染墙，再渲染阴影，由于depth test,阴影可能不能正确显示。我们给墙设置一个深度偏移，使它增大，例如z增加0.01，先渲染墙，再渲染阴影，则墙和阴影可以正确的显示。
+- depthBiasSlopeFactor为启用深度偏移时，添加到片段深度倾斜slope计算中的值
+- depthBiasClamp为深度偏移的最大值（或最小值），可以在启用深度偏置时添加到片段的深度
+
+
 * ColorAttachmen颜色附件
 loadOp和storeOp表示渲染前和渲染后要做的动作。如下例，渲染前先清屏(Clear)，我们想让渲染后的图像显示到屏幕上，所以将storeOp设置为保存Store
 #+begin_src c++
