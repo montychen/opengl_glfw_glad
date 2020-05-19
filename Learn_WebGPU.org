@@ -28,6 +28,7 @@ clear_color: wgpu::Color {r: 0.1,  g: 0.2,  b: 0.3,  a: 1.0,} // 定义清屏的
 
 #+end_src
 
+
 * 纹理texture
 纹理映射是一种将纹理图像应用于物体表面的技术，就是把图像贴到构成物体表面的多边形上去，就像该图像是一种贴画纸或玻璃纸附着于物体的表面上。
 
@@ -50,3 +51,9 @@ clear_color: wgpu::Color {r: 0.1,  g: 0.2,  b: 0.3,  a: 1.0,} // 定义清屏的
 
 #+ATTR_latex: :width 400   #+ATTR_HTML: :width 400  #+ATTR_ORG: :width 400
 [[file:webgl/texture_coord.png]]
+
+
+* 渲染通道 Render pass  &  多通道渲染multipass rendering
+现实场景中，如果想获得逼真的渲染效果，往往需要考虑阴影，照明和反射。 每一个都需要大量的计算，通常都是在它们各自的渲染通道Render pass中完成。最后再把它们的渲染结果组合形成最终的效果。
+
+为什么需要多通道渲染呢multipass rendering？在源头就将阴影，照明和反射这些信息独立开来，这样在合成的时候我们就可以有更多的控制空间和选择余地了。 简单的场景一般只要一个渲染通道
