@@ -70,6 +70,51 @@ TEXTURE_MAG_FILTER 、 TEXTURE_MIN_FILTER 和 mipmap_filter 的取值有2个
 [[file:webgl/texture_coord.png]]
 
 
+* BindGroup把相关的资源绑定在同一个组里，便于后续使用。
+- BindGroupLayoutDescriptor 相当于这些资源的类型声明，有点像函数定义里的参数声明。通过device.create_bind_group_layout来创建
+- BindGroupDescriptor 用来实际给这些声明的资源类型赋值。通过device.create_bind_group来创建。
+  #+begin_src c++
+// 资源的类型声明，有点像函数定义里的参数声明。
+let texture_bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+    bindings: &[
+        wgpu::BindGroupLayoutEntry {
+        binding: 0,
+            visibility: wgpu::ShaderStage::FRAGMENT,
+            ty: wgpu::BindingType::SampledTexture {
+        multisampled: false,
+            dimension: wgpu::TextureViewDimension::D2,
+            component_type: wgpu::TextureComponentType::Uint,
+            },
+            },
+        wgpu::BindGroupLayoutEntry {
+        binding: 1,
+            visibility: wgpu::ShaderStage::FRAGMENT,
+            ty: wgpu::BindingType::Sampler {
+        comparison: false,
+            },
+            },
+                ],
+        label: Some("texture_bind_group_layout"),
+        });
+
+// 用来实际给这些声明的资源类型赋
+let diffuse_bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
+    layout: &texture_bind_group_layout,
+        bindings: &[
+            wgpu::Binding {
+            binding: 0,
+                resource: wgpu::BindingResource::TextureView(&diffuse_texture.view),
+                },
+            wgpu::Binding {
+            binding: 1,
+                resource: wgpu::BindingResource::Sampler(&diffuse_texture.sampler),
+                }
+        ],
+        label: Some("diffuse_bind_group"),
+        });
+  #+end_src
+
+
 * 渲染通道 Render pass  &  多通道渲染multipass rendering
 现实场景中，如果想获得逼真的渲染效果，往往需要考虑阴影，照明和反射。 每一个都需要大量的计算，通常都是在它们各自的渲染通道Render pass中完成。最后再把它们的渲染结果组合形成最终的效果。
 
