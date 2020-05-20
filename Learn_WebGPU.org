@@ -73,7 +73,45 @@ TEXTURE_MAG_FILTER 、 TEXTURE_MIN_FILTER 和 mipmap_filter 的取值有2个
 * BindGroup把相关的资源绑定在同一个组里，便于后续使用。
 - BindGroupLayoutDescriptor 相当于这些资源的类型声明，有点像函数定义里的参数声明。通过device.create_bind_group_layout来创建
 - BindGroupDescriptor 用来实际给这些声明的资源类型赋值。通过device.create_bind_group来创建。
-  #+begin_src c++
+#+begin_quote
+        let texture_bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            bindings: &[
+                wgpu::BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: wgpu::ShaderStage::FRAGMENT,
+                    ty: wgpu::BindingType::SampledTexture {
+                        multisampled: false,
+                        dimension: wgpu::TextureViewDimension::D2,
+                        component_type: wgpu::TextureComponentType::Uint,
+                    },
+                },
+                wgpu::BindGroupLayoutEntry {
+                    binding: 1,
+                    visibility: wgpu::ShaderStage::FRAGMENT,
+                    ty: wgpu::BindingType::Sampler {
+                        comparison: false,
+                    },
+                },
+            ],
+            label: Some("texture_bind_group_layout"),
+        });
+
+        let diffuse_bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
+            layout: &texture_bind_group_layout,
+            bindings: &[
+                wgpu::Binding {
+                    binding: 0,
+                    resource: wgpu::BindingResource::TextureView(&diffuse_texture.view),
+                },
+                wgpu::Binding {
+                    binding: 1,
+                    resource: wgpu::BindingResource::Sampler(&diffuse_texture.sampler),
+                }
+            ],
+            label: Some("diffuse_bind_group"),
+        });
+#+end_quote
+    #+begin_src c++
 // 资源的类型声明，有点像函数定义里的参数声明。
 let texture_bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
     bindings: &[
@@ -86,6 +124,7 @@ let texture_bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroup
             component_type: wgpu::TextureComponentType::Uint,
             },
             },
+
         wgpu::BindGroupLayoutEntry {
         binding: 1,
             visibility: wgpu::ShaderStage::FRAGMENT,
@@ -105,6 +144,7 @@ let diffuse_bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
             binding: 0,
                 resource: wgpu::BindingResource::TextureView(&diffuse_texture.view),
                 },
+
             wgpu::Binding {
             binding: 1,
                 resource: wgpu::BindingResource::Sampler(&diffuse_texture.sampler),
