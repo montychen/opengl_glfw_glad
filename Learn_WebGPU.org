@@ -9,6 +9,46 @@
 
 
 
+* 坐标
+*** WebGPU世界坐标系：左手坐标系
+*WebGPU世界坐标系使用左手坐标系：原点（0.0，0.0，0.0）在屏幕的中间，X轴正向朝右， Y轴正向朝上，Z轴垂直于屏幕正向朝里，看向屏幕， 我们的视线方向是Z轴的正方向。
+
+*** NDC 标准化设备坐标(Normalized Device Coordinates)
+WebGPU的标准化设备坐标NDC：原点（0.0，0.0，0.0）在屏幕中间，X轴正向朝右， Y轴正向朝上，Z轴垂直于屏幕正向朝里（看向屏幕，我们的视线方向是Z轴的正向）。
+- x、y取值范围在[-1.0, 1.0]，z轴取值范围在【0， 1.0]。任何落在范围外的坐标都会被丢弃/裁剪，不会显示在屏幕上。
+
+习惯直接在vertex shader里用NDC坐标定义顶点。
+
+*** 纹理坐标texture coordinates：纹理通常来说就是一张图片
+- WebGPU纹理坐标：原点(0, 0)在左上角，X轴正向向右，Y轴正向向下 。坐标值和图像大小无关，不管是128*128还是128*256的图像，其右下角坐标总是（1.0，1.0）
+- 纹理坐标就是纹理图像上的坐标，纹理坐标是二维的，为了和广泛使用的xy坐标区分开来， 习惯用u和v来命名纹理坐标
+- 不论图片尺寸有多大，长和宽各是多少，强制规定了纹理坐标总是从0到1之间取值。
+- 通过纹理坐标可以在纹理图像上获取纹素的颜色。
+
+
+*** 视口ViewPort
+- *OS的屏幕坐标 + OS的窗口坐标：屏幕的左上角为原点* ，X轴正向向右，Y轴正向向下。不管是 iOS 还是 Windows 等等 GUI 编程，都是这样。
+- *WebGPU帧缓冲坐标、视口坐标和像素坐标pixel coordinate* : 原点(0, 0)在做上角，X轴正向向右，Y轴正向向下
+
+*视口* ：即告诉WebGPU应把 *渲染Render* 之后的图形绘制在窗体的哪个部位。当视口区域是整个窗体时，WebGPU将把渲染结果绘制到整个窗口。函数glViewPort可以用来改变视口区域的位置和大小:
+
+*** 齐次坐标（Homogeneous coordinates）: 能用 左乘矩阵 来统一完成所有的坐标变换
+
+*齐次坐标*  就是将一个原本是n维的向量用n+1维来表示。 比如，三维中的点（x, y, z）表示成 （x, y, z, w）。
+
+齐次坐标的作用：能够统一使用 *左乘矩阵* 来完成所有的坐标变换：平移、缩放、旋转、错切(表示弹性物体的变形）、对称、投影。没有w分量矩阵运算实现不了平移.
+*左乘矩阵* : 指的是矩阵和顶点相乘时，矩阵放在左边，如: 矩阵 x 顶点 = 变换后的顶点.
+
+那么，统一使用矩阵来完成坐标变换的有哪些好处？
+- GPU的设计天然就更适合矩阵运算。
+- 更重要的是，矩阵可以通过相乘，来进行可以组合，也就是把多个连续的变换矩阵组合成一个矩阵，这样可以大大提高效率。
+
+
+想要从齐次向量得到3D向量，我们可以把x、y和z坐标分别除以w坐标。我们通常不会注意这个问题，因为w分量通常是1.0。
+- 若w==1，则向量(x, y, z, 1）表示的是空间中的点。
+- 若w==0，则向量(x, y, z, 0) 表示的是方向。 此时，这个向量就不能位移，”平移一个方向”是毫无意义的。
+
+
 * 背面剔除Backface Culling: 早点丢弃那些被遮挡、观察者看不见背面，提高渲染速度。
 当我们观察场景中对象时，一般只能以一定角度来观察，那么对象的某些面我们是看不到的，例如观察一个立方体，最多只能同时看到3个面，有时只能看到1个面，而绘制时如果不采取剔除背面的措施，则要绘制6个面，其中包括一些，我们根本看不到的面。开启背面剔除就是早点丢弃那些被遮挡、观察者看不见的背面，能明显改善渲染性能。
 - 视锥剔除Frustum Culling非常的快(如果算法好的话)，是在渲染管线(Rendering Pipeline)之前进行的，不像背面剔除Backface Culling需要在渲染管线之后一个顶点一个顶点地计算。对于被剪裁掉的物体绘图引擎都不会将其送入显卡，因此视锥剔除对渲染速度有巨大的改善,毕竟什么都不渲染是最快的渲染.
@@ -60,98 +100,52 @@ TEXTURE_MAG_FILTER 、 TEXTURE_MIN_FILTER 和 mipmap_filter 的取值有2个
 ** 各向异性纹理过滤 anisotropic filtering：纹理在x坐标方向和在y坐标方向缩放的比例不一样
 假设Px为纹理在x坐标方向上的缩放的比例因子；Py为纹理在y坐标方向上的缩放的比例因子；Pmax为Px和Py中的最大值；Pmin为Px和Py中的最小值。当Pmax/Pmin等于1时，也就是说Px等于Py，是对正方形区域里行采样，纹理的缩放是各向同性的；但是如果Pmax/Pmin不等于1而是大于1，Px不等于Py，也就是说纹理在x坐标方向和在y坐标方向缩放的比例不一样，纹理的缩放是各向异性的，Pmax/Pmin代表了各向异性的程度。
 
-** 纹理坐标texture coordinates：纹理通常来说就是一张图片，纹理坐标是二维的
-- 纹理坐标：原点（0.0， 0.0）在左下角，  x轴正向朝右， y轴正向朝上。坐标值和图像大小无关，不管是128*128还是128*256的图像，其右上角坐标始终是（1.0，1.0）
-- 纹理坐标就是纹理图像上的坐标，纹理坐标是二维的，为了和广泛使用的xy坐标区分开来， 习惯用s和t来命名纹理坐标（st坐标系统）。
-- 不论图片尺寸有多大，长和宽各是多少，强制规定了纹理坐标总是从0到1之间取值。
-- 通过纹理坐标可以在纹理图像上获取纹素的颜色。
-
-#+ATTR_latex: :width 400   #+ATTR_HTML: :width 400  #+ATTR_ORG: :width 400
-[[file:webgl/texture_coord.png]]
-
 
 * BindGroup把相关的资源绑定在同一个组里，便于后续使用。
 - BindGroupLayoutDescriptor 相当于这些资源的类型声明，有点像函数定义里的参数声明。通过device.create_bind_group_layout来创建
 - BindGroupDescriptor 用来实际给这些声明的资源类型赋值。通过device.create_bind_group来创建。
-#+begin_quote
-        let texture_bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-            bindings: &[
-                wgpu::BindGroupLayoutEntry {
-                    binding: 0,
-                    visibility: wgpu::ShaderStage::FRAGMENT,
-                    ty: wgpu::BindingType::SampledTexture {
-                        multisampled: false,
-                        dimension: wgpu::TextureViewDimension::D2,
-                        component_type: wgpu::TextureComponentType::Uint,
-                    },
-                },
-                wgpu::BindGroupLayoutEntry {
-                    binding: 1,
-                    visibility: wgpu::ShaderStage::FRAGMENT,
-                    ty: wgpu::BindingType::Sampler {
-                        comparison: false,
-                    },
-                },
-            ],
-            label: Some("texture_bind_group_layout"),
-        });
 
-        let diffuse_bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
-            layout: &texture_bind_group_layout,
-            bindings: &[
-                wgpu::Binding {
-                    binding: 0,
-                    resource: wgpu::BindingResource::TextureView(&diffuse_texture.view),
-                },
-                wgpu::Binding {
-                    binding: 1,
-                    resource: wgpu::BindingResource::Sampler(&diffuse_texture.sampler),
-                }
-            ],
-            label: Some("diffuse_bind_group"),
-        });
-#+end_quote
-    #+begin_src c++
-// 资源的类型声明，有点像函数定义里的参数声明。
+  #+begin_src python
+ # 资源的类型声明，有点像函数定义里的参数声明。
 let texture_bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
     bindings: &[
-        wgpu::BindGroupLayoutEntry {
-        binding: 0,
+        wgpu::BindGroupLayoutEntry{
+            binding: 0,
             visibility: wgpu::ShaderStage::FRAGMENT,
-            ty: wgpu::BindingType::SampledTexture {
-        multisampled: false,
-            dimension: wgpu::TextureViewDimension::D2,
-            component_type: wgpu::TextureComponentType::Uint,
+            ty: wgpu::BindingType::SampledTexture{
+                multisampled: false,
+                dimension: wgpu::TextureViewDimension::D2,
+                component_type: wgpu::TextureComponentType::Uint,
             },
-            },
+        },
 
         wgpu::BindGroupLayoutEntry {
-        binding: 1,
+            binding: 1,
             visibility: wgpu::ShaderStage::FRAGMENT,
             ty: wgpu::BindingType::Sampler {
-        comparison: false,
+                comparison: false,
             },
-            },
-                ],
-        label: Some("texture_bind_group_layout"),
-        });
+        },
+    ],
+    label: Some("texture_bind_group_layout"),
+});
 
-// 用来实际给这些声明的资源类型赋
+#  用来实际给这些声明的资源类型赋
 let diffuse_bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
     layout: &texture_bind_group_layout,
-        bindings: &[
-            wgpu::Binding {
+    bindings: &[
+        wgpu::Binding {
             binding: 0,
-                resource: wgpu::BindingResource::TextureView(&diffuse_texture.view),
-                },
+            resource: wgpu::BindingResource::TextureView(&diffuse_texture.view),
+        },
 
-            wgpu::Binding {
-            binding: 1,
-                resource: wgpu::BindingResource::Sampler(&diffuse_texture.sampler),
-                }
-        ],
-        label: Some("diffuse_bind_group"),
-        });
+     wgpu::Binding {
+         binding: 1,
+         resource: wgpu::BindingResource::Sampler(&diffuse_texture.sampler),
+     }
+    ],
+    label: Some("diffuse_bind_group"),
+});
   #+end_src
 
 
