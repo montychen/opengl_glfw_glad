@@ -7,6 +7,177 @@
   WebGPU规范副主席 Corentin Wallez， 他也是谷歌WebGUP实现小组的Leader，在19年DevFest上有个油管的视频介绍WebGPU不错：[[https://www.youtube.com/watch?v=EhWvqaRDz5s&list=LLDobcIfc2f6biSPC36-iQOg&index=2&t=0s][WebGPU: Next-generation 3D graphics on the web (DevFest 2019)]]
   #+end_quote
 
+* 图形管线 PipeLine
+
+** 图形管线的3个阶段: 应用、几何、光栅
+#+ATTR_latex: :width 650   #+ATTR_HTML: :width 650  #+ATTR_ORG: :width 650
+[[file:OpenGL/pipeline_3stage.jpg]]
+
+#+ATTR_latex: :width 650   #+ATTR_HTML: :width 650  #+ATTR_ORG: :width 650
+[[file:OpenGL/pipeline1.png]]
+
+** 变换 Transformation: 几何变换 -> 投影裁剪NDC -> 视口变换
+*顶点*  : 管线的输入是那些预先定义好的三维空间中的点，而不是直接输入三角形，在后面三维空点的投影到二维屏幕后，再决定那三个点形成一个三角形。
+
+*MVP* 几何单元（比如三角形）在经过: M模型矩阵变换、V视角矩阵变换、P投影矩阵变化以及透视除法后，坐标变换到归一化的NDC坐标系下[-1， 1] 。在知道输出 屏幕大小的情况下，通过视口变换可将x/y变换到窗口坐标下（x∈【0，width】 y∈【0，height】z不变）。至此我们即将所有三角形投射到raster_space中。
+
+#+ATTR_latex: :width 700   #+ATTR_HTML: :width 700  #+ATTR_ORG: :width 700
+[[file:OpenGL/MVP.jpg]]
+
+** 投影: 裁剪clipping(frustum culling视椎体剔除) + 透视除法生成NDC[-1, 1]
+*投影矩阵(projection matrix)* :显示器是二维的, 一个3D场景需要被投影到屏幕上成为一个2D图像，这称为投影变换，需要用到投影矩阵，投影干两件事:
+1. 投影矩阵会创建一个视椎体对物体坐标进行 *裁剪clipping(即frustum culling视椎体剔除)* 。实现方式就是投影矩阵先把顶点坐标从eye coordinates观察空间变换到裁剪坐标clip coordinate, 然后再把视椎体外不可见的部分裁剪掉 。
+2. *裁剪坐标再通过透视除法被变换到标准化设备坐标NDC[-1, 1]* ，这一步是用裁剪坐标的w分量除裁剪坐标(x/w, y/w, z/w, w/w)实现的。
+
+*** 视锥体frustum、裁剪坐标clipping coordinates
+- 视锥体的形状决定了3D到2D的投影类型，如果 *近平面和远平面尺寸一致，那么物体上的顶点不论远近都以统一的方式投影在屏幕上，这是正交投影orthographic projection。否则就是透视投影perspective projection* 。简单来说， *透视投影有近大远小的效果* ，而正交投影没有。
+- 裁剪坐标（clipping coordinates）：位于这个视锥体以外的顶点都会被剪裁掉，所得的坐标结果成为裁剪坐标（clipping coordinates）
+- 视锥体frustum的形状酷似一个塔尖被削平了的金字塔,更准确地说，是一个去掉头部的四棱锥体。视锥体由6个面所组成：近截面、远截面、上截面、下截面、左截面、右截面。处于这个视锥体里的对象，才是“可见”的对象，可见的对象 会被渲染到“视平面”上（三维到二维的投影）。  *视平面可以认为是视椎体的近截面，对应着最终要投影的2D屏幕* ；远截面面相对来说没那么重要，因为人眼的视椎体是没有远截面的 （比如裸眼可以看到月亮星星，远截面其实是无限远的）。在图像学中，near用于将离相机太近的物体裁剪掉。far用于将离相机太远的物体裁剪掉。 提高渲染效率。视锥体有4个参数：
+  1. 视角fov(field of view): 眼睛睁开的角度,即,视角的大小,如果设置为0,相当你闭上眼睛了,所以什么也看不到
+  2. 屏幕宽高比aspect ratio: 视平面width/视平面height，其实就是视平面的宽高比
+  3. near: 是眼睛到近截面near clipping plane 的垂直距离，用于将离相机太近的物体裁剪掉。
+  4. far: 是眼睛到远截面far clipping plane 的垂直距离， 用于将离相机太远的物体裁剪掉。
+#+ATTR_latex: :width 500   #+ATTR_HTML: :width 500  #+ATTR_ORG: :width 500
+[[file:webgl/frustum.png]]
+
+*** 近平面的宽高比和视口宽高比 & 图像变形
+不管是正交投影orthographic还是透视投影，最终都是将视景体内的物体投影在近平面上，这也是 3D 坐标转换到 2D 坐标的关键一步。 在用opengl绘制一张图片 的时候经常会遇到图片被拉伸或挤压变形的问题，为了解决该问题，关键就是让 *近平面的宽高比和视口宽高比保持一致* ，并且以较短的一边作为 1 的标准，让图像保持居中。
+
+#+ATTR_latex: :width 650   #+ATTR_HTML: :width 650  #+ATTR_ORG: :width 650
+[[file:OpenGL/viewport_wh.png]]
+
+
+*** 视点 or 相机位置
+在一个场景中，我们希望改变观察者的位置和观察角度。用于改变观察者方位和角度的变换，就是视图变换。默认情况下， *视点或者说相机位于原点(0,0,0)， 且视线朝着-Z方向。 也就是说，只有在z<0的地方绘图，才有可能被观察到* 。
+
+创建视图矩阵: Matrix4.setLookAt(eyeX, eyeY, eyeZ, atX, atY, atZ, upX, upY, upZ)
+- eyeX,eyeY, eyeZ: 指定视点
+- atX, atY, atZ: 观察目标点
+- upX, upY, upZ: 指定上方向
+
+为了确定相机视角，需要3项信息：
+1. 视点：观察者的位置，视线的起点。习惯用（eyeX, eyeY, eyeZ)表示
+2. 观察目标点：被观察物体所在的点，习惯用（atX, atY, atZ）表示。可以用来确定视线(at - eye)，视线从视点出发，穿过观察目标并继续延伸
+3. 上方向：如果仅仅确定了视点和目标点，观察者还是可能以视线为轴旋转的，如下图所示。所以，为了将观察者固定住，还需要指定上方向。习惯用（upX, upY, upZ)表示。
+#+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
+[[file:webgl/camera.png]]
+
+** 光栅化 Rasterization： 找出最佳逼近三角形的像素集 + 插值算出三角形内部所有像素点的颜色
+一定要牢记，显示屏是二维的，GPU 所需要做的是将三维的数据，绘制到二维屏幕上。*光栅化* 就是将一个几何图元转变为屏幕栅格上的二维图像的过程，这个二维图像由光栅上离散的点阵构成（屏幕上的点就是像素），每个点都包含了 *颜色、深度和纹理* 数据。将该点和相关信息叫做一个 *片元（fragment）* 。 粗略地讲：根据图形的定义的那些顶点在经过各种矩阵变换后也仅仅是顶点。而由顶点构成的三角形要在屏幕上显示出来，除了需要三个顶点的信息以外，还需要 *插值算出三角形内部的所有像素的颜色* 。光栅化就是干这个的。主要有2步：
+1. 在栅格点阵上找出最佳逼近于图形形状(比如三角形）的像素集。逼近的过程本质可以认为是： *连续量向离散量的转换* 。
+2. 给像素指定合适的颜色值，包括 *插值算出三角形内部所有像素点的颜色* （Z值、法向、纹理坐标等）。可以通过光照、纹理的计算，来确定像素的颜色值。
+   #+ATTR_latex: :width 650   #+ATTR_HTML: :width 650  #+ATTR_ORG: :width 650
+[[file:OpenGL/rasterization.png]]
+
+
+
+
+* Phong光照模型 = ambient + diffuse + specular
+*结合Phong光照模型，最终作用于物体的光照效果就是 = （ambient + diffuse + specular）  ✖  物体的基本色*
+
+** 环境光(Ambient light)：模拟间接光照。
+环境光给予物体各个点的光照强度相同，且没有方向之分，所以在只有环境光的情况下，同一物体各点的明暗程度均一样，因此，只有环境光是不能产生具有真实感的图形效果。环境光指的是那些被多次反射后，从各个角度间接照射物体的光，理想的环境光有如下特性：强度一致，没有空间或方向性； 习惯用一个颜色常量来模拟：
+
+*环境光 = 入射光颜色向量I ️✖ 物体表面光的反射系数K*
+
+#+ATTR_latex: :width 650   #+ATTR_HTML: :width 650  #+ATTR_ORG: :width 650
+[[file:OpenGL/ambient.png]]
+
+*** 例：把环境光照添加到场景里： 用光的颜色乘以一个很小的常量环境因子，再乘以物体的颜色，然后将最终结果作为片段的颜色：
+#+begin_src c++
+float ambientStrength = 0.1;                 //  物体表面的光的反射系数
+vec3 ambient = ambientStrength * lightColor; // 这个就是环境光, lightColor是入射光颜色向量
+
+vec3 result = ambient * objectColor;         // 计算出：环境光作用于物体的效果， objectColor 是物体的基本色
+FragColor = vec4(result, 1.0);
+#+end_src
+
+
+** 漫反射(Diffuse reflection): 光源直接照射物体产生的效果。（大但不光亮）
+漫反射：指的是粗糙表面等强度均匀的向四周反射光。 漫反射和光的入射角度有关，和反射的角度无关，反射光是均匀的反射到各个方向，也就是和视点无关，
+入射光垂直照射物体表面，反射光最强；也就是说物体越正对着光源的部分，就会越亮。
+
+*漫反射 =  入射光颜色向量I ✖ 物体表面光的反射系数K  ✖ (L.N)*
+
+*OpenGL的实现：diffuse = K * lightColor * max( dot(N, L),  0)*
+
+点乘 N.L 光的入射角如果大于等于90度，值就等于或者小于0，就没反射光了，应该是黑的，这里做了处理。
+
+- I 入射光颜色向量, 习惯用lightColor表示。
+- K 物体表面光的反射系数
+- L 是从P点指点向光源的单位向量（注意，是由P点指向光源，不要弄反了) = normalize（点光源向量 - P点向量）
+- N 入射点P的单位法向量 = normalize(N)
+
+#+ATTR_latex: :width 650   #+ATTR_HTML: :width 650  #+ATTR_ORG: :width 650
+[[file:OpenGL/diffuse.png]]
+
+
+** 高光 or 镜面反射(Specular reflection)：光源直接照射物体产生的效果。（小而亮）
+光滑的表面，在点光源的照射下， 会产生一块特别亮的区域（高光点）。原因是：在理想镜面情况下，入射角等于反射角，观察者只能在 反射方向一侧才能看到反射光；但现实是没有完全光滑的表面， 所以实际的反射区域是一个小的角度范围，这个范围就是高光区域。
+
+*镜面反射 =  入射光颜色向量I ✖ 物体表面光的反射系数K  ✖ (V.R)^n*
+
+*OpenGL的镜面反射： specular = K * lightColor * pow( max( dot(V, R),  0),  n)*
+
+反射光向量R的计算还是比较麻烦的，改进后的就是Blinn-phong 反射模型，它省去了计算反射光向量R的两个乘法运算，速度更快。
+*Blinn-Phong镜面反射 = 入射光颜色向量I ✖ 物体表面光的反射系数K  ✖ (N.H)^n*
+
+*OpenGL的Blinn-Phong镜面反射： specular = K * lightColor * pow( max( dot(N, H),  0),  n)*
+
+- I 入射光颜色向量, 习惯用lightColor表示。
+- K 物体表面光的反射系数
+- L 是从P点指点向光源的单位向量（注意，是由P点指向光源，不要弄反了) = normalize（点光源向量 - P点向量）
+- N 入射点P的单位法向量 = normalize(N)
+- n 是物体表面的光滑指数，值越大表示越光滑，反射光越集中，高光区域就越小。n = 10, 20, 30, 80, 160
+- V 表示从P点指向视点的向量，
+- R 代表反射光向量 =  2(N • L)N − L = 2 * max( dot(N, L), 0) * N - L
+- H 二分向量，它是沿L和V的角平线的单位向量 = normalize(L + V)
+
+#+ATTR_latex: :width 650   #+ATTR_HTML: :width 650  #+ATTR_ORG: :width 650
+[[file:OpenGL/specular.jpg]]
+*** 例： 环境光 + 漫反射 + 高光同时作用于物体的效果
+#+begin_src c++
+// ambient
+float ambientStrength = 0.1;                 //  Ka物体表面的光的反射系数
+vec3 ambient = ambientStrength * lightColor; // 这个就是环境光的结果，lightColor是入射光颜色向量
+
+// diffuse
+vec3 norm = normalize(Normal);  // N 法向量：垂直于P点的向量归一化
+vec3 lightDir = normalize(lightPos - FragPos); // L 是从P点指点向光源的单位向量 = 点光源向量 - P点向量
+float diff = max(dot(norm, lightDir), 0.0);    // 点乘 N.L 光照的入射角如果大于等于90度，就没反射光了，应该是黑的，所以这里做了处理。
+vec3 diffuse = diff * lightColor;              // 漫反射的结果
+
+// specular
+float specularStrength = 0.5;   // Ks 物体表面光的反射系数
+vec3 viewDir = normalize(viewPos - FragPos); // V 表示从P点指向视点的向量，
+vec3 reflectDir = reflect(-lightDir, norm);  // 通过GLSL内置函数reflect算出反射光向量R. 光线的入射方向和L的方向是相反的，所以这里对lightDir取反
+float spec = pow( max( dot(viewDir, reflectDir),  0.0), 32);
+vec3 specular = specularStrength * spec * lightColor;
+
+vec3 result = (ambient + diffuse + specular) * objectColor; // 计算出：环境光 + 漫反射 + 高光同时作用于物体的效果
+FragColor = vec4(result, 1.0);
+#+end_src
+
+
+* 帧缓冲Frame buffer & 深度缓冲Depth Buffer(Z-Buffer)消隐算法 & 颜色缓冲Color Buffer
+*FrameBuffer帧缓冲* 里存储的内容和视口（屏幕）上的每个像素一一对应的，对帧缓冲内容的修改其实就是对视口（屏幕）上显示内容的修改。另外， 对片元Fragment的处理， 就是在利用和修改帧缓冲的数据。Frame buffer是显卡硬件的一部分，包含了完整的帧数据.
+- *Frame buffer包含color buffer，stencil buffer，depth buffer等若干buffer。 只有color buffer用于最后的像素显示，其他的都是用来辅助fragment的处理* 。 而且Frame buffer 中只有颜色缓冲区ColorBuffer是必须要有的，其它的都是可选的，如：深度缓冲区DepthBuffer，模板缓冲区StencilBuffer
+- OpenGL允许我们定义我们自己的帧缓冲，也就是说我们能够定义我们自己的颜色缓冲，甚至是深度缓冲和模板缓冲。
+
+
+*Stencil Buffer模版缓冲*: 作用就是限制绘制的图元区域, 过滤丢弃一些片段，只留下想要的东东。 做法是按照窗口宽高创建一个矩阵，矩阵由0,1组成，其中由1组成的区域代表相匹配的图元需要提交到后续流程进行测试和绘制，而由0组成的区域的片元则直接被丢弃，起到一个筛选作用，而这个0,1数值矩阵所在的显存区域则称为模版缓冲区。 例如：我们将模板缓存中的一个矩形区域设置为1，我们的立方体在绘制时，我们将只绘制模板值为1的像素区域，从而达到控制像素绘制与否的目的。
+#+ATTR_latex: :width 650   #+ATTR_HTML: :width 650  #+ATTR_ORG: :width 650
+[[file:OpenGL/stencil.png]]
+
+- 模板缓冲区可以为屏幕上的每个像素点保存一个无符号8bit整数。
+- 在渲染Render的过程中，可以用这个值与一个预先设定的参考值相比较，根据比较的结果来决定是否更新相应的像素点的颜色值。这个比较的过程被称为模板测试。
+- 模板测试发生在透明度测试（alpha test）之后，深度测试（depth test）之前。如果模板测试通过，则相应的像素点更新，否则不更新。
+
+*Z-Buffer(也叫DepthBffer深度缓冲)* : 存储每个可见像素的深度值, 这是z坐标经过投影变换后的一个介于0.0和1.0之间的深度值。
+- 在像素级上以近物来取代远物，和绘制的先后顺序无关，前面的像素挡住后面的，后面的不可见。 也叫消隐Visible surface detection。
+- *深度测试Depth Testing*: 当片元Fragment想要输出它的颜色时，OpenGL会将它的深度值和z缓冲进行比较，如果当前片元在其它片元之后，它会被丢弃，否则将会覆盖。
+- 近处的物体有很大的深度精度； 远处的物体，由于深度精度不够很容易导致像素的前后关系判断失误，不能正确消隐，导致远处的物体产生闪烁现象
+
 
 
 * 坐标
@@ -106,7 +277,7 @@ TEXTURE_MAG_FILTER 、 TEXTURE_MIN_FILTER 和 mipmap_filter 的取值有2个
 - BindGroupDescriptor 用来实际给这些声明的资源类型赋值。通过device.create_bind_group来创建。
 
   #+begin_src python
- # 资源的类型声明，有点像函数定义里的参数声明。
+# 资源的类型声明，有点像函数定义里的参数声明。
 let texture_bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
     bindings: &[
         wgpu::BindGroupLayoutEntry{
@@ -153,3 +324,19 @@ let diffuse_bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
 现实场景中，如果想获得逼真的渲染效果，往往需要考虑阴影，照明和反射。 每一个都需要大量的计算，通常都是在它们各自的渲染通道Render pass中完成。最后再把它们的渲染结果组合形成最终的效果。
 
 为什么需要多通道渲染呢multipass rendering？在源头就将阴影，照明和反射这些信息独立开来，这样在合成的时候我们就可以有更多的控制空间和选择余地了。 简单的场景一般只要一个渲染通道
+
+
+
+* R旋转 Rotate & 为什么逆时针是旋转正方向
+在OpenGL的右手坐标系下，旋转规则是： 确定旋转轴后，右手握成拳头，拇指指向旋转轴的正方向，其余手指的弯曲方向即为旋转的正方向，跟手指弯曲方向一致的
+旋转记为正向，相反则为负向。例如： Z轴正旋转或者Z轴逆时针旋转，就是大拇指指向Z轴，其余手指弯曲的方向就是Z轴旋转正方向。这个正方向，其实是逆时针
+方向，所以一般规定逆时针为正就是这么来的，也就是说，旋转方向可以用旋转角度值的正负来表示。
+
+为了描述旋转（比如：绕Z轴，逆时针旋转了β角度），必须指明3个要素：
+- 旋转轴（图像将围绕旋转轴旋转）
+- 转转角度（图形旋转经过的角度）
+- 旋转方向（顺时针or逆时针）： 在调用旋转函数时，一般不会传入一个表示旋转方向的参数。因为如果旋转的角度是正值，那就是逆时针旋转，原因如上所述。
+
+#+ATTR_latex: :width 300   #+ATTR_HTML: :width 300  #+ATTR_ORG: :width 300
+[[file:webgl/z_rotation.png]]
+
