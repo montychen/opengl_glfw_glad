@@ -7,7 +7,7 @@
 
 
 * Mac 下安装 GLFW
-GLFW 是一个专门针对 OpenGL/Vulkan 的 C 语言库，它提供了渲染物体所需的最小的接口：创建 OpenGL 上下文、生成跨平台的显示窗口（同时生成默认帧缓冲）、处理用户输入，这正是我们需要的。
+GLFW 是一个专门针对 OpenGL/Vulkan 的 C 语言库，它提供了渲染物体所需的最小的接口：创建OpenGL上下文、生成跨平台的显示窗口（同时生成默认帧缓冲）、处理用户输入，这正是我们需要的。
 
 ** 1、使用 homebrew 来安装 GLFW，如果没安装 homebrew 的需要先安装一下。
 #+begin_src bash

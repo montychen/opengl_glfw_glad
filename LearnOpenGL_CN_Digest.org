@@ -11,7 +11,7 @@ glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 明确告诉GLFW我们使用的是核心模式(Core-profile
 glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // 如果使用的是Mac系统，需要这行代码；mac默认使用的是比较旧的版本，这行强制系统使用当前硬件支持的最新版本。
 
-GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL); // 创建窗口
+GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL); // 创建窗口，当我们使用GLFW创建窗口的时候，GLFW会帮我们把默认帧缓冲创建和配置好
 glfwMakeContextCurrent(window);     // 把当前线程的Context，设成窗口的Context
 
 #+end_src
@@ -269,7 +269,10 @@ glm::mat4 myIdentityMatrix = glm::mat4(1.0);
 
 ** 帧缓冲Frame buffer & 深度缓冲Depth Buffer(Z-Buffer)消隐算法 & 颜色缓冲Color Buffer
 *FrameBuffer帧缓冲* 里存储的内容和视口（屏幕）上的每个像素一一对应的，对帧缓冲内容的修改其实就是对视口（屏幕）上显示内容的修改。另外， 对片元Fragment的处理， 就是在利用和修改帧缓冲的数据。Frame buffer是显卡硬件的一部分，包含了完整的帧数据.
-- OpenGL 实际上并不是把图像直接绘制到计算机屏幕上，而是渲染到一个帧缓冲区，然后需要由这台机器来负责把帧缓冲区的内容绘制到屏幕上的一个窗口中。有不少库都可以支持这一部分工作，GLFW 是最流行的。
+- OpenGL 实际上并不是把图像直接绘制到计算机屏幕上，而是渲染到一个帧缓冲区，然后需要由这台机器来负责把帧缓冲区的内容绘制到屏幕上的一个窗口中。有不少库都可以支持这一部分工作，GLFW 是最流行的。GLFW 库包含了 GLFWwindow 类，我们可以在其上进行 3D 场景绘制。
+#+begin_src c++
+GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL); // 创建窗口，当我们使用GLFW创建窗口的时候，GLFW会帮我们把默认帧缓冲创建和配置好
+#+end_src
 - 当我们使用GLFW创建窗口的时候，GLFW会帮我们把默认帧缓冲创建和配置好。通常，我们只需要把默认帧缓冲区作为绘图表面，但是又有些特殊情况，比如阴影贴图、动态反射等需要渲染到纹理操作的，如果使用窗口系统提供的默认帧缓冲区，效率会比较低低下，因此需要自定义自己的帧缓冲区。OpenGL允许我们手动创建帧缓冲区，来将数据绘制到我们自己的帧缓冲中，也就是常说的 *离屏渲染* 。
 - *Frame buffer包含color buffer，stencil buffer，depth buffer等若干buffer。 只有color buffer用于最后的像素显示，其他的都是用来辅助fragment的处理* 。 而且Frame buffer 中只有颜色缓冲区ColorBuffer是必须要有的，其它的都是可选的，如：深度缓冲区DepthBuffer，模板缓冲区StencilBuffer
 
