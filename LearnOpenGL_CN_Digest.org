@@ -11,7 +11,7 @@ glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 明确告诉GLFW我们使用的是核心模式(Core-profile
 glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // 如果使用的是Mac系统，需要这行代码；mac默认使用的是比较旧的版本，这行强制系统使用当前硬件支持的最新版本。
 
-GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL); // 创建窗口，当我们使用GLFW创建窗口的时候，GLFW会帮我们把默认帧缓冲创建和配置好
+GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL); //当我们用GLFW创建窗口的时候，GLFW会帮我们把默认帧缓冲创建和配置好
 glfwMakeContextCurrent(window);     // 把当前线程的Context，设成窗口的Context
 
 #+end_src
@@ -271,7 +271,7 @@ glm::mat4 myIdentityMatrix = glm::mat4(1.0);
 *FrameBuffer帧缓冲* 里存储的内容和视口（屏幕）上的每个像素一一对应的，对帧缓冲内容的修改其实就是对视口（屏幕）上显示内容的修改。另外， 对片元Fragment的处理， 就是在利用和修改帧缓冲的数据。Frame buffer是显卡硬件的一部分，包含了完整的帧数据.
 - OpenGL 实际上并不是把图像直接绘制到计算机屏幕上，而是渲染到一个帧缓冲区，然后需要由这台机器来负责把帧缓冲区的内容绘制到屏幕上的一个窗口中。有不少库都可以支持这一部分工作，GLFW 是最流行的。GLFW 库包含了 GLFWwindow 类，我们可以在其上进行 3D 场景绘制。
 #+begin_src c++
-GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL); // 创建窗口，当我们使用GLFW创建窗口的时候，GLFW会帮我们把默认帧缓冲创建和配置好
+GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL); // 当我们用GLFW创建窗口的时候，GLFW会帮我们把默认帧缓冲创建和配置好
 #+end_src
 - 当我们使用GLFW创建窗口的时候，GLFW会帮我们把默认帧缓冲创建和配置好。通常，我们只需要把默认帧缓冲区作为绘图表面，但是又有些特殊情况，比如阴影贴图、动态反射等需要渲染到纹理操作的，如果使用窗口系统提供的默认帧缓冲区，效率会比较低低下，因此需要自定义自己的帧缓冲区。OpenGL允许我们手动创建帧缓冲区，来将数据绘制到我们自己的帧缓冲中，也就是常说的 *离屏渲染* 。
 - *Frame buffer包含color buffer，stencil buffer，depth buffer等若干buffer。 只有color buffer用于最后的像素显示，其他的都是用来辅助fragment的处理* 。 而且Frame buffer 中只有颜色缓冲区ColorBuffer是必须要有的，其它的都是可选的，如：深度缓冲区DepthBuffer，模板缓冲区StencilBuffer
@@ -494,6 +494,7 @@ glMatrixMode（GL_MODELVIEW ）；//设置当前矩阵为模型视景矩阵
 gluPerspective(45.0f, (GLfloat)cx/(GLfloat)cy, 0.1f, 100.0f)；  //对图像进行透视投影，以将三维物体显示在二维平面上
 
 #+end_src
+
 ** glTexParameteri(target, pname, param)配置纹理参数
 将param的值赋给绑定到目标的纹理对象的pname参数上。默认每个纹理参数都有默认值，通常你可以不用手动显示的调用这个函数，使用默认值就可以。
 - 第1个参数target： 指定纹理的类型，有两个值
@@ -512,3 +513,12 @@ gluPerspective(45.0f, (GLfloat)cx/(GLfloat)cy, 0.1f, 100.0f)；  //对图像进�
     1. gl.REPEAT: 平铺式的重复纹理
     2. gl.MIRRORED_REPEAT: 纹理镜像重复填充
     3. gl.CLAMP_TO_EDGE: 使用纹理边缘的像素填充
+
+** void glfwSwapBuffers(GLFWwindow* window)交换缓冲区
+GLFW窗口默认是双缓冲的，这意味着每个窗口有两个渲染缓冲区——前缓冲区和后缓冲区。 前缓冲区是正在显示的缓冲区，后缓冲区是即将显示的缓冲区。当整个帧已经被渲染时，缓冲器需要彼此交换，因此后缓冲器变为前缓冲器，反之亦然。
+
+** void glfwSwapInterval(int interval) 设置缓冲区交换的间隔，
+- 参数 interval: 设置需要等待多少次 *屏幕刷新次数（其实就是，监视器实际的刷新频率里，要发生了多少次监视器刷新)* ，缓冲区才会交换。
+  - 默认情况下，交换间隔为0, 则在调用glfwSwapBuffers时立即进行交换,而不等待屏幕刷新的到来。
+  - 如果设成1，那就表示屏幕刷新1次时，才交换缓冲区。
+屏幕撕裂现象Screen tearing: 就是当GPU往屏幕渲染的帧率大于屏幕刷新的帧率(监视器刷新帧率)，也就是说，当屏幕绘制（刷新）一帧到中间时， GPU已经向屏幕输送了好几帧，而屏幕会继续绘制（刷新），但这时用的数据是GPU向屏幕更新的数据。 这样就导致的屏幕撕裂的问题。 而解决这种问题的方式，设置交换间隔为1，开启 Vsync垂直同步，避免撕裂直到屏幕刷新完当前帧为止。
