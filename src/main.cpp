@@ -160,8 +160,8 @@ int main()
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         // glBindVertexArray(0); // no need to unbind it every time
 
-        // GLFW窗口默认是双缓冲的，这意味着每个窗口有两个渲染缓冲区。 前缓冲区是正在显示的缓冲区，后缓冲区是即将显示的缓冲区。当整个帧已经被渲染时，缓冲器需要彼此交换
-        glfwSwapBuffers(window); // 调用该函数后，是马上就执行缓冲区交换，还是需要等待多久才执行，要根据glfwSwapInterval设定的间隔值来决定。
+        // GLFW窗口默认是双缓冲的，这意味着每个窗口有两个渲染缓冲区。 前缓冲区是正在显示的缓冲区，后缓冲区是即将显示的缓冲区。交换缓冲区的意思就是，前缓冲区变成后缓冲区，后缓冲区变成前缓冲区
+        glfwSwapBuffers(window); // 要求交换缓冲区，用前缓冲区内容来绘制屏幕。调用该函数后，是马上就执行缓冲区交换，还是需要等待多久才执行，要根据glfwSwapInterval设定的间隔值来决定。
 
         glfwPollEvents();
     }

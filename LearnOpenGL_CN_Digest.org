@@ -466,7 +466,7 @@ FragColor = vec4(result, 1.0);
    - GL_TRIANGLES：将传入的顶点作为单独的三角形绘制，ABCDEF绘制ABC,DEF两个三角形
    - GL_TRIANGLE_STRIP：将传入的顶点作为三角条带绘制，ABCDEF绘制ABC,BCD,CDE,DEF四个三角形
    - GL_TRIANGLE_FAN扇形：将传入的顶点作为扇面绘制，ABCDEF绘制ABC、ACD、ADE、AEF四个三角形
-2. first：第一个顶点元素的索引
+2. first：第一个顶点元素的索引，通常是顶点 0，即第一个顶点
 3. count： 一共有多少个顶点
 
 #+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
@@ -514,9 +514,9 @@ gluPerspective(45.0f, (GLfloat)cx/(GLfloat)cy, 0.1f, 100.0f)；  //对图像进�
     2. gl.MIRRORED_REPEAT: 纹理镜像重复填充
     3. gl.CLAMP_TO_EDGE: 使用纹理边缘的像素填充
 
-** void glfwSwapBuffers(GLFWwindow* window)要求交换缓冲区
+** void glfwSwapBuffers(GLFWwindow* window)要求交换缓冲区，用前缓冲区内容来绘制屏幕
 - 调用该函数后，是马上就执行缓冲区交换，还是需要等待多久才执行，要根据glfwSwapInterval设定的间隔值来决定。
-- GLFW窗口默认是双缓冲的，这意味着每个窗口有两个渲染缓冲区——前缓冲区和后缓冲区。 前缓冲区是正在显示的缓冲区，后缓冲区是即将显示的缓冲区。当整个帧已经被渲染时，缓冲器需要彼此交换，因此后缓冲器变为前缓冲器，反之亦然。
+- GLFW窗口默认是双缓冲的，这意味着每个窗口有两个渲染缓冲区——前缓冲区和后缓冲区。 前缓冲区是正在显示的缓冲区，后缓冲区是即将显示的缓冲区。交换缓冲区的意思就是，前缓冲区变成后缓冲区，后缓冲区变成前缓冲区，用前缓冲区内容来绘制屏幕。
 
 ** void glfwSwapInterval(int interval) 设置缓冲区交换间隔，也就是需要等待显示器的Vsync刷新次数
 - 参数 interval: 设置需要等待多少次 *屏幕的刷新次数vsync（其实就是，监视器实际的刷新频率里，要发生了多少次监视器刷新Vsync)* ，缓冲区才会交换。
