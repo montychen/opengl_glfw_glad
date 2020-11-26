@@ -47,7 +47,7 @@ int main()
         return -1;
     }
     glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback); // 设置当窗口大小改变（系统或用户自己调整）时，通过回调函数来重新设置视口ViewPort的大小
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------
