@@ -157,7 +157,7 @@ int main()
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
         //glDrawArrays(GL_TRIANGLES, 0, 6);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // 触发绘制开始执行
         // glBindVertexArray(0); // no need to unbind it every time
 
         // GLFW窗口默认是双缓冲的，这意味着每个窗口有两个渲染缓冲区。 前缓冲区是正在显示的缓冲区，后缓冲区是即将显示的缓冲区。交换缓冲区的意思就是，前缓冲区变成后缓冲区，后缓冲区变成前缓冲区
