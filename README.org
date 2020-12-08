@@ -52,7 +52,7 @@ OpenGL 只是一个标准/规范，具体的实现是由驱动开发商针对特
 - 下载 glm 后解压， 里面有一个 glm 文件夹，把它拷贝到 [[/usr/local/include/glm][/usr/local/include]] 目录下即可。或者也可以通过 brew install glm 就可以把需要的 glm  文件夹安装到/usr/local/include 目录下。
 
 
-* [[https://bitbucket.org/SpartanJ/soil2/src/default][SOIL2]] 简易 OpenGL 图像库(Simple OpenGL Image Library)
+* [[https://github.com/SpartanJ/soil2][SOIL2]] 简易 OpenGL 图像库(Simple OpenGL Image Library)
 - 下载 SOIL2, 解压。
 - 下载 [[https://premake.github.io/index.html][premake 4.4 beta 版]] 解压后是一个可执行文件，把它拷贝到 SOIL2 的目录下。
 - 打开终端，进入 SOIL2 所在的目录下,运行
