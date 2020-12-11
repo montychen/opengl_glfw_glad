@@ -1,5 +1,5 @@
 * Mac 系统已经自带了 OpenGL 核心库： .
-- MacOS 支持Opengl的最高版本是 4.1版。我2012年6月买的MacBook Pro 15支持 *OpenGL v4.1* : 用这个软件  *OpenGL Extensions Viewer* 查看Opengl、Metal支持的版本。
+- MacOS 支持Opengl的最高版本是 4.1版。我2012年6月买的MacBook Pro 15支持 *OpenGL v4.1* : 用这个软件  *[[http://www.realtech-vr.com/home/glview][OpenGL Extensions Viewer]]* 查看Opengl、Metal支持的版本。
 - *iOS支持OpenGL ES最高版本是3.0版* ：苹果在iOS上不会再添加 OpenGL ES 3.1及以上版本的支持。因为2014年开始苹果放弃OpenGL，推出了自己的Metal
 - 从iOS 7.0 和Android 4.3 开始都支持 OpenGL ES 3.0
 
