@@ -354,6 +354,9 @@ GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL); // �
 * Phong光照模型 = ambient + diffuse + specular
 *结合Phong光照模型，最终作用于物体的光照效果就是 = （ambient + diffuse + specular）  ✖  物体的基本色*
 
+   #+ATTR_latex: :width 450   #+ATTR_HTML: :width 450  #+ATTR_ORG: :width 450
+[[file:OpenGL/ads_lighting.png]]
+
 ** 环境光(Ambient light)：模拟间接光照。
 环境光给予物体各个点的光照强度相同，且没有方向之分，所以在只有环境光的情况下，同一物体各点的明暗程度均一样，因此，只有环境光是不能产生具有真实感的图形效果。环境光指的是那些被多次反射后，从各个角度间接照射物体的光，理想的环境光有如下特性：强度一致，没有空间或方向性； 习惯用一个颜色常量来模拟：
 
