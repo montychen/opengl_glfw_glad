@@ -184,8 +184,8 @@ VBO、VAO和 EBO 都是显卡硬件中的一块内存区域，它们的作用是
 #+begin_src c++
 float vertices[] = {            // 在CPU中：声明三角形的顶点数据
 -0.5f, -0.5f, 0.0f, // left
- 0.5f, -0.5f, 0.0f, // right
- 0.0f,  0.5f, 0.0f  // top
+0.5f, -0.5f, 0.0f, // right
+0.0f,  0.5f, 0.0f  // top
 };
 
 // 1.开辟（声明/获得）显存空间并分配ID
@@ -299,6 +299,11 @@ GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL); // �
 
 * 图形管线 PipeLine
 
+- 在OpenGL中，任何事物都在3D空间中，而屏幕和窗口却是2D像素数组，这导致OpenGL的大部分工作都是关于把3D坐标转变为适应你屏幕的2D像素。3D坐标转为2D坐标的处理过程是由OpenGL的图形渲染管线管理的。
+- Pipeline图形渲染管线，实际上指的是一堆原始图形数据途经一个输送管道，期间经过各种变化处理最终出现在屏幕的过程。
+- 图形渲染管线可以被划分为两个主要部分：第一部分把你的3D坐标转换为2D坐标，第二部分是把2D坐标转变为实际的有颜色的像素。
+- 2D坐标和2D像素也是不同的，2D坐标精确表示一个点在2D空间中的位置，而2D像素是这个点的近似值，2D像素受到你的屏幕/窗口分辨率的限制。
+
 ** 图形管线的3个阶段: 应用、几何、光栅
 #+ATTR_latex: :width 650   #+ATTR_HTML: :width 650  #+ATTR_ORG: :width 650
 [[file:OpenGL/pipeline_3stage.jpg]]
@@ -310,9 +315,10 @@ GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL); // �
 [[file:OpenGL/pipeline1.png]]
 
 
-- 顶点着色器赋予程序员一次操作一个顶点的能力(“逐个顶点”处理)
-- 几何着色器赋予了一次操作一个图元的能力(“逐个图元”处理)
-- 片段着色器允许一次操作一个像素(“逐个片段”处理)
+- 顶点着色器赋予程序员一次操作一个顶点的能力(“逐个顶点”处理): 顶点着色器主要的目的是把3D坐标转为另一种3D坐标.
+- 几何着色器赋予了一次操作一个图元的能力(“逐个图元”处理)：它可以通过产生新顶点构造出新的图元来生成其他形状
+- 光栅化 Rasterization： 找出最佳逼近图元的像素集（比如三角形） + 插值算出图元内部所有像素点的颜色
+- 片段着色器允许一次操作一个像素(“逐个片段”处理)：目的是计算一个像素的最终颜色，这也是所有OpenGL高级效果产生的地方
 
 ** 变换 Transformation: 几何变换 -> 投影裁剪NDC -> 视口变换
 *顶点*  : 管线的输入是那些预先定义好的三维空间中的点，而不是直接输入三角形，在后面三维空点的投影到二维屏幕后，再决定那三个点形成一个三角形。
@@ -354,7 +360,7 @@ GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL); // �
 * Phong光照模型 = ambient + diffuse + specular
 *结合Phong光照模型，最终作用于物体的光照效果就是 = （ambient + diffuse + specular）  ✖  物体的基本色*
 
-   #+ATTR_latex: :width 450   #+ATTR_HTML: :width 450  #+ATTR_ORG: :width 450
+#+ATTR_latex: :width 450   #+ATTR_HTML: :width 450  #+ATTR_ORG: :width 450
 [[file:OpenGL/ads_lighting.png]]
 
 ** 环境光(Ambient light)：模拟间接光照。
@@ -535,4 +541,4 @@ gluPerspective(45.0f, (GLfloat)cx/(GLfloat)cy, 0.1f, 100.0f)；  //对图像进�
 
 ** void glPointSize(GLfloat size) 指定光栅化的时候，每个点对应几个像素。
 默认1个point对应1个pixel的大小。 语句 glPointSize(30.0f) 可以把1个point设置成30个像素的大小。
- - 参数 size: 指定每个点对应几个像素。
+- 参数 size: 指定每个点对应几个像素。
