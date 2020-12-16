@@ -159,7 +159,7 @@ glDeleteShader(fragmentShader);
 #+end_src
 
 #+begin_quote
-void glShaderSource(	GLuint shader, GLsizei count,  const GLchar **string, const GLint *length)
+void glShaderSource(GLuint shader, GLsizei count,  const GLchar **string, const GLint *length)
 - 第一个参数是要编译的着色器对象
 - 第二参数指定了传递的源码字符串数量，这里只有一个。
 - 第三个参数是顶点着色器真正的源码
@@ -172,16 +172,39 @@ void glShaderSource(	GLuint shader, GLsizei count,  const GLchar **string, const
 VBO、VAO和 EBO 都是显卡硬件中的一块内存区域，它们的作用是在显存中提前开辟好一块内存，用于缓存顶点数据或者图元索引数据，我们可以一次性的发送一大批在CPU定义的数据到GPU的VBO中，而不是每个顶点发送一次，渲染时， 直接从显存的VBO中取出顶点数据，不需要从CPU传输数据，效率高。
 #+end_quote
 
-*VBO(顶点缓冲对象：Vertex Buffer Object)* 用于存储顶点数据，如顶点坐标，顶点法向量，顶点颜色数据等。
+**** VBO(顶点缓冲对象：Vertex Buffer Object) 用于存储顶点数据，如顶点坐标，顶点法向量，顶点颜色数据等。
 - 可以开辟很多个VBO，每个VBO有唯一标识ID，这个ID对应着具体的VBO的显存地址，通过这个ID可以对特定的VBO内的数据进行存取操作。
+- 一个VBO对应一个顶点属性，通过glVertexAttribPointer(index, size, type, normalized, stride, GLvoid * pointer) 函数把两者关联对应起来。
+  + index：指定要配置的顶点属性。用位置索引值来指定，也就是在顶点着色器中，定义顶点属性变量时，由layout(location = 0)定义的值。
+  + 具体是哪个VBO（程序可以有多个VBO）？是通过在调用glVertexAttribPointer时绑定到GL_ARRAY_BUFFER的VBO决定。
 
-*VAO(顶点数组对象Vertex Array Object)*
+
+**** VAO(顶点数组对象Vertex Array Object)
 - 保存了所有顶点属性数据的状态结合，VAO本身并没有存储顶点的相关属性数据，这些信息还是存储在VBO中，VAO相当于是对多个VBO的引用， 把相关的VBO组合在一起作为一个对象统一管理。
 - VAO中有一个属性列表，默认有16个属性(0 - 15)，我们可以为属性指定数据，其中属性可以是顶点位置，颜色，法线，纹理坐标等等我们需要 的数据，其中的每一个属性对应的数据其实就是VBO
-- 如果我们已经为vao绑定过数据了，下一次使用的时候就不需要重新绑定了，直接使用这个vao就可以了，相当于我们已经有模型的数据了。
-- 在bind和unbind（glBindVertexArray(0)）之间的操作都是针对这一个vao对象的，也就是执行VAO绑定之后，其后的所有VBO和EBO配置都是这个VAO对象的一部分
+- 如果我们已经为vao绑定设置过数据了，下一次使用的时候就不需要重新再设定数据，直接绑定就可以使用这个vao了，相当于我们已经有模型的数据了。
+- VAO在绑定后glBindVertexArray(VAO)，直到解绑前glBindVertexArray(0)，这之间的操作都是针对这一个vao对象的，也就是执行VAO绑定之后，其后的所有VBO和EBO配置都是这个VAO对象的一部分
 
 #+begin_src c++
+
+// 顶点着色器
+#version 330 core
+layout (location = 0) in vec3 aPos;
+
+void main()
+{
+    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+}
+
+// 片段着色器
+#version 330 core
+out vec4 FragColor;
+void main()
+{
+    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+}
+
+
 float vertices[] = {            // 在CPU中：声明三角形的顶点数据
 -0.5f, -0.5f, 0.0f, // left
 0.5f, -0.5f, 0.0f, // right
@@ -197,39 +220,104 @@ glGenBuffers(1, &VBO);          // 创建1个缓存对象，并把缓存的ID保
 glBindVertexArray(VAO);
 
 // VBO绑定、传输数据CPU => GPU、把一个VBO和一个顶点属性关联起来
-glBindBuffer(GL_ARRAY_BUFFER, VBO); // 绑定缓冲类型：顶点缓冲对象的缓冲类型是GL_ARRAY_BUFFER。
+glBindBuffer(GL_ARRAY_BUFFER, VBO); // 绑定缓冲类型：顶点缓冲对象的类型是GL_ARRAY_BUFFER。也可以理解成，这里才是真正把缓冲定义为VBO类型，上面创建缓冲区时，并没有🔝类型。
 glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);  //一次性把CPU中定义的顶点数据传到GPU的VBO。 CPU => GPU
-glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0); // 一个VBO对应一个顶点属性，这里把两者管理起来。
-glEnableVertexAttribArray(0);   // glEnableVertexAttribArray以顶点属性位置值为参数，启用顶点属性；顶点属性默认是禁用的。
+glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0); // 一个VBO对应一个顶点属性，这里把两者关联对应起来。
+glEnableVertexAttribArray(0);   // 以顶点属性位置值为参数layout (location = 0) ，启用顶点属性；顶点属性默认是禁用的。
 
 // 解绑
 glBindBuffer(GL_ARRAY_BUFFER, 0); // VBO解绑
 glBindVertexArray(0);             // VAO解绑
 #+end_src
 
-*EBO* (索引缓冲对象：Element Buffer Object)存储的是顶点位置的索引，目的是为了解决同一顶点重复调用的问题，减少内存浪费。当需要使用重复顶点的时候，可以通过顶点索引来调用顶点，而不是重复记录。
-- 当用EBO绑定顶点索引的方式绘制模型时，需要 *使用glDrawElements而不是glDrawArrays*
-
-
-*** 绘制
-OpenGL中所有的图形都是通过分解成三角形的方式进行绘制，glDrawArrays函数负责把模型绘制出来，它使用当前激活的着色器程序，当前VAO对象中的VBO顶点数据和属性配置来绘制出来基本图形。
+***** 绘制: glDrawArrays函数负责把模型绘制出来，它使用当前激活的着色器程序，当前VAO对象中的VBO顶点数据和属性配置来绘制出来基本图形。
 
 #+begin_src c++
 glUseProgram(shaderProgram);    // 激活着色器程序，glUseProgram()并没有运行着色器，它只是将着色器加载进硬件。
-glBindVertexArray(VAO);
+glBindVertexArray(VAO);         // 之前已经为这个vao绑定设置过数据了，现在直接绑定使用这个vao就可以了，相当于我们已经有模型的数据了。
 glDrawArrays(GL_TRIANGLES, 0, 3); // 触发绘制开始执行 >> 先把缓冲区的数据传给顶点属性 >> 然后着色器开始执行
 #+end_src
 
+**** EBO索引缓冲对象：Element Buffer Object 也叫Index Buffer Object，IBO
+- 存储的是顶点位置的索引，目的是为了解决同一顶点重复调用的问题，减少内存浪费。当需要使用重复顶点的时候，可以通过顶点索引来调用顶点，而不是重复记录。
+- 当用EBO绑定顶点索引的方式绘制模型时，需要 *使用glDrawElements而不是glDrawArrays*
+- 顶点数组对象VAO同样可以保存索引缓冲对象EBO的绑定状态。VAO绑定时正在绑定的索引缓冲对象会被保存为VAO的元素缓冲对象。绑定VAO的同时也会自动绑定EBO。
 
-** 向量： 向量相乘可以交换位置；点乘和叉乘
+#+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
+[[file:opengl/vao_ebo.png]]
 
-** 矩阵： 矩阵相乘不能交换位置
-*** OpenGL API接受的矩阵要求是 *列主序*
+***** 例子：用2个三角形来绘制一个矩形，顶点重复的例子
+用2个三角形来绘制一个矩形，可以使用下面的顶点集合。可以看到，有几个顶点叠加了。我们指定了右下角和左上角两次！一个矩形只有4个而不是6个顶点，这样就产生50%的额外开销。当有上千个三角形的模型之后这个问题会更糟糕，这会产生一大堆浪费。更好的解决方案是只储存不同的顶点，并设定绘制这些顶点的顺序。这样我们只要储存4个顶点就能绘制矩形了，之后只要指定绘制的顺序就行了
+#+begin_src c++
+
+// 顶点重复
+float vertices[] = {
+// 第一个三角形
+0.5f, 0.5f, 0.0f,   // 右上角
+0.5f, -0.5f, 0.0f,  // 右下角 *
+-0.5f, 0.5f, 0.0f,  // 左上角 **
+// 第二个三角形
+0.5f, -0.5f, 0.0f,  // 右下角 *
+-0.5f, -0.5f, 0.0f, // 左下角
+-0.5f, 0.5f, 0.0f   // 左上角 **
+};
+#+end_src
+
+***** 使用EBO来避免顶点重复，用2个三角形来绘制矩形, 可以看到，当时用索引的时候，我们只定义了4个顶点，而不是6个
+#+begin_src c++
+
+// 1： 首先，我们先要定义（不重复的）顶点
+float vertices[] = {
+0.5f, 0.5f, 0.0f,   // 右上角 0
+0.5f, -0.5f, 0.0f,  // 右下角 1
+-0.5f, -0.5f, 0.0f, // 左下角 2
+-0.5f, 0.5f, 0.0f   // 左上角 3
+};
+
+// 2：定义绘制出矩形所需的索引：
+unsigned int indices[] = { // 注意索引从0开始!
+0, 1, 3, // 第一个三角形
+1, 2, 3  // 第二个三角形
+};
+
+unsigned int VBO, VAO, EBO;
+glGenVertexArrays(1, &VAO);
+glGenBuffers(1, &VBO);
+glGenBuffers(1, &EBO);          // 创建索引缓冲对象：
+
+// 绑定VAO, 执行VAO绑定之后其后的所有VBO配置、以及EBO配置都是这个VAO对象的一部分
+glBindVertexArray(VAO);
+
+// 把顶点数组复制到一个顶点缓冲中，供OpenGL使用
+glBindBuffer(GL_ARRAY_BUFFER, VBO); // 绑定缓冲类型：顶点缓冲对象的类型是GL_ARRAY_BUFFER。也可以理解成，这里才是真正把缓冲定义为VBO类型，上面创建缓冲区时，并没有🔝类型。
+glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);  //一次性把CPU中定义的顶点数据传到GPU的VBO。 CPU => GPU
+
+// 复制索引数组到一个索引缓冲中，glDrawElements函数从当前绑定到GL_ELEMENT_ARRAY_BUFFER目标的EBO中获取索引。
+glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO); // 把缓冲的类型定义为GL_ELEMENT_ARRAY_BUFFER，也就是EBO
+glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW); // 把索引复制到缓冲里：一次性把CPU中定义的索引数据传输到GPU的EBO里。 CPU => GPU
+
+// 设定顶点属性指针
+glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0); // 一个VBO对应一个顶点属性，这里把两者关联对应起来。
+glEnableVertexAttribArray(0);   // 以顶点属性位置值为参数layout (location = 0) ，启用顶点属性；顶点属性默认是禁用的。
+
+// 绘制
+glUseProgram(shaderProgram);
+glBindVertexArray(VAO); // 顶点数组对象VAO同样可以保存索引缓冲对象EBO的绑定状态。VAO绑定时正在绑定的索引缓冲对象会被保存为VAO的元素缓冲对象。
+
+// glDrawElements函数从当前绑定到GL_ELEMENT_ARRAY_BUFFER目标的EBO中获取索引。
+glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // 当用EBO绑定顶点索引的方式绘制模型时，需要使用glDrawElements而不是glDrawArrays
+#+end_src
+
+
+*** 向量： 向量相乘可以交换位置；点乘和叉乘
+
+*** 矩阵： 矩阵相乘不能交换位置
+****** OpenGL API接受的矩阵要求是 *列主序*
 在实际编程语言中，我们使用的一维数组来存储4x4矩阵的16个元素。所谓的行存储和列存储的区分就在于数组的前四个元素存储的是矩阵的第一列还是第一行；表示列的称为列存储，表示行的成为行存储。
 #+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
 [[file:webgl/column_order.png]]
 
-*** 单位矩阵(Identity Matrix): 主对角线元素为1，其余元素为0, 可简记为I。
+****** 单位矩阵(Identity Matrix): 主对角线元素为1，其余元素为0, 可简记为I。
 在c++，用glm构造一个单位矩阵 glm::mat4(1.0);
 #+begin_src c++
 glm::mat4 myIdentityMatrix = glm::mat4(1.0);
@@ -238,7 +326,7 @@ glm::mat4 myIdentityMatrix = glm::mat4(1.0);
 [[file:webgl/identity_matrix.png]]
 
 
-** 视点 or 相机位置
+*** 视点 or 相机位置
 在一个场景中，我们希望改变观察者的位置和观察角度。用于改变观察者方位和角度的变换，就是视图变换。默认情况下， *视点或者说相机位于原点(0,0,0)， 且视线朝着-Z方向。 也就是说，只有在z<0的地方绘图，才有可能被观察到* 。
 
 创建视图矩阵: Matrix4.setLookAt(eyeX, eyeY, eyeZ, atX, atY, atZ, upX, upY, upZ)
@@ -253,7 +341,7 @@ glm::mat4 myIdentityMatrix = glm::mat4(1.0);
 #+ATTR_latex: :width 800   #+ATTR_HTML: :width 800  #+ATTR_ORG: :width 800
 [[file:webgl/camera.png]]
 
-** R旋转 Rotate & 为什么逆时针是旋转正方向
+*** R旋转 Rotate & 为什么逆时针是旋转正方向
 在OpenGL的右手坐标系下，旋转规则是： 确定旋转轴后，右手握成拳头，拇指指向旋转轴的正方向，其余手指的弯曲方向即为旋转的正方向，跟手指弯曲方向一致的
 旋转记为正向，相反则为负向。例如： Z轴正旋转或者Z轴逆时针旋转，就是大拇指指向Z轴，其余手指弯曲的方向就是Z轴旋转正方向。这个正方向，其实是逆时针
 方向，所以一般规定逆时针为正就是这么来的，也就是说，旋转方向可以用旋转角度值的正负来表示。
@@ -267,7 +355,7 @@ glm::mat4 myIdentityMatrix = glm::mat4(1.0);
 [[file:webgl/z_rotation.png]]
 
 
-** 帧缓冲Frame buffer & 深度缓冲Depth Buffer(Z-Buffer)消隐算法 & 颜色缓冲Color Buffer
+*** 帧缓冲Frame buffer & 深度缓冲Depth Buffer(Z-Buffer)消隐算法 & 颜色缓冲Color Buffer
 *FrameBuffer帧缓冲* 里存储的内容和视口（屏幕）上的每个像素一一对应的，对帧缓冲内容的修改其实就是对视口（屏幕）上显示内容的修改。另外， 对片元Fragment的处理， 就是在利用和修改帧缓冲的数据。Frame buffer是显卡硬件的一部分，包含了完整的帧数据.
 - OpenGL 实际上并不是把图像直接绘制到计算机屏幕上，而是渲染到一个帧缓冲区，然后需要由这台机器来负责把帧缓冲区的内容绘制到屏幕上的一个窗口中。有不少库都可以支持这一部分工作，GLFW 是最流行的。GLFW 库包含了 GLFWwindow 类，我们可以在其上进行 3D 场景绘制。
 #+begin_src c++
@@ -292,7 +380,7 @@ GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL); // �
 
 
 
-** 纹理Mipmap
+*** 纹理Mipmap
 *纹理mipmap* 的基本思路是，对远处的东东，用尺寸较小、分辨率较低的纹理；对近处的东东，用尺寸交大、分辨率较高的纹理。 因为在三维世界中, 显示一张图的大小与摄象机机距离模型的远近位置有关,近的地方,图片就大一些,远的地方图片就会小一些。 当摄像机较 远的时候，用精细的贴图玩家也看不见， 而且还浪费资源，此时完全可以用更小的贴图。
 - mipmap的关键是预先将贴图压缩成很多逐渐缩小的图片, 按照2的倍数 *每次缩小一半直到1X1* ， 把缩小的图都 *预先存储* 起来。例如 一张64*64的图片,会产生64*64, 32*32,16*16,8*8,4*4, 2*2,1*1的7张图片,当屏幕上 需要绘制像素点 为20*20 时，程序只是利用 32*32 和 16*16 这两张图片来计算 出即将显示为 20*20 大小的一个图片，这比单独利用 32*32 的那张原始片计算出来的图片效果要好得多，速度也更快.
 - mip level： 一系列缩略图的编号即为mip level。 *level 0为原图*，之后的每一个level 都比上一个level长宽缩减到一半， 也就是按照2的倍数进行缩小 直到1X1。 Mip层0是最初的图像，之后的mip层被称为mip链。
@@ -318,7 +406,7 @@ GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL); // �
 - 顶点着色器赋予程序员一次操作一个顶点的能力(“逐个顶点”处理): 顶点着色器主要的目的是把3D坐标转为另一种3D坐标.
 - 几何着色器赋予了一次操作一个图元的能力(“逐个图元”处理)：它可以通过产生新顶点构造出新的图元来生成其他形状
 - 光栅化 Rasterization： 找出最佳逼近图元的像素集（比如三角形） + 插值算出图元内部所有像素点的颜色
-- 片段着色器允许一次操作一个像素(“逐个片段”处理)：目的是计算一个像素的最终颜色，这也是所有OpenGL高级效果产生的地方
+- 片段着色器允许一次操作一个像素(“逐个片段”处理)：目的是计算一个像素的最终颜色，这也是所有OpenGL高级效果产生的地方。通常，片段着色器包含3D场景的数据（比如光照、阴影、光的颜色等等），这些数据可以被用来计算最终像素的颜色。
 
 ** 变换 Transformation: 几何变换 -> 投影裁剪NDC -> 视口变换
 *顶点*  : 管线的输入是那些预先定义好的三维空间中的点，而不是直接输入三角形，在后面三维空点的投影到二维屏幕后，再决定那三个点形成一个三角形。
@@ -450,13 +538,13 @@ FragColor = vec4(result, 1.0);
 * OpenGL函数
 
 ** glBufferData( GLenum target,  GLsizeiptr size,  const GLvoid * data,  GLenum usage ) 把在CPU中定义的数据传输到GPU的缓冲中。 CPU => GPU
-1. 目标缓冲的类型：顶点缓冲对象当前绑定到GL_ARRAY_BUFFER目标上。
+1. 目标缓冲的类型：顶点缓冲对象VBO的缓冲类型是GL_ARRAY_BUFFER。
 2. 指定传输数据的大小(以字节为单位)；用一个简单的sizeof计算出顶点数据大小就行。
 3. 是我们希望发送的实际数据。
 4. 指定了我们希望显卡如何管理给定的数据。它有三种形式：
    - GL_STATIC_DRAW ：数据不会或几乎不会改变。
-   - GL_DYNAMIC_DRAW：数据会被改变很多。
-   - GL_STREAM_DRAW ：数据每次绘制时都会改变。
+   - GL_DYNAMIC_DRAW：数据会被改变很多。这样就能确保显卡把数据放在能够高速写入的内存部分。
+   - GL_STREAM_DRAW ：数据每次绘制时都会改变。这样就能确保显卡把数据放在能够高速写入的内存部分。
 
 ** glVertexAttribPointer(index, size, type, normalized, stride, GLvoid * pointer) 一个VBO对应一个顶点属性。该函数建立他们的对应关系
 设置顶点属性指针，把VBO中的数据，赋值给某个在顶点着色器中定义的顶点属性(Vertex Attribute)。通过顶点属性变量layout(location = 0)定义的位置索引值，来建立关联。每个顶点属性从一个VBO获得它的数据，具体是哪个VBO（程序可以有多个VBO）？是通过在调用glVertexAttribPointer时绑定到GL_ARRAY_BUFFER的VBO决定。
@@ -468,7 +556,7 @@ FragColor = vec4(result, 1.0);
    - stride是相对于一组属性来说的，而不是对于属性的每一个成分来说的。以具有3个分量的顶点属性为例，有x、y、z三个成分，将x、y、z看做一组，stride是每一组之间的步幅。
 6. offset：指定顶点数据在缓冲区起始位置的偏移量，这里是0
 
-** void glDrawArrays(mode, first, count) 绘制图元
+** void glDrawArrays(mode, first, count) VAO绑定VBO时，用来绘制图元
 触发绘制开始执行 >> 先把缓冲区的数据传给顶点属性 >> 然后着色器开始执行：先逐顶点执行vertex shader...再逐片元执行fragment shader。
 1. mode绘图模式：需要绘制的图元primitives类型： 可以绘制的3种基本图元是：点、线、三角形。其它的图形都是由这3种基本图元组成。
    - GL_POINTS：将传入的顶点坐标作为单独的点绘制
