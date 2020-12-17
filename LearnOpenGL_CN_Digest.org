@@ -220,7 +220,7 @@ glGenBuffers(1, &VBO);          // 创建1个缓存对象，并把缓存的ID保
 glBindVertexArray(VAO);
 
 // VBO绑定、传输数据CPU => GPU、把一个VBO和一个顶点属性关联起来
-glBindBuffer(GL_ARRAY_BUFFER, VBO); // 绑定缓冲类型：顶点缓冲对象的类型是GL_ARRAY_BUFFER。也可以理解成，这里才是真正把缓冲定义为VBO类型，上面创建缓冲区时，并没有🔝类型。
+glBindBuffer(GL_ARRAY_BUFFER, VBO); // 绑定缓冲类型：顶点缓冲对象的类型是GL_ARRAY_BUFFER。也可以理解成，这里才是真正把缓冲定义为VBO类型，上面创建缓冲区时，并没有指定类型。
 glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);  //一次性把CPU中定义的顶点数据传到GPU的VBO。 CPU => GPU
 glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0); // 一个VBO对应一个顶点属性，这里把两者关联对应起来。
 glEnableVertexAttribArray(0);   // 以顶点属性位置值为参数layout (location = 0) ，启用顶点属性；顶点属性默认是禁用的。
