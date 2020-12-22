@@ -99,6 +99,16 @@ void glViewport(GLint x, GLint y, GLint width, GLint height)
 - 若w==0，则向量(x, y, z, 0) 表示的是方向。 此时，这个向量就不能位移，”平移一个方向”是毫无意义的。
 
 ** GLSL着色语言(OpenGL Shading Language)基础
+着色器(Shader)是运行在GPU上的小程序，它们之间不能相互通信；它们之间唯一的沟通只有通过输入和输出。着色器的开头总是要声明版本，接着是输入和输出变量inout变量、uniform和main函数。每个着色器的入口点都是main函数，在这个函数中我们处理所有的输入变量（用in关键字声明的变量），并将结果输出到输出变量中（用out关键字声明的变量）。
+- 每个输入变量也叫顶点属性(Vertex Attribute)。我们能声明的顶点属性数量是有上限的，一般由硬件来决定，OpenGL确保至少有16个包含4分量的顶点属性可用，可查询GL_MAX_VERTEX_ATTRIBS来获取具体的上限。
+- 顶点属性变量(Vertex Attribute)不能声明为数组或结构体。in 只能用于基础数据类型：int、uint、float、double和bool + 两种容器类型向量(Vector)和矩阵(Matrix)。
+  #+begin_src c++
+int nrAttributes;
+glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
+std::cout << "Maximum nr of vertex attributes supported: " << nrAttributes << std::endl;
+  #+end_src
+
+
 *** GLSL和OpenGL的通信： uniform、inout
 *Uniform* 是一种从CPU应用向GPU着色器发送数据的一种方式。Uniform是全局的，在某一着色器里声明了它，其他着色器就可以使用它。
 #+ATTR_latex: :width 650   #+ATTR_HTML: :width 650  #+ATTR_ORG: :width 650
@@ -107,7 +117,6 @@ void glViewport(GLint x, GLint y, GLint width, GLint height)
 *** 顶点着色器(Vertex Shader)
 #+begin_src glsl
 #version 330 core                   // 声明使用的版本，同样明确表示使用核心模式。
-// 顶点属性变量(Vertex Attribute)不能声明为数组或结构体。in 只能用于数据类型 float, vec2, vec3, vec4, int, ivec2, ivec3, ivec4, uint, uvec2, uvec3, uvec4, mat2, mat2x2, mat2x3, mat2x4, mat3, mat3x3, mat3x4, mat4, mat4x2, and mat4x3.
 layout (location = 0) in vec3 aPos; //顶点属性变量用in关键字声明; layout (location = 0)设定了变量的位置值，每个顶点属性的位置值要唯一；顶点变量是只读的，不能修改。
 
 void main()
