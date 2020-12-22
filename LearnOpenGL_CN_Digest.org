@@ -98,11 +98,37 @@ void glViewport(GLint x, GLint y, GLint width, GLint height)
 - 若w==1，则向量(x, y, z, 1）表示的是空间中的点。
 - 若w==0，则向量(x, y, z, 0) 表示的是方向。 此时，这个向量就不能位移，”平移一个方向”是毫无意义的。
 
+*** 向量vec的分量重组swizzling
+- 向量的分量可以通过vec.x这种方式获取，这里x是指这个向量的第一个分量。你可以分别使用.x、.y、.z和.w来获取它们的第1、2、3、4个分量。GLSL也允许你对颜色使用rgba，或是对纹理坐标使用stpq访问相同的分量。
+  - x, y, z, w:  顶点坐标的分量
+  - r, g, b, a:  颜色分量
+  - s, t, p, q   纹理坐标分量
+- 分量重组swizzling：分量可以进行“任意搭配组合”去访问向量各个位置的数据，这也是它被称作swizzle的原因。
+  #+begin_src javascript
+vec4 v4 = vec4(1.0, 2.0, 3.0, 4.0);
+float f;
+f = v4.x; // 设f为 1.0
+f = v4.w; // 设f为 4.0
+
+vec2 v2;
+v2 = v4.xy  // 设v2为（1.0， 2.0）
+v2 = v4.yw  // 设v2为（2.0， 4.0）可以省略任意分量
+v2 = v4.yy  // 设v2为（2.0， 2.0）可以重复任意分量
+v2 = v4.wx  // 设v2为（4.0， 1.0）可以逆序
+  #+end_src
+- 分量重组swizzling也可以用在赋值表达式（=）的左值
+  #+begin_src javascript
+vec4 v4 = vec4(1.0, 2.0, 3.0, 4.0);
+v4.xw = vec2(5.0, 6.0);  // v4 = (5.0, 2.0, 3.0, 6.0) x和w分量的值变了
+  #+end_src
+
+
 ** GLSL着色语言(OpenGL Shading Language)基础
 着色器(Shader)是运行在GPU上的小程序，它们之间不能相互通信；它们之间唯一的沟通只有通过输入和输出。着色器的开头总是要声明版本，接着是输入和输出变量inout变量、uniform和main函数。每个着色器的入口点都是main函数，在这个函数中我们处理所有的输入变量（用in关键字声明的变量），并将结果输出到输出变量中（用out关键字声明的变量）。
 - 每个输入变量也叫顶点属性(Vertex Attribute)。我们能声明的顶点属性数量是有上限的，一般由硬件来决定，OpenGL确保至少有16个包含4分量的顶点属性可用，可查询GL_MAX_VERTEX_ATTRIBS来获取具体的上限。
 - 顶点属性变量(Vertex Attribute)不能声明为数组或结构体。in 只能用于基础数据类型：int、uint、float、double和bool + 两种容器类型向量(Vector)和矩阵(Matrix)。
   #+begin_src c++
+// 查询最多可以声明几个顶点属性
 int nrAttributes;
 glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
 std::cout << "Maximum nr of vertex attributes supported: " << nrAttributes << std::endl;
