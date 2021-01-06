@@ -98,32 +98,12 @@ void glViewport(GLint x, GLint y, GLint width, GLint height)
 - 若w==1，则向量(x, y, z, 1）表示的是空间中的点。
 - 若w==0，则向量(x, y, z, 0) 表示的是方向。 此时，这个向量就不能位移，”平移一个方向”是毫无意义的。
 
-*** 向量vec的分量重组swizzling
-- 向量的分量可以通过vec.x这种方式获取，这里x是指这个向量的第一个分量。你可以分别使用.x、.y、.z和.w来获取它们的第1、2、3、4个分量。GLSL也允许你对颜色使用rgba，或是对纹理坐标使用stpq访问相同的分量。
-  - x, y, z, w:  顶点坐标的分量
-  - r, g, b, a:  颜色分量
-  - s, t, p, q   纹理坐标分量
-- 分量重组swizzling：分量可以进行“任意搭配组合”去访问向量各个位置的数据，这也是它被称作swizzle的原因。
-  #+begin_src javascript
-vec4 v4 = vec4(1.0, 2.0, 3.0, 4.0);
-float f;
-f = v4.x; // 设f为 1.0
-f = v4.w; // 设f为 4.0
-
-vec2 v2;
-v2 = v4.xy  // 设v2为（1.0， 2.0）
-v2 = v4.yw  // 设v2为（2.0， 4.0）可以省略任意分量
-v2 = v4.yy  // 设v2为（2.0， 2.0）可以重复任意分量
-v2 = v4.wx  // 设v2为（4.0， 1.0）可以逆序
-  #+end_src
-- 分量重组swizzling也可以用在赋值表达式（=）的左值
-  #+begin_src javascript
-vec4 v4 = vec4(1.0, 2.0, 3.0, 4.0);
-v4.xw = vec2(5.0, 6.0);  // v4 = (5.0, 2.0, 3.0, 6.0) x和w分量的值变了
-  #+end_src
-
 
 ** GLSL着色语言(OpenGL Shading Language)基础
+GLSL中包含C等其它语言大部分的默认基础数据类型：int、uint、float、double和bool。GLSL也有两种容器类型，分别是向量(Vector)和矩阵(Matrix)。
+
+
+*** 着色器Shader
 着色器(Shader)是运行在GPU上的小程序，它们之间不能相互通信；它们之间唯一的沟通只有通过输入和输出。着色器的开头总是要声明版本，接着是输入和输出变量inout变量、uniform和main函数。每个着色器的入口点都是main函数，在这个函数中我们处理所有的输入变量（用in关键字声明的变量），并将结果输出到输出变量中（用out关键字声明的变量）。
 - 每个输入变量也叫顶点属性(Vertex Attribute)。我们能声明的顶点属性数量是有上限的，一般由硬件来决定，OpenGL确保至少有16个包含4分量的顶点属性可用，可查询GL_MAX_VERTEX_ATTRIBS来获取具体的上限。
 - 顶点属性变量(Vertex Attribute)不能声明为数组或结构体。in 只能用于基础数据类型：int、uint、float、double和bool + 两种容器类型向量(Vector)和矩阵(Matrix)。
@@ -344,7 +324,41 @@ glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // 当用EBO绑定顶点索
 #+end_src
 
 
-*** 向量： 向量相乘可以交换位置；点乘和叉乘
+*** 向量 vector
+GLSL中的向量是一个可以包含有1、2、3或者4个分量的容器，分量的类型可以是前面默认基础类型的任意一个。它们可以是下面的形式（n代表分量的数量）
+- vecn   包含n个float分量的默认向量。大多数时候我们使用vecn，因为float足够满足大多数要求了。
+- bvecn  包含n个bool分量的向量
+- ivecn  包含n个int分量的向量
+- uvecn  包含n个unsigned int分量的向量
+- dvecn  包含n个double分量的向量
+
+**** 向量vec的分量重组swizzling
+- 向量的分量可以通过vec.x这种方式获取，这里x是指这个向量的第一个分量。你可以分别使用.x、.y、.z和.w来获取它们的第1、2、3、4个分量。GLSL也允许你对颜色使用rgba，或是对纹理坐标使用stpq访问相同的分量。
+  - x, y, z, w:  顶点坐标的分量
+  - r, g, b, a:  颜色分量
+  - s, t, p, q   纹理坐标分量
+- 分量重组swizzling：分量可以进行“任意搭配组合”去访问向量各个位置的数据，这也是它被称作swizzle的原因。
+  #+begin_src javascript
+vec4 v4 = vec4(1.0, 2.0, 3.0, 4.0);
+float f;
+f = v4.x; // 设f为 1.0
+f = v4.w; // 设f为 4.0
+
+vec2 v2;
+v2 = v4.xy  // 设v2为（1.0， 2.0）
+v2 = v4.yw  // 设v2为（2.0， 4.0）可以省略任意分量
+v2 = v4.yy  // 设v2为（2.0， 2.0）可以重复任意分量
+v2 = v4.wx  // 设v2为（4.0， 1.0）可以逆序
+  #+end_src
+- 分量重组swizzling也可以用在赋值表达式（=）的左值
+  #+begin_src javascript
+vec4 v4 = vec4(1.0, 2.0, 3.0, 4.0);
+v4.xw = vec2(5.0, 6.0);  // v4 = (5.0, 2.0, 3.0, 6.0) x和w分量的值变了
+  #+end_src
+
+
+**** 向量相乘可以交换位置；点乘和叉乘
+
 
 *** 矩阵： 矩阵相乘不能交换位置
 ****** OpenGL API接受的矩阵要求是 *列主序*
