@@ -102,11 +102,33 @@ void glViewport(GLint x, GLint y, GLint width, GLint height)
 ** GLSL着色语言(OpenGL Shading Language)基础
 GLSL中包含C等其它语言大部分的默认基础数据类型：int、uint、float、double和bool。GLSL也有两种容器类型，分别是向量(Vector)和矩阵(Matrix)。
 
+*** GLSL缺省内置变量（预定义变量）
+**** 顶点着色器Vertex Shader 缺省内置输入变量
+- in int gl_VertexID;    当前正在处理的顶点的索引
+- in int gl_InstanceID;  当进行实例渲染时instance rendering，保存了当前实例的索引。实例计数总是从0开始，即使在使用基础实例调用时也是如此。当不使用实例渲染时，这个值将为0。
+- in int gl_DrawID; // Requires GLSL 4.60 or ARB_shader_draw_parameters
+- in int gl_BaseVertex; // Requires GLSL 4.60 or ARB_shader_draw_parameters
+- in int gl_BaseInstance; // Requires GLSL 4.60 or ARB_shader_draw_parameters
+
+**** 顶点着色器Vertex Shader 缺省内置输出变量
+- out vec4 gl_Position;   用于输出顶点裁剪后的坐标
+- out float gl_PointSize; 被光栅化的点的像素宽度/高度; 默认1个point对应1个pixel的大小。 语句glPointSize(30.0f) 可以把1个point设置成30个像素的大小。
+- out float gl_ClipDistance[]; 允许着色器设置顶点到每个用户定义的剪切半空间的距离。非负距离意味着顶点在剪切平面的内部/后面，负距离意味着顶点在剪切平面的外部/前面。数组中的每个元素就是一个夹平面。为了使用这个变量，用户必须手动重新声明它的大小。
+
+**** 片段着色器Fragment Shader 缺省内置输入变量
+- in vec4 gl_FragCoord;
+- in bool gl_FrontFacing;
+- in vec2 gl_PointCoord;
+
+**** 片段着色器Fragment Shader 缺省内置输出变量
+- out float gl_FragDepth;
 
 *** 着色器Shader
-着色器(Shader)是运行在GPU上的小程序，它们之间不能相互通信；它们之间唯一的沟通只有通过输入和输出。着色器的开头总是要声明版本，接着是输入和输出变量inout变量、uniform和main函数。每个着色器的入口点都是main函数，在这个函数中我们处理所有的输入变量（用in关键字声明的变量），并将结果输出到输出变量中（用out关键字声明的变量）。
-- 每个输入变量也叫顶点属性(Vertex Attribute)。我们能声明的顶点属性数量是有上限的，一般由硬件来决定，OpenGL确保至少有16个包含4分量的顶点属性可用，可查询GL_MAX_VERTEX_ATTRIBS来获取具体的上限。
-- 顶点属性变量(Vertex Attribute)不能声明为数组或结构体。in 只能用于基础数据类型：int、uint、float、double和bool + 两种容器类型向量(Vector)和矩阵(Matrix)。
+着色器(Shader)是运行在GPU上的小程序，为了保障最大程度的并发，Shader是不能相互通信的，彼此之间没有状态依赖。；它们之间唯一的沟通只有通过输入和输出。
+- 着色器的开头总是要声明版本，接着是输入和输出变量inout变量、uniform和main函数。只要一个输出变量out与下一个着色器的输入变量in类型和名字都一样的时候，它就会传递下去。
+- 每个输入变量不能声明为数组或结构体。in 只能用于基础数据类型：int、uint、float、double和bool + 两种容器类型向量(Vector)和矩阵(Matrix)。
+- 着色器的入口点都是main函数，在这个函数中我们处理所有的输入变量（用in关键字声明的变量），并将结果输出到输出变量中（用out关键字声明的变量）。
+- 我们能声明的顶点属性数量是有上限的，一般由硬件来决定，OpenGL确保至少有16个包含4分量的顶点属性可用，可查询GL_MAX_VERTEX_ATTRIBS来获取具体的上限。
   #+begin_src c++
 // 查询最多可以声明几个顶点属性
 int nrAttributes;
@@ -116,7 +138,7 @@ std::cout << "Maximum nr of vertex attributes supported: " << nrAttributes << st
 
 
 *** GLSL和OpenGL的通信： uniform、inout
-*Uniform* 是一种从CPU应用向GPU着色器发送数据的一种方式。Uniform是全局的，在某一着色器里声明了它，其他着色器就可以使用它。
+*Uniform* 是一种从CPU应用向GPU着色器发送数据的一种方式。Uniform是全局、而且是只读的，在某一着色器里声明了它，其他着色器就可以使用它。
 #+ATTR_latex: :width 650   #+ATTR_HTML: :width 650  #+ATTR_ORG: :width 650
 [[file:OpenGL/glsl_opengl.jpg]]
 
@@ -134,7 +156,7 @@ void main()
 *** 片段着色器(Fragment Shader): 片段着色器所做的是计算像素最后的颜色输出。
 #+begin_src glsl
 #version 330 core                // 声明使用的版本，同样明确表示使用核心模式。
-out vec4 FragColor;              // 片段着色器只需要一个输出变量，用out关键字声明输出变量，这里把变量命名为FragColor。
+out vec4 FragColor;              // 片段着色器只需要一个输出变量，用来生成最终像素的颜色。用out关键字声明输出变量，这里把变量命名为FragColor。
 
 void main()
 {
@@ -677,5 +699,5 @@ gluPerspective(45.0f, (GLfloat)cx/(GLfloat)cy, 0.1f, 100.0f)；  //对图像进�
 屏幕撕裂现象Screen tearing: 就是当GPU往屏幕渲染的帧率大于屏幕刷新的帧率(监视器刷新帧率)，也就是说，当屏幕绘制（刷新）一帧还没绘制完，只绘制了其中的一部分时， GPU就已经向屏幕输送了好几帧，而屏幕会继续绘制（刷新），但这时用的数据是GPU向屏幕更新的数据，结果就是屏幕显示的内容并不是某个帧的完整数据，而是几个不同帧的混杂，这就是屏幕撕裂的问题。 而解决这种问题的方式，设置交换间隔为1，开启 Vsync垂直同步，我们就可以实现稳定的帧率。此外，帧率将与我们的显卡刷新率相匹配。也就是说，如果显卡的刷新频率是60FPS。我们可以通过在glfwSwapInterval方法中设置高于1的数字来降低这个速率（如果我们设置为2，我们将得到30FPS）。
 
 ** void glPointSize(GLfloat size) 指定光栅化的时候，每个点对应几个像素。
-默认1个point对应1个pixel的大小。 语句 glPointSize(30.0f) 可以把1个point设置成30个像素的大小。
+被光栅化的点的像素宽度/高度；默认1个point对应1个pixel的大小。 语句 glPointSize(30.0f) 可以把1个point设置成30个像素的大小。
 - 参数 size: 指定每个点对应几个像素。
