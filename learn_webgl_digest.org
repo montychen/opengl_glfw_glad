@@ -9,7 +9,7 @@ WebGPU是最新的Web 3D图形API，是WebGL的升级版。 由 W3C GPU for the 
   - Metal: Mac, iOS
   - Direct3D 12: Windows 10
 
-
+* 光栅（Raster）* ： 由像素构成的一个矩形网格。要在光栅上显示的数据保存于帧缓存内FrameBuffer
 
 * WebGL和画布canvas
 *计算机图形硬件系统*
