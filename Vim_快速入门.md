@@ -70,6 +70,8 @@
   ```bash
   let mapleader = ","  
   nnoremap <silent> <leader>n :NERDTreeToggle<CR>
+  "n 表示这个映射只在普通(normal)模式下生效，
+  "nore 表示这个映射是非递归的，
   ```
 
 - 重新运行vim, 然后手动执行`:PlugInstall` 插件就会自行安装
@@ -84,7 +86,21 @@
 
 # Mac系统，Vim的输入和正常模式下，解决恼人的中文输入法的切换
 
-[解决办法](https://zhuanlan.zhihu.com/p/49411224)主要使用[Vim-xkbswitch](https://github.com/lyokha/vim-xkbswitch), 具体步骤
+## [解决办法1](https://jdhao.github.io/2021/02/25/nvim_ime_mode_auto_switch/)使用 [vim-barbaric](https://github.com/rlue/vim-barbaric), 貌似这个更好用
+vim-barbaric 是一款帮助用户自动设置输入法模式的插件。
+
+1. 需要先安装 [xkbswitch-macosx](https://github.com/myshov/xkbswitch-macosx)
+```bash
+	curl -o /usr/local/bin/xkbswitch https://raw.githubusercontent.com/myshov/xkbswitch-macosx/master/bin/xkbswitch
+```
+2. 然后安装vim-barbaric插件即可, 该插件开箱即用，无需额外设置。
+```bash
+	Plug 'rlue/vim-barbaric'   " 这里使用vim-plug插件管理器安装
+```
+
+
+
+## [解决办法](https://zhuanlan.zhihu.com/p/49411224)使用[Vim-xkbswitch](https://github.com/lyokha/vim-xkbswitch), 具体步骤
 
 1. 拷贝xkbswitch 到 /usr/local/bin
    
