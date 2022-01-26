@@ -1,6 +1,7 @@
 # Vim 和 NeoVim
 
- Neovim完全兼容Vim，Neovim也完全支持用vimscript来写配置，它俩只是的配置文件名和放的目录位置不同。
+Neovim完全兼容Vim，Neovim也完全支持用vimscript来写配置，它俩只是的配置文件名和放的目录位置不同。
+由于Nvim是Vim的一个分叉，会定期从Vim合并补丁，所以基本功能几乎是一样的。有一些细微的差别，但这对初学者来说基本无关紧要。
 
 # 安装
 
@@ -127,6 +128,31 @@ vim-barbaric 是一款帮助用户自动设置输入法模式的插件。
    
    let g:XkbSwitchEnabled = 1    "默认让xkbs输入法自动切换生效
    ```
+
+
+# Markdown
+在.vimrc文件加入如下内容
+```bash
+    call plug#begin('~/.vim/plugged')
+        ...
+        "markdown support
+        Plug 'godlygeek/tabular'
+        Plug 'plasticboy/vim-markdown'
+
+        " markdown preview
+        Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
+        ...
+    call plug#end()
+    let g:vim_markdown_folding_disabled = 1  "设置md标题默认不折叠
+
+```
+在vim里运行 **`一次`** 下面的命令
+```bash
+	:source %
+	:PluginInstall
+	:call mkdp#util#install()
+```
+以后只要在vim的md文件下运行 `:MarkdownPreview` 命令就可以一边编辑，一边在浏览器里面预览了，而且两边保持同步。
 
 # 把插入模式下的光标改成闪烁的竖线(Neovim默认是可以的)
 
