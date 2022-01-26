@@ -66,10 +66,10 @@ Neovim完全兼容Vim，Neovim也完全支持用vimscript来写配置，它俩�
 
 ## 例子，配置nerdtree
 
-- 在 .vimrc 配置文件`call plug#end()`的后面添加如下配置，用来设置`,n`快捷键来激活nerdtree:
+- 在 .vimrc 配置文件`call plug#end()`的后面添加如下配置，用来设置`空格键 + n`快捷键来激活nerdtree:
   
   ```bash
-  let mapleader = ","  
+  let mapleader = " "  "注意： 双引号里有个空格，这里把leader键映射成空格键
   nnoremap <silent> <leader>n :NERDTreeToggle<CR>
   "n 表示这个映射只在普通(normal)模式下生效，
   "nore 表示这个映射是非递归的，
@@ -87,7 +87,7 @@ Neovim完全兼容Vim，Neovim也完全支持用vimscript来写配置，它俩�
 
 # Mac系统，Vim的输入和正常模式下，解决恼人的中文输入法的切换
 
-## [解决办法1](https://jdhao.github.io/2021/02/25/nvim_ime_mode_auto_switch/)使用 [vim-barbaric](https://github.com/rlue/vim-barbaric), 貌似这个更好用
+## 优先用这个[解决办法1](https://jdhao.github.io/2021/02/25/nvim_ime_mode_auto_switch/)使用 [vim-barbaric](https://github.com/rlue/vim-barbaric), 貌似这个更好用
 vim-barbaric 是一款帮助用户自动设置输入法模式的插件。
 
 1. 需要先安装 [xkbswitch-macosx](https://github.com/myshov/xkbswitch-macosx)
@@ -101,7 +101,7 @@ vim-barbaric 是一款帮助用户自动设置输入法模式的插件。
 
 
 
-## [解决办法](https://zhuanlan.zhihu.com/p/49411224)使用[Vim-xkbswitch](https://github.com/lyokha/vim-xkbswitch), 具体步骤
+## [解决办法2](https://zhuanlan.zhihu.com/p/49411224)使用[Vim-xkbswitch](https://github.com/lyokha/vim-xkbswitch), 具体步骤
 
 1. 拷贝xkbswitch 到 /usr/local/bin
    
