@@ -1,37 +1,39 @@
-# Vim 和 NeoVim(也习惯叫nvim)
+# [Vim](https://github.com/vim/vim)	和 [Neovim](https://github.com/neovim/neovim)(也习惯叫nvim)
 
 Neovim完全兼容Vim，Neovim也完全支持用vimscript来写配置，它俩只是的配置文件名和放的目录位置不同。
 由于Nvim是Vim的一个分叉，会定期从Vim合并补丁，所以基本功能几乎是一样的。有一些细微的差别，但这对初学者来说基本无关紧要。
 
+nvim除了支持使用vimscript来写配置，从0.5版本开始，nvim还添加了对lua的支持。
 # 安装
 
-- mac下安装[Vim](https://github.com/vim/vim)
-  
-  ```bash
-  brew install vim
-  ```
 
-- mac下安装[Neovim](https://github.com/neovim/neovim)
-  
-  ```bash
-  brew install neovim
-  ```
+- mac下安装Vim		` brew install vim `
+- mac下安装Neovim	 ` brew install neovim ` 。有时brew的版本太低，可以直接从nvim的github官网下载最新版本
+	1. 下载最新版本的二进制包： `nvim-macos.tar.gz`
+	2. 在命令行下解压：`tar xzvf nvim-macos.tar.gz`
+	3. 建立软连接 `ln  ***完整的目录***/nvim-osx64/bin/nvim   /usr/local/bin/nvim`
+ 
+- (可选）替换默认的vim `nvim ~/.bashrc`
+	```bash
+	alias vim='nvim'
+	alias vi='nvim'
+	```
+
 
 # 配置文件
 
-- Vim 的配置文件:  **～/.vimrc**  没有就新建一个`touch ~/.vimrc`
+- Vim 的配置文件:  **`～/.vimrc`**  没有就新建一个`touch ~/.vimrc`
 
-- Neovim的配置文件: **~/.config/nvim/init.vim**  没有就新建一个 `mkdir -p ~/.config/nvim  && touch ~/.config/nvim/init.vim`
+- Neovim的配置文件: **`~/.config/nvim/init.vim`**。也可以直接是 init.lua ，为了保证和老版本兼容，或者有一些不知怎么在lua下配置的，这里还是使用init.vim。没有就新建一个 `mkdir -p ~/.config/nvim  && touch ~/.config/nvim/init.vim`
 
 - 为了便于Neovim和Vim共享相同的配置，可以 **.vimrc** 文件里写配置，然后在Neovim的配置文件init.vim中直接引用，如：
-  
   ```bash
   source $HOME/.vimrc
   ```
 
-# 插件管理器
+# 插件管理器[vim-plug](https://github.com/junegunn/vim-plug)
 
-- 目前Vim和Neovim主流主的插件管理器是 [vim-plug](https://github.com/junegunn/vim-plug)
+- 目前Vim和Neovim都可以使用的主流插件管理器是vim-plug
  ```bash
  # 为Vim安装插件管理器vim-plug, 默认安装在 (~/.vim/autoload)
  curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
@@ -42,7 +44,7 @@ Neovim完全兼容Vim，Neovim也完全支持用vimscript来写配置，它俩�
  https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim 
  ```
 
-# 用vim-plug安装插件
+## 用vim-plug安装插件
 
 - 在vim的配置文件.vimrc（neovim是init.vim)里，把要安装的插件放在`call plug#begin(PLUGIN_DIRECTORY)` 和 `call plug#end()` 之间 ; PLUGIN_DIRECTORY 是占位符，要用实际插件的安装目录代替。 vim插件一般安装在`~/.vim/plugged`。Neovim的插件也可以安装在这里。
 
@@ -60,8 +62,6 @@ Neovim完全兼容Vim，Neovim也完全支持用vimscript来写配置，它俩�
   ```
 
 ## 例子，配置nerdtree
-
-
 - 在 .vimrc 配置文件`call plug#end()`的后面添加如下配置，用来设置`空格键 + n`快捷键来激活nerdtree:
   
   ```bash
@@ -80,6 +80,121 @@ Neovim完全兼容Vim，Neovim也完全支持用vimscript来写配置，它俩�
 - 移除插件，移除配置文件的地址，执行 :PlugClean 命令即可。
 
 - 关闭插件执行界面是快捷键 q
+
+
+# 只有Neovim可用的插件管理器[packer.nvim](https://github.com/wbthomason/packer.nvim)
+
+## 在vimscript配置文件（比如init.vim)中执行lua
+
+在`init.vim`文件里可以直接写 `lua`代码，这样
+```
+lua print('单行 lua')
+```
+
+多行调用
+```
+lua <<EOF
+print('多行 lua')
+print('多行 lua')
+EOF
+```
+
+在init.vim 中加载其他 lua 文件
+```
+" 加载 lua/basic.lua 文件
+lua require('basic')
+```
+
+## 在lua配置文件（init.lua)中执行vimscript代码，或者把**init.vim**的配置移植到**init.lua**
+`vim.cmd("set notimeout")` 是一个安全操作，无论你向vim.cmd传输了什么字符串，他们都会被转义成为Vimscript。多行代码可以使用双方括号`[[...]]`来完成
+```lua
+vim.cmd([[
+set notimeout
+set encoding=utf-8
+]])
+```
+- `vim.g.mapleader = ","` 等价于 `let g:mapleader = ','`； 注意**vim.g**对应的是 **let** 代表**全局变量**的表
+- `vim.o.encoding="utf-8"` 等价于 `set encoding=utf-8`；其对应的是 **set** ，其中：
+	- **vim.o** 用于全局设置
+	- **vim.wo** 用于窗口设置
+	- **vim.bo** 用于缓冲设置
+- 把**init.vim** 的配置移动到**init.lua**大部分设置非常简单。你只需将 `set x = y` 替换为 `vim.o.x = "y"` 就可以了。
+- 成对的布尔设置被合并为一个设置，例如，用 `vim.o.wrap = true` 和 `vim.o.wrap = false` 来代替 `set wrap` 和 `set nowrap`
+- `HOME 目录` 问题： 在使用 **~** 作为对主目录的引用时遇到问题，所以可以通过编写 `HOME = os.getenv("HOME")` 来设置 HOME 变量
+- 双反斜杠： 如果你想传递一个特殊字符 \t 给 Neovim，你需要在 Lua 中把它写成 "\\t"
+
+### 键位映射
+Lua API 具有将键映射到某些函数的功能。函数是 **vim.api.nvim_set_keymap(mode, keys, mapping, options)**
+- mode 是指代表编辑器模式的字母（n 表示正常，i 表示插入等），就像在 nmap 或 imap 等原始 vim 函数中一样
+- keys 是一个表示键组合的字符串
+- mapping 是一个表示键映射到什么的字符串
+- options 是一个表，你可以在其中传递一些附加设置。常用的两个是 `noremap = true` 和 `Silent = true`
+
+举个例子, 下面这个函数等价于 `noremap <leader>a <cmd>Git blame<cr>`
+```lua
+vim.api.nvim_set_keymap(
+  "n",
+  "<leader>a",
+  ":Git blame<cr>",
+  { noremap = true }
+ )
+```
+自己写了一些简单的函数，以避免每次都输入 **vim.api...** 
+```lua
+function map(mode, shortcut, command)
+  vim.api.nvim_set_keymap(mode, shortcut, command, { noremap = true, silent = true })
+end
+
+function nmap(shortcut, command)
+  map('n', shortcut, command)
+end
+
+function imap(shortcut, command)
+  map('i', shortcut, command)
+end
+```
+有了这些函数，上面的例子可以写成下面这样，可读性更好了
+```lua
+nmap("<leader>a", "<cmd>Git blame<cr>")     -- 等价于 noremap <leader>a <cmd>Git blame<cr>
+```
+
+
+## 一分钟的时间学会 Lua 语言
+```lua
+-- 这是一个注释
+num = 22 -- 这是一个声明了number类型的全局变量
+local num2 = 33 -- 本地变量
+
+-- 定义字符串
+str1 = 'this is a string'
+str2 = "and so is this"
+str3 = [[ and this is a string too ]]
+str4 = "string " .. "concatenation"  --字符串连接使用 .. 运算符
+
+val = true and not false -- 布尔和逻辑操作符
+
+if str1 == 'something' then
+  print("YES")
+elseif str2 ~= 'is not equal' then
+  print('Maybe')
+else
+  print('no')
+end
+
+function printText(text)
+  print(text)
+  return true
+end
+
+tab1 = { 'this', 'is, 'a', 'table' }   -- 一个数组
+tab2 = { also = 'this is a table' }    -- 表是数组和词典类型的组合
+tab2["new_key"] = "new value"
+
+print(tab2["also"])
+
+require('plugins') -- 加载lua目录下的plugins.lua文件并且执行它
+```
+
 
 # Mac系统，Vim的输入和正常模式下，解决恼人的中文输入法的切换
 
@@ -176,6 +291,8 @@ Plug 'rlue/vim-barbaric'   " 这里使用vim-plug插件管理器安装
 	autocmd InsertLeave,WinEnter * set cursorline    "高亮当前行
 	autocmd InsertEnter,WinLeave * set nocursorline  "插入模式，取消当前行高亮
 
+	set encoding=UTF-8
+
 	set tabstop=4           “tab 4个空格
 	set softtabstop=4
 	set shiftwidth=4
@@ -187,11 +304,12 @@ Plug 'rlue/vim-barbaric'   " 这里使用vim-plug插件管理器安装
 
 ## 快捷键定义or映射
 
-  let mapleader = " "							  "注意： 双引号里有个空格，这里把leader键映射成空格键
-	inoremap jj <Esc>									 "在插入模式下，连续输入jj可以退出插入模式
+	let mapleader = " "				  "注意： 双引号里有个空格，这里把leader键映射成空格键
+	inoremap jj <Esc>						"在插入模式下，连续输入jj可以退出插入模式
 
-	nmap ss :split<Return><C-w>w			"正常模式下，ss水平切分窗口
-	nmap sv :vsplit<Return><C-w>w			"正常模式下，sv垂直切分窗口
+	nmap sp :split<Return><C-w>w			"正常模式下，sp水平切分窗口
+	nmap vsp :vsplit<Return><C-w>w			"正常模式下，vsp垂直切分窗口
+
 
 
 ## 拆分窗口
@@ -202,7 +320,7 @@ Plug 'rlue/vim-barbaric'   " 这里使用vim-plug插件管理器安装
 	ddp
 
 ## 正常模式下，选中全部内容
-	ggvG
+	ggVG
 
 
 
