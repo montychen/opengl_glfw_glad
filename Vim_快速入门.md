@@ -24,7 +24,9 @@ nvim除了支持使用vimscript来写配置，从0.5版本开始，nvim还添加
 
 - Vim 的配置文件:  **`～/.vimrc`**  没有就新建一个`touch ~/.vimrc`
 
-- Neovim的配置文件: **`~/.config/nvim/init.vim`**。也可以直接是 init.lua ，为了保证和老版本兼容，或者有一些不知怎么在lua下配置的，这里还是使用init.vim。没有就新建一个 `mkdir -p ~/.config/nvim  && touch ~/.config/nvim/init.vim`
+- Neovim的配置文件: **init.vim** 或者 **init.lua** ，二选一，如果init.lua存在则不会加载init.vim文件。没有就新建一个 `mkdir -p ~/.config/nvim  && touch ~/.config/nvim/init.vim`
+	- **~/.config/nvim/init.vim** 默认是用vimscript语言。在init.vim文件里也可以调用lua，见后面描述。
+	- **~/.config/nvim/init.lua** 默认使用lua语言。 在init.lua里也可以调用vimscript，见后面描述。
 
 - 为了便于Neovim和Vim共享相同的配置，可以 **.vimrc** 文件里写配置，然后在Neovim的配置文件init.vim中直接引用，如：
   ```bash
@@ -83,6 +85,15 @@ nvim除了支持使用vimscript来写配置，从0.5版本开始，nvim还添加
 
 
 # 只有Neovim可用的插件管理器[packer.nvim](https://github.com/wbthomason/packer.nvim)
+```lua
+return require('packer').startup(function()
+  use 'wbthomason/packer.nvim'
+
+  -- 下面用use列出需要安装的插件
+  use 'tpope/vim-fugitive'			-- Git插件 
+  use { 'tpope/vim-rails', ft = "ruby" }	-- 只有打开的文件类型是Ruby文件时，才加载该插件
+end)
+```
 
 ## 在vimscript配置文件（比如init.vim)中执行lua
 
@@ -108,6 +119,8 @@ lua require('basic')
 ## 在lua配置文件（init.lua)中执行vimscript代码，或者把**init.vim**的配置移植到**init.lua**
 `vim.cmd("set notimeout")` 是一个安全操作，无论你向vim.cmd传输了什么字符串，他们都会被转义成为Vimscript。多行代码可以使用双方括号`[[...]]`来完成
 ```lua
+-- 可能你已经使用了一些包管理器，比如vim-plug，当转向 Lua 时不需要更改它
+-- 只需将整个插件列表包装在 vim.cmd 中并像以前一样继续使用它。
 vim.cmd([[
 set notimeout
 set encoding=utf-8
@@ -301,6 +314,10 @@ Plug 'rlue/vim-barbaric'   " 这里使用vim-plug插件管理器安装
 
 	autocmd InsertLeave,WinEnter * set cursorline    "高亮当前行
 	autocmd InsertEnter,WinLeave * set nocursorline  "插入模式，取消当前行高亮
+
+	set scrolloff=8			"jk移动时光标到底部时，光标上下方保留8行
+	set sidescrolloff=8
+
 
 ## 快捷键定义or映射
 
