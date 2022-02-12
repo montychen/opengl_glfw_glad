@@ -24,7 +24,7 @@ nvim除了支持使用vimscript来写配置，从0.5版本开始，nvim还添加
 
 - Vim 的配置文件:  **`～/.vimrc`**  没有就新建一个`touch ~/.vimrc`
 
-- Neovim的配置文件: **init.vim** 或者 **init.lua** ，二选一，如果init.lua存在则不会加载init.vim文件。没有就新建一个 `mkdir -p ~/.config/nvim  && touch ~/.config/nvim/init.vim`
+- Neovim的配置文件: 下面的**init.vim** 或者 **init.lua** 只能二选一，如果init.lua存在则不会加载init.vim文件。没有就新建一个 `mkdir -p ~/.config/nvim  && touch ~/.config/nvim/init.vim`
 	- **~/.config/nvim/init.vim** 默认是用vimscript语言。在init.vim文件里也可以调用lua，见后面描述。
 	- **~/.config/nvim/init.lua** 默认使用lua语言。 在init.lua里也可以调用vimscript，见后面描述。
 
@@ -85,17 +85,27 @@ nvim除了支持使用vimscript来写配置，从0.5版本开始，nvim还添加
 
 
 # 只有Neovim可用的插件管理器[packer.nvim](https://github.com/wbthomason/packer.nvim)
+安装**packer.nvim**
+```bash
+git clone --depth 1 https://github.com/wbthomason/packer.nvim\
+ ~/.local/share/nvim/site/pack/packer/start/packer.nvim
+```
+在 **~/.config/nvim/lua/plugins.lua**中写好要安装的插件， 然后使用 **`:PackerSync`** 即可。
+
 ```lua
 return require('packer').startup(function()
   use 'wbthomason/packer.nvim'
 
-  -- 下面用use列出需要安装的插件
+  -- 用use列出要安装的插件
   use 'tpope/vim-fugitive'			-- Git插件 
   use { 'tpope/vim-rails', ft = "ruby" }	-- 只有打开的文件类型是Ruby文件时，才加载该插件
+
+  -- 用config配置插件
+
 end)
 ```
 
-## 在vimscript配置文件（比如init.vim)中执行lua
+## 在vimscript配置文件init.vim中执行lua
 
 在`init.vim`文件里可以直接写 `lua`代码，这样
 ```
@@ -116,8 +126,9 @@ EOF
 lua require('basic')
 ```
 
-## 在lua配置文件（init.lua)中执行vimscript代码，或者把**init.vim**的配置移植到**init.lua**
-`vim.cmd("set notimeout")` 是一个安全操作，无论你向vim.cmd传输了什么字符串，他们都会被转义成为Vimscript。多行代码可以使用双方括号`[[...]]`来完成
+## **init.lua**配置文件
+### 一、在init.lua中执行vimscript代码，
+使用 **`vim.cmd("set notimeout")`** 执行vimscript, 多行代码使用双方括号`[[...]]`来完成
 ```lua
 -- 可能你已经使用了一些包管理器，比如vim-plug，当转向 Lua 时不需要更改它
 -- 只需将整个插件列表包装在 vim.cmd 中并像以前一样继续使用它。
@@ -126,6 +137,8 @@ set notimeout
 set encoding=utf-8
 ]])
 ```
+
+### 二、使用lua配置
 - `vim.g.mapleader = ","` 等价于 `let g:mapleader = ','`； 注意**vim.g**对应的是 **let** 代表**全局变量**的表
 - `vim.o.encoding="utf-8"` 等价于 `set encoding=utf-8`；其对应的是 **set** ，其中：
 	- **vim.o** 用于全局设置
@@ -136,7 +149,7 @@ set encoding=utf-8
 - `HOME 目录` 问题： 在使用 **~** 作为对主目录的引用时遇到问题，所以可以通过编写 `HOME = os.getenv("HOME")` 来设置 HOME 变量
 - 双反斜杠： 如果你想传递一个特殊字符 \t 给 Neovim，你需要在 Lua 中把它写成 "\\t"
 
-### 键位映射
+### 三、lua键位映射
 Lua API 具有将键映射到某些函数的功能。函数是 **vim.api.nvim_set_keymap(mode, keys, mapping, options)**
 - mode 是指代表编辑器模式的字母（n 表示正常，i 表示插入等），就像在 nmap 或 imap 等原始 vim 函数中一样
 - keys 是一个表示键组合的字符串
@@ -315,8 +328,8 @@ Plug 'rlue/vim-barbaric'   " 这里使用vim-plug插件管理器安装
 	autocmd InsertLeave,WinEnter * set cursorline    "高亮当前行
 	autocmd InsertEnter,WinLeave * set nocursorline  "插入模式，取消当前行高亮
 
-	set scrolloff=8			"jk移动时光标到底部时，光标上下方保留8行
-	set sidescrolloff=8
+	set scrolloff=3			"jk移动时光标到底部时，光标上下方保留3行
+	set sidescrolloff=3
 
 
 ## 快捷键定义or映射
@@ -325,13 +338,13 @@ Plug 'rlue/vim-barbaric'   " 这里使用vim-plug插件管理器安装
 	inoremap jj <Esc>						"在插入模式下，连续输入jj可以退出插入模式
 
 	nmap sp :split<Return><C-w>w			"正常模式下，sp水平切分窗口
-	nmap vsp :vsplit<Return><C-w>w			"正常模式下，vsp垂直切分窗口
+	nmap vs :vsplit<Return><C-w>w			"正常模式下，vs垂直切分窗口
 
 
 
 ## 拆分窗口
-	垂直拆分 :vsp
 	水平拆分 :sp
+	垂直拆分 :vs    or  :vsp
 
 ## 交换当前行和下一行
 	ddp
