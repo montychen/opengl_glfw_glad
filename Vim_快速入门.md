@@ -35,7 +35,10 @@ nvim除了支持使用vimscript来写配置，从0.5版本开始，nvim还添加
 
 # 插件管理器[vim-plug](https://github.com/junegunn/vim-plug)
 
-- 目前Vim和Neovim都可以使用的主流插件管理器是vim-plug
+
+vim-plug是Vim和Neovim都可以使用的主流插件管理器
+
+安装vim-plug
  ```bash
  # 为Vim安装插件管理器vim-plug, 默认安装在 (~/.vim/autoload)
  curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
@@ -90,9 +93,11 @@ nvim除了支持使用vimscript来写配置，从0.5版本开始，nvim还添加
 git clone --depth 1 https://github.com/wbthomason/packer.nvim\
  ~/.local/share/nvim/site/pack/packer/start/packer.nvim
 ```
-在 **~/.config/nvim/lua/plugins.lua**中写好要安装的插件， 然后使用 **`:PackerSync`** 即可。
-
+使用packer.nvim安装插件
+1. 在 ~/.config/nvim/lua/plugins.lua中写好要安装的插件
+2. 运行 :PackerSync 即可，该命令会一次性完成安装、更新、清理、配置。
 ```lua
+--  ~/.config/nvim/lua/plugins.lua
 return require('packer').startup(function()
   use 'wbthomason/packer.nvim'
 
