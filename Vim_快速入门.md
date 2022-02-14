@@ -1,13 +1,14 @@
 # [Vim](https://github.com/vim/vim)	和 [Neovim](https://github.com/neovim/neovim)(也习惯叫nvim)
 
+Neovim比vim好用太多，推荐使用Neovim
+
 Neovim完全兼容Vim，Neovim也完全支持用vimscript来写配置，它俩只是的配置文件名和放的目录位置不同。
 由于Nvim是Vim的一个分叉，会定期从Vim合并补丁，所以基本功能几乎是一样的。有一些细微的差别，但这对初学者来说基本无关紧要。
 
 nvim除了支持使用vimscript来写配置，从0.5版本开始，nvim还添加了对lua的支持。
+
+
 # 安装
-
-
-- mac下安装Vim		` brew install vim `
 - mac下安装Neovim	 ` brew install neovim ` 。有时brew的版本太低，可以直接从nvim的github官网下载最新版本
 	1. 下载最新版本的二进制包： `nvim-macos.tar.gz`
 	2. 在命令行下解压：`tar xzvf nvim-macos.tar.gz`
@@ -18,17 +19,19 @@ nvim除了支持使用vimscript来写配置，从0.5版本开始，nvim还添加
 	alias vim='nvim'
 	alias vi='nvim'
 	```
-
+- mac下安装Vim		` brew install vim `
 
 # 配置文件
 
 - Vim 的配置文件:  **`～/.vimrc`**  没有就新建一个`touch ~/.vimrc`
 
-- Neovim的配置文件: 下面的**init.vim** 或者 **init.lua** 只能二选一，如果init.lua存在则不会加载init.vim文件。没有就新建一个 `mkdir -p ~/.config/nvim  && touch ~/.config/nvim/init.vim`
-	- **~/.config/nvim/init.vim** 默认是用vimscript语言。在init.vim文件里也可以调用lua，见后面描述。
+- Neovim 配置文件不是 **.vimrc**, 而是下面的**init.vim** 或者 **init.lua** 只能二选一，
 	- **~/.config/nvim/init.lua** 默认使用lua语言。 在init.lua里也可以调用vimscript，见后面描述。
+	- **~/.config/nvim/init.vim** 默认是用vimscript语言。在init.vim文件里也可以调用lua，见后面描述。
+	
+  没有就新建一个 `mkdir -p ~/.config/nvim  && touch ~/.config/nvim/init.lua`
 
-- 为了便于Neovim和Vim共享相同的配置，可以 **.vimrc** 文件里写配置，然后在Neovim的配置文件init.vim中直接引用，如：
+- (几乎用不上）为了便于Neovim和Vim共享相同的配置，可以 **.vimrc** 文件里写配置，然后在Neovim的配置文件init.vim中直接引用，如：
   ```bash
   source $HOME/.vimrc
   ```
@@ -93,9 +96,10 @@ vim-plug是Vim和Neovim都可以使用的主流插件管理器
 git clone --depth 1 https://github.com/wbthomason/packer.nvim\
  ~/.local/share/nvim/site/pack/packer/start/packer.nvim
 ```
-使用packer.nvim安装插件
-1. 在 ~/.config/nvim/lua/plugins.lua中写好要安装的插件
-2. 运行 :PackerSync 即可，该命令会一次性完成安装、更新、清理、配置。
+packer.nvim安装插件
+
+创建配置文件 **~/.config/nvim/lua/plugins.lua** 
+
 ```lua
 --  ~/.config/nvim/lua/plugins.lua
 return require('packer').startup(function()
@@ -109,6 +113,17 @@ return require('packer').startup(function()
 
 end)
 ```
+修改 `init.lua` ，加载这个文件
+
+```lua
+" Packer插件管理
+require('plugins')     -- 加载文件 lua/plugins.lua
+```
+但通常无论 **安装** 还是 **更新** 插件，每次修改plugins.lua文件后，只需要下边这一条命令就够了。
+
+`:PackerSync`
+
+
 
 ## 在vimscript配置文件init.vim中执行lua
 
@@ -177,11 +192,11 @@ function map(mode, shortcut, command)
 end
 
 function nmap(shortcut, command)
-  map('n', shortcut, command)
+  map('n', shortcut, command)       -- 正常模式下映射
 end
 
 function imap(shortcut, command)
-  map('i', shortcut, command)
+  map('i', shortcut, command)       -- 输入模式下映射
 end
 ```
 有了这些函数，上面的例子可以写成下面这样，可读性更好了
@@ -224,6 +239,33 @@ tab2["new_key"] = "new value"
 print(tab2["also"])
 
 require('plugins') -- 加载lua目录下的plugins.lua文件并且执行它
+```
+
+# 我的配置init.lua
+
+我的配置文件结构, 所在目录是 **~/.config/nvim/**。 后边章节会逐个介绍
+
+```
+├── init.lua                              入口文件，这里负责加载所有lua文件夹里的文件
+└── lua                                   所有 lua 配置文件
+    ├── basic.lua                         Neovim 的基础配置
+    ├── keybindings.lua                   快捷键配置
+    ├── lsp                               内置 LSP  (Language Server Protocol) 配置
+    │   ├── diagnostic_signs.lua
+    │   ├── language_servers.lua
+    │   └── nvim-cmp-config.lua
+    ├── plugin-config                     各个插件配置在这个文件夹
+    │   ├── bufferline.lua
+    │   ├── comment.lua
+    │   ├── nvim-autopairs.lua
+    │   ├── nvim-colorizer.lua
+    │   ├── nvim-tree.lua
+    │   ├── nvim-treesitter.lua
+    │   ├── rust-tools.lua
+    │   ├── surround.lua
+    │   ├── telescope.lua
+    │   └── which-key.lua
+    └── plugins.lua                       插件安装管理
 ```
 
 
@@ -317,30 +359,33 @@ Plug 'rlue/vim-barbaric'   " 这里使用vim-plug插件管理器安装
 # vim常用命令or操作
 ## 基本配置
 
-	autocmd! bufwritepost .vimrc source ~/.vimrc		"当 .vimrc 被修改时, 自动重新加载 
-
-	autocmd InsertLeave,WinEnter * set cursorline    "高亮当前行
-	autocmd InsertEnter,WinLeave * set nocursorline  "插入模式，取消当前行高亮
+    " autocmd! bufwritepost .vimrc source ~/.vimrc	                      "当 .vimrc 被修改时, 自动重新加载 
+    autocmd! bufwritepost basic.lua source ~/.config/nvim/lua/basic.lua   "当 lua/basic.lua 被修改时, 自动重新加载 
 
 	set encoding=UTF-8
 
-	set tabstop=4           “tab 4个空格
+	set tabstop=4           "tab 4个空格
 	set softtabstop=4
 	set shiftwidth=4
+	set shiftround			" 表示缩进列数对齐到 shiftwidth 值的整数倍
+	set expandtab			" 转换tab为空格，按下Tab 键时，输入到的都是空格
+	set smarttab            " 表示插入 Tab 时使用 shiftwidth
 
-	set nu									"显示行号
+	set nu					"显示行号
+
+    set mouse=a             "开启鼠标支持
 
 	autocmd InsertLeave,WinEnter * set cursorline    "高亮当前行
 	autocmd InsertEnter,WinLeave * set nocursorline  "插入模式，取消当前行高亮
 
-	set scrolloff=3			"jk移动时光标到底部时，光标上下方保留3行
-	set sidescrolloff=3
+	set scrolloff=4			"jk移动时光标到底部时，光标上下方保留4行
+	set sidescrolloff=4
 
 
 ## 快捷键定义or映射
 
-	let mapleader = " "				  "注意： 双引号里有个空格，这里把leader键映射成空格键
-	inoremap jj <Esc>						"在插入模式下，连续输入jj可以退出插入模式
+	let mapleader = " "	        			  "注意： 双引号里有个空格，这里把leader键映射成空格键
+	inoremap jj <Esc>		    			"在插入模式下，连续输入jj可以退出插入模式
 
 	nmap sp :split<Return><C-w>w			"正常模式下，sp水平切分窗口
 	nmap vs :vsplit<Return><C-w>w			"正常模式下，vs垂直切分窗口
