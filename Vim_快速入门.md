@@ -36,6 +36,43 @@ nvim除了支持使用vimscript来写配置，从0.5版本开始，nvim还添加
   source $HOME/.vimrc
   ```
 
+# 无需而外安装插件的基本配置
+新建文件 `touch ~/.config/nvim/lua/basic.lua`
+```lua
+vim.cmd([[
+
+" autocmd! bufwritepost .vimrc source ~/.vimrc	            	 "当 .vimrc 被修改时, 自动重新加载 
+autocmd! bufwritepost basic.lua source ~/.config/nvim/lua/basic.lua   "当 lua/basic.lua 被修改时, 自动重新加载 
+
+set encoding=UTF-8
+
+let mapleader = " "	        "注意： 双引号里有个空格，这里把leader键映射成空格键
+
+set tabstop=4               "tab 4个空格
+set softtabstop=4
+set shiftwidth=4
+set shiftround		    	" 表示缩进列数对齐到 shiftwidth 值的整数倍
+set expandtab			    " 转换tab为空格，按下Tab 键时，输入到的都是空格
+set smarttab                " 表示插入 Tab 时使用 shiftwidth
+
+set nu						"显示行号
+
+set mouse=a                 "开启鼠标支持
+
+autocmd InsertLeave,WinEnter * set cursorline    "高亮当前行
+autocmd InsertEnter,WinLeave * set nocursorline  "插入模式，取消当前行高亮
+
+set scrolloff=2	    		"jk移动时光标到底部时，光标上下方保留2行
+set sidescrolloff=2
+
+let g:vim_markdown_folding_disabled = 1  "设置md标题默认不折叠
+
+]])
+```
+修改 **~/.config/nvim/init.lua** ，加载basic.lua文件
+```lua
+require('basic')		-- 基础设置, 加载文件 lua/basic.lua
+```
 
 # 只有Neovim可用的插件管理器[packer.nvim](https://github.com/wbthomason/packer.nvim)
 安装**packer.nvim**
