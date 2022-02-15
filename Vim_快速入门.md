@@ -103,16 +103,27 @@ packer.nvim安装插件
 ```lua
 --  ~/.config/nvim/lua/plugins.lua
 return require('packer').startup(function()
-  use 'wbthomason/packer.nvim'
+  use 'wbthomason/packer.nvim'   -- Packer can manage itself
 
   -- 用use列出要安装的插件
-  use 'tpope/vim-fugitive'			-- Git插件 
-  use { 'tpope/vim-rails', ft = "ruby" }	-- 只有打开的文件类型是Ruby文件时，才加载该插件
+  use 'mhinz/vim-startify'    -- 启动页列出最近打开的文件 
+  use 'rlue/vim-barbaric'     -- 中文输入法自动切换
+
+  -- 支持markdown编辑、预览, 在markdown文件下运行 :MarkdownPreview 就可以实时预览
+  use {
+      'plasticboy/vim-markdown', 
+      require = {'godlygeek/tabular'}   }   -- vim-markdown依赖tabular插件
+  use {
+      'iamcco/markdown-preview.nvim',
+      run = function() vim.fn['mkdp#util#install']() end, 
+      ft = {'markdown'}  }  -- 打开的文件类型是markdown文件时，才加载该插件
 
   -- 用config配置插件
 
 end)
+
 ```
+
 修改 `init.lua` ，加载这个文件
 
 ```lua
