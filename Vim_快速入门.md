@@ -36,59 +36,6 @@ nvim除了支持使用vimscript来写配置，从0.5版本开始，nvim还添加
   source $HOME/.vimrc
   ```
 
-# 插件管理器[vim-plug](https://github.com/junegunn/vim-plug)
-
-
-vim-plug是Vim和Neovim都可以使用的主流插件管理器
-
-安装vim-plug
- ```bash
- # 为Vim安装插件管理器vim-plug, 默认安装在 (~/.vim/autoload)
- curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
- https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-  
- # 为Neovim安装插件管理器vim-plug，默认安装在 (~/.local/share/nvim/site/autoload)
- curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \
- https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim 
- ```
-
-## 用vim-plug安装插件
-
-- 在vim的配置文件.vimrc（neovim是init.vim)里，把要安装的插件放在`call plug#begin(PLUGIN_DIRECTORY)` 和 `call plug#end()` 之间 ; PLUGIN_DIRECTORY 是占位符，要用实际插件的安装目录代替。 vim插件一般安装在`~/.vim/plugged`。Neovim的插件也可以安装在这里。
-
-- 安装插件就是告诉插件管理器插件的地址(以下地址均是来自 github, 地址使用作者名/仓库名即可)
-  
-  ```bash
-  call plug#begin('~/.vim/plugged')  "这里同时也指定了插件的安装目录~/.vim/plugged
-  
-  Plug 'scrooloose/nerdtree'
-  Plug 'mhinz/vim-startify' 
-  Plug 'tpope/vim-fugitive' 
-  Plug 'lfv89/vim-interestingwords'
-  
-  call plug#end()
-  ```
-
-## 例子，配置nerdtree
-- 在 .vimrc 配置文件`call plug#end()`的后面添加如下配置，用来设置`空格键 + n`快捷键来激活nerdtree:
-  
-  ```bash
-  let mapleader = " "  "注意： 双引号里有个空格，这里把leader键映射成空格键
-  nnoremap <silent> <leader>n :NERDTreeToggle<CR>
-  "n 表示这个映射只在普通(normal)模式下生效，
-  "nore 表示这个映射是非递归的，
-  ```
-
-- 重新运行vim, 然后手动执行`:PlugInstall` 插件就会自行安装
-
-- 更新插件使用 :PlugUpdate
-
-- 更新 vim-plug 插件自己 :PlugUpgrade
-
-- 移除插件，移除配置文件的地址，执行 :PlugClean 命令即可。
-
-- 关闭插件执行界面是快捷键 q
-
 
 # 只有Neovim可用的插件管理器[packer.nvim](https://github.com/wbthomason/packer.nvim)
 安装**packer.nvim**
@@ -107,7 +54,7 @@ return require('packer').startup(function()
 
   -- 用use列出要安装的插件
   use 'mhinz/vim-startify'    -- 启动页列出最近打开的文件 
-  use 'rlue/vim-barbaric'     -- 中文输入法自动切换
+  use 'rlue/vim-barbaric'     -- 中文输入法自动切换，需要手动安装xkbswitch-macosx依赖，见下文
 
   -- 支持markdown编辑、预览, 在markdown文件下运行 :MarkdownPreview 就可以实时预览
   use {
@@ -292,6 +239,7 @@ curl -o /usr/local/bin/xkbswitch https://raw.githubusercontent.com/myshov/xkbswi
 2. 然后安装vim-barbaric插件即可, 该插件开箱即用，无需额外设置。
 ```bash
 Plug 'rlue/vim-barbaric'   " 这里使用vim-plug插件管理器安装
+use 'rlue/vim-barbaric'     --中文输入法自动切换，这里使用packer.nvim插件管理器
 ```
 
 
@@ -325,7 +273,60 @@ Plug 'rlue/vim-barbaric'   " 这里使用vim-plug插件管理器安装
    ```
 
 
-# Markdown
+# 插件管理器[vim-plug](https://github.com/junegunn/vim-plug)
+
+vim-plug是Vim和Neovim都可以使用的主流插件管理器
+
+安装vim-plug
+ ```bash
+ # 为Vim安装插件管理器vim-plug, 默认安装在 (~/.vim/autoload)
+ curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  
+ # 为Neovim安装插件管理器vim-plug，默认安装在 (~/.local/share/nvim/site/autoload)
+ curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \
+ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim 
+ ```
+
+## 用vim-plug安装插件
+
+- 在vim的配置文件.vimrc（neovim是init.vim)里，把要安装的插件放在`call plug#begin(PLUGIN_DIRECTORY)` 和 `call plug#end()` 之间 ; PLUGIN_DIRECTORY 是占位符，要用实际插件的安装目录代替。 vim插件一般安装在`~/.vim/plugged`。Neovim的插件也可以安装在这里。
+
+- 安装插件就是告诉插件管理器插件的地址(以下地址均是来自 github, 地址使用作者名/仓库名即可)
+  
+  ```bash
+  call plug#begin('~/.vim/plugged')  "这里同时也指定了插件的安装目录~/.vim/plugged
+  
+  Plug 'scrooloose/nerdtree'
+  Plug 'mhinz/vim-startify' 
+  Plug 'tpope/vim-fugitive' 
+  Plug 'lfv89/vim-interestingwords'
+  
+  call plug#end()
+  ```
+
+## 例子，配置nerdtree
+- 在 .vimrc 配置文件`call plug#end()`的后面添加如下配置，用来设置`空格键 + n`快捷键来激活nerdtree:
+  
+  ```bash
+  let mapleader = " "  "注意： 双引号里有个空格，这里把leader键映射成空格键
+  nnoremap <silent> <leader>n :NERDTreeToggle<CR>
+  "n 表示这个映射只在普通(normal)模式下生效，
+  "nore 表示这个映射是非递归的，
+  ```
+
+- 重新运行vim, 然后手动执行`:PlugInstall` 插件就会自行安装
+
+- 更新插件使用 :PlugUpdate
+
+- 更新 vim-plug 插件自己 :PlugUpgrade
+
+- 移除插件，移除配置文件的地址，执行 :PlugClean 命令即可。
+
+- 关闭插件执行界面是快捷键 q
+
+
+## 用vim-plua安装Markdown
 在.vimrc文件加入如下内容
 ```bash
     call plug#begin('~/.vim/plugged')
