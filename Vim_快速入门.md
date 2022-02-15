@@ -96,9 +96,9 @@ vim-plug是Vim和Neovim都可以使用的主流插件管理器
 git clone --depth 1 https://github.com/wbthomason/packer.nvim\
  ~/.local/share/nvim/site/pack/packer/start/packer.nvim
 ```
-packer.nvim安装插件
+packer.nvim会把插件安装到目录下： **~/.local/share/nvim/site/pack/packer**
 
-创建配置文件 **~/.config/nvim/lua/plugins.lua** 
+创建配置文件 **` touch ~/.config/nvim/lua/plugins.lua`** 
 
 ```lua
 --  ~/.config/nvim/lua/plugins.lua
