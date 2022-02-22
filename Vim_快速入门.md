@@ -8,11 +8,12 @@ Neovim完全兼容Vim，Neovim也完全支持用vimscript来写配置，它俩�
 nvim除了支持使用vimscript来写配置，从0.5版本开始，nvim还添加了对lua的支持。
 
 
-# 安装
+# 安装vim & nvim
 - mac下安装Neovim	 ` brew install neovim ` 。有时brew的版本太低，可以直接从nvim的github官网下载最新版本
 	1. 下载最新版本的二进制包： `nvim-macos.tar.gz`
 	2. 在命令行下解压：`tar xzvf nvim-macos.tar.gz`
 	3. 建立软连接 `ln  ***完整的目录***/nvim-osx64/bin/nvim   /usr/local/bin/nvim`
+    4. 运行 `nvim`
  
 - (可选）替换默认的vim `nvim ~/.bashrc`
 	```bash
@@ -20,6 +21,21 @@ nvim除了支持使用vimscript来写配置，从0.5版本开始，nvim还添加
 	alias vi='nvim'
 	```
 - mac下安装Vim		` brew install vim `
+
+## 安装字体 nerd-font, 解决终端图标乱码
+```bash
+brew tap homebrew/cask-fonts     # 如果存在其它cask-fonts库，可以 brew untap  *仓库名** 删除重复的仓库 
+brew install font-hack-nerd-font --cask
+```
+然后在终端里设置使用 Hack Nerd Font 字体
+
+
+# 一些插件需要安装的系统依赖，mac下的安装方式。
+ranger悬浮文件管理器，安装系统依赖
+```bash
+# macOS users please install ranger by `pip3 ranger-fm` instead of `brew install ranger`
+pip3 install ranger-fm pynvim
+```
 
 # 配置文件
 
@@ -36,7 +52,7 @@ nvim除了支持使用vimscript来写配置，从0.5版本开始，nvim还添加
   source $HOME/.vimrc
   ```
 
-# 无需而外安装插件的基本配置
+# 无需额外安装插件的基本配置
 新建文件 `touch ~/.config/nvim/lua/basic.lua`
 ```lua
 vim.cmd([[
@@ -90,17 +106,26 @@ return require('packer').startup(function()
   use 'wbthomason/packer.nvim'   -- Packer can manage itself
 
   -- 用use列出要安装的插件
-  use 'mhinz/vim-startify'    -- 启动页列出最近打开的文件 
-  use 'rlue/vim-barbaric'     -- 中文输入法自动切换，需要手动安装xkbswitch-macosx依赖，见下文
+  use 'mhinz/vim-startify'        -- 启动页列出最近打开的文件 
+  use 'rlue/vim-barbaric'         -- 中文输入法自动切换，需要手动安装xkbswitch-macosx依赖，见下文
 
-  -- 支持markdown编辑、预览, 在markdown文件下运行 :MarkdownPreview 就可以实时预览
+  use{'godlygeek/tabular'}
+  
+  use {                           -- 支持markdown编辑、预览, 在md文件下运行 :MarkdownPreview 可实时预览
+      'plasticboy/vim-markdown',  ft = {'markdown'}}
+      <!-- require = {'godlygeek/tabular'}   }                    -- vim-markdown依赖tabular插件 -->
   use {
-      'plasticboy/vim-markdown', 
-      require = {'godlygeek/tabular'}   }   -- vim-markdown依赖tabular插件
+      'iamcco/markdown-preview.nvim',  ft = {'markdown'},
+      run = function() vim.fn['mkdp#util#install']() end  }  -- 打开的文件类型是markdown文件时，才加载该插件
+
+  use { 'tomtom/tcomment_vim' }  -- 注释插件   当前行 gcc or gc（选中模式）
+
   use {
-      'iamcco/markdown-preview.nvim',
-      run = function() vim.fn['mkdp#util#install']() end, 
-      ft = {'markdown'}  }  -- 打开的文件类型是markdown文件时，才加载该插件
+        "vim-airline/vim-airline",          -- 状态栏美化插件
+        requires = {
+        "vim-airline/vim-airline-themes",
+        "ryanoasis/vim-devicons" }}  --图标插件，支持vim-airline, lightline, vim-startify；要放在vim-airline后面
+
 
   -- 用config配置插件
 
@@ -461,7 +486,7 @@ vim-plug是Vim和Neovim都可以使用的主流插件管理器
 
 从系统剪贴板粘贴到vim
 
-- 方法一：在输入模式下 Ctrl + v  也能从系统剪贴板粘贴到vim
+- 方法一：在 **输入模式**下，使用**Ctrl + v**  也能从系统剪贴板粘贴到vim
 - 方法二： 
 
 		"+p				注意前面的双引号"也要
@@ -471,3 +496,70 @@ vim-plug是Vim和Neovim都可以使用的主流插件管理器
 set clipboard^=unnamed,unnamedplus    "其中unnamed代表*寄存器，unnamedplus代表+寄存器。
 ```
 
+# [ranger](https://github.com/ranger/ranger)悬浮文件管理
+安装系统依赖
+```bash
+# macOS users please install ranger by `pip3 ranger-fm` instead of `brew install ranger`
+pip3 install ranger-fm pynvim
+```
+使用packer安装ranger的vim插件[rnvimr](https://github.com/kevinhwang91/rnvimr)
+```
+use "kevinhwang91/rnvimr"    --悬浮文件管理器ranger, mac下要先安装系统依赖。 使用hjkl 和 回车<CR>. ctrl-t新tab ctrl-x 水平 ctrl-v垂直打开文件
+```
+映射打开ranger文件管理器的快捷键
+```
+nnoremap sr :RnvimrToggle<CR>
+```
+
+Ranger的基础键位如下
+```
+q 退出
+jk 上下左右移动
+h 表示进入上一级父目录
+l或者会出 进入子目录或者打开文件
+
+空格 选中一个文件，对选中的文件再按空格取消选中
+v 选中全部文件
+
+dd 剪切文件到剪切板
+dD 彻底删除文件
+yy 复制文件
+pp 粘贴文件
+
+a 修改名字
+
+ctrl-t 新tab中打开文件 
+ctrl-x 水平分割窗口打开文件
+ctrl-v 垂直分割窗口打开文件，可能要连续按2次
+
+g 可以快速进入不同目录，有提示
+```
+
+然后在终端运行，看看安装是否正确
+```
+nvim +'checkhealth rnvimr'
+```
+
+# nvim-tree 文件管理
+packer.nvim安装
+```
+use { 'kyazdani42/nvim-tree.lua', requires = 'kyazdani42/nvim-web-devicons'}  -- 文件管理
+```
+nvim-tree 可以执行常见的 创建 、删除、拷贝、剪切 文件等操作
+```
+o 打开关闭文件夹
+a 创建文件
+r 重命名
+x 剪切
+c 拷贝
+p 粘贴
+d 删除
+<C-v> will open the file in a vertical split
+<C-x> will open the file in a horizontal split
+<C-t> will open the file in a new tab
+<Tab> will open the file as a preview (keeps the cursor in the tree)
+<C-]> will cd in the directory under the cursor
+ - to navigate up to the parent directory of the current file/directory
+ R will refresh the tree
+
+```
