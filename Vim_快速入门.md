@@ -123,7 +123,7 @@ return require('packer').startup(function()
 
   use "kevinhwang91/rnvimr" --悬浮文件管理ranger, mac先安装系统依赖。hjkl ctrl-t新tab ctrl-x水平ctrl-v垂直打开文件
 
-  use { "junegunn/fzf", run = function() vim.fn['fzf#install']() end }    --可查找任何内容，文件、Git分支、进程等
+  use { "junegunn/fzf", run = function() vim.fn['fzf#install']() end }  --模糊查找神器: 内容，文件、Git分支、进程
   use 'junegunn/fzf.vim'
  
   -- 用config配置插件
