@@ -109,24 +109,23 @@ return require('packer').startup(function()
   use 'mhinz/vim-startify'        -- 启动页列出最近打开的文件 
   use 'rlue/vim-barbaric'         -- 中文输入法自动切换，需要手动安装xkbswitch-macosx依赖，见下文
 
-  use{'godlygeek/tabular'}
-  
-  use {                           -- 支持markdown编辑、预览, 在md文件下运行 :MarkdownPreview 可实时预览
-      'plasticboy/vim-markdown',  ft = {'markdown'}}
-      <!-- require = {'godlygeek/tabular'}   }                    -- vim-markdown依赖tabular插件 -->
-  use {
-      'iamcco/markdown-preview.nvim',  ft = {'markdown'},
-      run = function() vim.fn['mkdp#util#install']() end  }  -- 打开的文件类型是markdown文件时，才加载该插件
+  use { 'plasticboy/vim-markdown', ft = {'markdown'},           --支持markdown编辑, 
+        require = {'godlygeek/tabular'}   }                     -- vim-markdown依赖tabular插件
+  use { 'iamcco/markdown-preview.nvim',  ft = {'markdown'},     -- 在md文件下运行 :MarkdownPreview 可实时预览
+        run = function() vim.fn['mkdp#util#install']() end  }   -- 打开的文件类型是markdown文件时，才加载该插件
 
   use { 'tomtom/tcomment_vim' }  -- 注释插件   当前行 gcc or gc（选中模式）
 
-  use {
-        "vim-airline/vim-airline",          -- 状态栏美化插件
+  use { "vim-airline/vim-airline",          -- 状态栏美化插件
         requires = {
         "vim-airline/vim-airline-themes",
         "ryanoasis/vim-devicons" }}  --图标插件，支持vim-airline, lightline, vim-startify；要放在vim-airline后面
 
+  use "kevinhwang91/rnvimr" --悬浮文件管理ranger, mac先安装系统依赖。hjkl ctrl-t新tab ctrl-x水平ctrl-v垂直打开文件
 
+  use { "junegunn/fzf", run = function() vim.fn['fzf#install']() end }    --可查找任何内容，文件、Git分支、进程等
+  use 'junegunn/fzf.vim'
+ 
   -- 用config配置插件
 
 end)
@@ -496,7 +495,7 @@ vim-plug是Vim和Neovim都可以使用的主流插件管理器
 set clipboard^=unnamed,unnamedplus    "其中unnamed代表*寄存器，unnamedplus代表+寄存器。
 ```
 
-# [ranger](https://github.com/ranger/ranger)悬浮文件管理
+# [ranger](https://github.com/ranger/ranger)悬浮文件管理, 文件管理优先使用这个。比nvim-tree好用
 安装系统依赖
 ```bash
 # macOS users please install ranger by `pip3 ranger-fm` instead of `brew install ranger`
@@ -506,8 +505,14 @@ pip3 install ranger-fm pynvim
 ```
 use "kevinhwang91/rnvimr"    --悬浮文件管理器ranger, mac下要先安装系统依赖。 使用hjkl 和 回车<CR>. ctrl-t新tab ctrl-x 水平 ctrl-v垂直打开文件
 ```
-映射打开ranger文件管理器的快捷键
+打开ranger文件管理器的快捷键和基本设置
 ```
+nnoremap sr :RnvimrToggle<CR>
+
+" 悬浮文件管理器ranger设置
+let g:rnvimr_enable_ex = 1          " 让Ranger取代Netrw并成为文件浏览器
+let g:rnvimr_enable_picker = 1      " 选择文件后隐藏
+let g:rnvimr_ranger_cmd = 'ranger --cmd="set viewmode multipane"'  "使用multipane单列模式，可按~手动切换成多列
 nnoremap sr :RnvimrToggle<CR>
 ```
 
