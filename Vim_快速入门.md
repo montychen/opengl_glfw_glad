@@ -30,12 +30,23 @@ brew install font-hack-nerd-font --cask
 然后在终端里设置使用 Hack Nerd Font 字体
 
 
-# 一些插件需要安装的系统依赖，mac下的安装方式。
+# 一些插件要安装系统依赖，mac的安装方式。
 ranger悬浮文件管理器，安装系统依赖
 ```bash
 # macOS users please install ranger by `pip3 ranger-fm` instead of `brew install ranger`
 pip3 install ranger-fm pynvim
 ```
+
+vim-barbaric中文输入自动却换，安装系统依赖
+```bash
+curl -o /usr/local/bin/xkbswitch https://raw.githubusercontent.com/myshov/xkbswitch-macosx/master/bin/xkbswitch
+```
+
+fzf.vim模糊搜索神器, 安装系统依赖[ripgrep](https://github.com/BurntSushi/ripgrep)
+```bash
+brew install ripgrep
+```
+
 
 # 配置文件
 
@@ -326,11 +337,11 @@ use 'rlue/vim-barbaric'     --中文输入法自动切换，这里使用packer.n
    ```bash
    call plug#begin('~/.vim/plugged')
     ...
-    Plug 'lyokha/vim-xkbswitch'  "中文自动输入法切换插件, 记得重启vim然后执行 :PlugInstall
+    Plug 'lyokha/vim-xkbswitch'      "中文自动输入法切换插件, 记得重启vim然后执行 :PlugInstall
     ...
    call plug#end()
    
-   let g:XkbSwitchEnabled = 1    "默认让xkbs输入法自动切换生效
+   let g:XkbSwitchEnabled = 1        "默认让vim-xkbswitch中文输入法自动切换生效
    ```
 
 
@@ -495,7 +506,12 @@ vim-plug是Vim和Neovim都可以使用的主流插件管理器
 set clipboard^=unnamed,unnamedplus    "其中unnamed代表*寄存器，unnamedplus代表+寄存器。
 ```
 
-# [ranger](https://github.com/ranger/ranger)悬浮文件管理, 文件管理优先使用这个。比nvim-tree好用
+# [ranger](https://github.com/ranger/ranger)悬浮文件管理, 比nvim-tree好用
+
+ranger只能逐级逐目录查找文件; 不能模糊、跨多个目录查找文件。
+
+fzf.vim可以模糊搜索当前项目、或者当前目录和子目录中的文件、或者vim打开的第一个文件所在目录和子目录下的文件。在vim里可以用`:pwd` 查看当前目录  `:cd ***` 改变当前目录
+
 安装系统依赖
 ```bash
 # macOS users please install ranger by `pip3 ranger-fm` instead of `brew install ranger`
@@ -505,23 +521,21 @@ pip3 install ranger-fm pynvim
 ```
 use "kevinhwang91/rnvimr"    --悬浮文件管理器ranger, mac下要先安装系统依赖。 使用hjkl 和 回车<CR>. ctrl-t新tab ctrl-x 水平 ctrl-v垂直打开文件
 ```
-打开ranger文件管理器的快捷键和基本设置
+ranger文件管理器快捷键和基本设置（init.lua）
 ```
-nnoremap sr :RnvimrToggle<CR>
-
 " 悬浮文件管理器ranger设置
 let g:rnvimr_enable_ex = 1          " 让Ranger取代Netrw并成为文件浏览器
 let g:rnvimr_enable_picker = 1      " 选择文件后隐藏
 let g:rnvimr_ranger_cmd = 'ranger --cmd="set viewmode multipane"'  "使用multipane单列模式，可按~手动切换成多列
-nnoremap sr :RnvimrToggle<CR>
+noremap <silent> <Leader>f :RnvimrToggle<CR>  “ranger逐级逐目录查找文件; 不能模糊、跨多个目录查找文件。
 ```
 
 Ranger的基础键位如下
 ```
-q 退出
+q 退出浮动窗口
 jk 上下左右移动
 h 表示进入上一级父目录
-l或者会出 进入子目录或者打开文件
+l或者回车<CR> 进入子目录或者打开文件
 
 空格 选中一个文件，对选中的文件再按空格取消选中
 v 选中全部文件
@@ -543,6 +557,37 @@ g 可以快速进入不同目录，有提示
 然后在终端运行，看看安装是否正确
 ```
 nvim +'checkhealth rnvimr'
+```
+
+# [fzf.vim](https://github.com/junegunn/fzf.vim)模糊搜索神器, 文件、内容都可以搜索
+使用packer安装fzf插件
+```lua
+use { "junegunn/fzf", run = function() vim.fn['fzf#install']() end }  --模糊查找神器: 内容，文件、Git分支、进程
+use 'junegunn/fzf.vim'
+```
+
+fzf的基本配置（init.lua)
+```
+" ------ fzf 模糊搜索
+" fzf的:Files模糊搜索当前项目、或者当前目录和子目录中的文件、或者vim打开的第一个文件所在目录和子目录下的文件 
+" :pwd 查看当前目录  :cd *** 可以改变当前目录
+nnoremap <silent> <Leader>pf :Files<CR>
+
+" fzf模糊查找当前打开的文件（buffer）
+nnoremap <silent> <Leader>b :Buffers<CR>
+
+" fzf模糊查找打开过的历史文件
+nnoremap <silent> <Leader>h :History<CR>
+
+"fzf模糊搜索内容：当前项目、或者vim打开的第一个文件所在目录和子目录下所有文件的内容都可以搜索 
+nnoremap <silent> <Leader>ps :Rg<CR>
+
+"fzf模糊搜索内容：在当前打开的所有文件(buffer)中搜索 
+nnoremap <silent> <Leader>bs :Lines<CR>
+```
+fzf基本命令
+```
+<Esc> 退出浮动窗口
 ```
 
 # nvim-tree 文件管理
