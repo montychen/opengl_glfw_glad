@@ -580,6 +580,7 @@ nnoremap <silent> <Leader>b :Buffers<CR>
 nnoremap <silent> <Leader>h :History<CR>
 
 "fzf模糊搜索内容：当前项目、或者vim打开的第一个文件所在目录和子目录下所有文件的内容都可以搜索 
+"buffer文件如果不属于 当前目录 则:Rg不会搜索；如果要搜索所有buffer的内容，就要用:Lines
 nnoremap <silent> <Leader>ps :Rg<CR>
 
 "fzf模糊搜索内容：在当前打开的所有文件(buffer)中搜索 
