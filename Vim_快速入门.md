@@ -15,7 +15,7 @@ mac下一定不要使用系统自带的终端Terminal.app，不然颜色丰富�
 
 
 
-## Alacritty 缺点是不支持tab也没有默认配置.
+## Alacritty 性能最快,缺点是不支持tab也没有默认配置.
 安装Alacritty `brew cask install alacritty`
 
 创建配置文件alacritty.yml。Alacritty 默认不会添加配置文件，要手动添加
@@ -714,12 +714,15 @@ x 剪切
 c 拷贝
 p 粘贴
 d 删除
-<C-v> will open the file in a vertical split
-<C-x> will open the file in a horizontal split
-<C-t> will open the file in a new tab
-<Tab> will open the file as a preview (keeps the cursor in the tree)
-<C-]> will cd in the directory under the cursor
- - to navigate up to the parent directory of the current file/directory
- R will refresh the tree
+s 使用系统默认程序打开目录或文件
+<Tab> 将文件添加到缓冲区，但不移动光标
+<C-t> 在新tab中打开文件
+<C-v> 垂直分屏打开文件
+<C-x> 水平分屏打开文件
+<C-]> 进入光标下的目录 相当 cd 目录
+<C-r> 重命名目录或文件，删除已有目录名称
+ - 返回上层目录
+ R 刷新 
+ / 搜索
 
 ```
