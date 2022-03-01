@@ -7,12 +7,115 @@ Neovim完全兼容Vim，Neovim也完全支持用vimscript来写配置，它俩�
 
 nvim除了支持使用vimscript来写配置，从0.5版本开始，nvim还添加了对lua的支持。
 
+# 终端问题
+mac下一定不要使用系统自带的终端Terminal.app，不然颜色丰富的主题theme都不能正常显示。 优先推荐使用[Tabby](https://github.com/Eugeny/tabby) 其次是 [Alacritty](https://github.com/alacritty/alacritty), 最后是[iTerm2](https://github.com/gnachman/iTerm2)也行。
+
+## Tabby 方便好用,默认配置很好
+安装 `brew install tabby`
+
+
+
+## Alacritty 缺点是不支持tab也没有默认配置.
+安装Alacritty `brew cask install alacritty`
+
+创建配置文件alacritty.yml。Alacritty 默认不会添加配置文件，要手动添加
+```bash
+mkdir ~/.config/alacritty
+touch ~/.config/alacritty/alacritty.yml
+```
+我的配置 **alacritty.yml**
+```
+colors:
+
+  primary:
+    background: "#1e2127"
+    # background: "#2E3440"
+    foreground: "#D8DEE9"
+
+
+  normal:
+    black: "#3B4252"
+    red: "#BF616A"
+    green: "#A3BE8C"
+    yellow: "#EBCB8B"
+    blue: "#81A1C1"
+    magenta: "#B48EAD"
+    cyan: "#88C0D0"
+    white: "#abb2bf"
+
+
+  bright:
+    black: "#5c6370"
+    red: "#e06c75"
+    green: "#98c379"
+    yellow: "#d19a66"
+    blue: "#61afef"
+    magenta: "#c678dd"
+    cyan: "#56b6c2"
+    white: "#ECEFF4"
+
+# background_opacity: 1.0
+window.opacity: 1.0
+
+# 设置字体
+font:
+  normal:
+    family: "Hack Nerd Font"
+    style: Regular
+  bold:
+    family: "Hack Nerd Font"
+    style: Bold
+  italic:
+    family: "Hack Nerd Font"
+    style: Italic
+  bold_italic:
+    family: "Hack Nerd Font"
+    style: Bold Italic
+
+  # 字大小
+  size: 20.0 
+
+  offset:
+    x: 0
+    y: 0
+  glyph_offset:
+    x: 0
+    y: 0
+
+window:
+  padding:
+    x: 2
+    y: 2
+
+scrolling:
+# 回滚缓冲区中的最大行数,指定“0”将禁用滚动。
+  history: 10000
+
+  # 滚动行数 
+
+  multiplier: 10
+
+# 如果为‘true’，则使用亮色变体绘制粗体文本。
+draw_bold_text_with_bright_colors: true
+
+selection:
+  semantic_escape_chars: ',│`|:"'' ()[]{}<>'
+  save_to_clipboard: true
+
+live_config_reload: true
+
+key_bindings:
+  - { key: V, mods: command, action: Paste }
+  - { key: C, mods: command, action: Copy }
+```
+
+
 
 # 安装vim & nvim
 - mac下安装Neovim	 ` brew install neovim ` 。有时brew的版本太低，可以直接从nvim的github官网下载最新版本
 	1. 下载最新版本的二进制包： `nvim-macos.tar.gz`
 	2. 在命令行下解压：`tar xzvf nvim-macos.tar.gz`
-	3. 建立软连接 `ln  ***完整的目录***/nvim-osx64/bin/nvim   /usr/local/bin/nvim`
+	3. 建立软连接 `ln -s ***完整的目录***/nvim-osx64/bin/nvim   /usr/local/bin/nvim`
     4. 运行 `nvim`
  
 - (可选）替换默认的vim `nvim ~/.bashrc`
@@ -42,9 +145,15 @@ vim-barbaric中文输入自动却换，安装系统依赖
 curl -o /usr/local/bin/xkbswitch https://raw.githubusercontent.com/myshov/xkbswitch-macosx/master/bin/xkbswitch
 ```
 
-fzf.vim模糊搜索神器, 安装系统依赖[ripgrep](https://github.com/BurntSushi/ripgrep)
+模糊搜索telescope, 安装系统依赖
+
+[ripgrep/rg](https://github.com/BurntSushi/ripgrep)  **文本搜索**神器grep最好代替者。
+
+[fd](https://github.com/sharkdp/fd)  **文件搜索**find的最好替代
+
+[sed](https://www.gnu.org/software/sed/) 一种在线编辑器，它一次处理一行内容, 用于 nvim-spectre 的全局字符串替换。
 ```bash
-brew install ripgrep
+brew install ripgrep fd gnu-sed
 ```
 
 
