@@ -10,12 +10,12 @@ nvim除了支持使用vimscript来写配置，从0.5版本开始，nvim还添加
 # 终端问题
 mac下一定不要使用系统自带的终端Terminal.app，不然颜色丰富的主题theme都不能正常显示。 优先推荐使用[Tabby](https://github.com/Eugeny/tabby) 其次是 [Alacritty](https://github.com/alacritty/alacritty), 最后是[iTerm2](https://github.com/gnachman/iTerm2)也行。
 
-## Tabby 方便好用,默认配置很好
+## Tabby 最方便好用,默认配置也很好，缺点是内存占用高一点
 安装 `brew install tabby`
 
 
 
-## Alacritty 性能最快,缺点是不支持tab也没有默认配置.
+## Alacritty 内存占用少,性能最好,缺点是不支持tab也没有默认配置.
 安装Alacritty `brew cask install alacritty`
 
 创建配置文件alacritty.yml。Alacritty 默认不会添加配置文件，要手动添加
@@ -234,7 +234,7 @@ return require('packer').startup(function()
   use { 'iamcco/markdown-preview.nvim',  ft = {'markdown'},     -- 在md文件下运行 :MarkdownPreview 可实时预览
         run = function() vim.fn['mkdp#util#install']() end  }   -- 打开的文件类型是markdown文件时，才加载该插件
 
-  use { 'tomtom/tcomment_vim' }  -- 注释插件   当前行 gcc or gc（选中模式）
+  <!-- use { 'tomtom/tcomment_vim' }  -- 注释插件   当前行 gcc or gc（选中模式） -->
 
   use { "vim-airline/vim-airline",          -- 状态栏美化插件
         requires = {
@@ -615,7 +615,110 @@ vim-plug是Vim和Neovim都可以使用的主流插件管理器
 set clipboard^=unnamed,unnamedplus    "其中unnamed代表*寄存器，unnamedplus代表+寄存器。
 ```
 
-# [ranger](https://github.com/ranger/ranger)悬浮文件管理, 比nvim-tree好用
+# nvim-tree 文件管理
+packer.nvim安装
+```
+use { 'kyazdani42/nvim-tree.lua', requires = 'kyazdani42/nvim-web-devicons'}  -- 文件管理
+```
+nvim-tree 可以执行常见的 创建 、删除、拷贝、剪切 文件等操作
+```
+o 打开关闭文件夹
+a 创建文件
+r 重命名
+x 剪切
+c 拷贝
+p 粘贴
+d 删除
+s 使用系统默认程序打开目录或文件
+<Tab> 将文件添加到缓冲区，但不移动光标
+<C-t> 在新tab中打开文件
+<C-v> 垂直分屏打开文件
+<C-x> 水平分屏打开文件
+<C-]> 进入光标下的目录 相当 cd 目录
+<C-r> 重命名目录或文件，删除已有目录名称
+ - 返回上层目录
+ R 刷新 
+ / 搜索
+
+```
+
+
+# [vim-visual-multi](https://github.com/mg979/vim-visual-multi) 多光标插件or多选择插件 
+用packer安装
+```
+use {'mg979/vim-visual-multi', branch = 'master'}
+```
+
+日常操作命令
+```
+ctrl-n 选中光标下的单词, 开始多选择操作
+
+n/N 选中下一个/上一个匹配的单词
+
+q 跳过当前匹配的单词or取笑当前匹配单词的选中状态, 并跳到下一个
+
+i，a，I，A 启动插入模式
+```
+
+
+# [telescope](https://github.com/nvim-telescope/telescope.nvim)模糊查找神器,比fzf好用
+用packer安装
+```
+use {
+    "nvim-telescope/telescope.nvim",
+    requires = {
+        "nvim-lua/plenary.nvim", -- Lua 开发模块
+        "BurntSushi/ripgrep", -- 文字查找
+        "sharkdp/fd" -- 文件查找
+    },
+    config = function()  -- config 是每次插件加载完成后自动运行 lua/conf/telescope.lua 文件中的代码
+        require("conf.telescope")
+    end
+}
+```
+
+在lua/conf/telescope.lua 文件中添加如下配置代码
+```
+-- telescope 需呀先手动安装依赖 fd 和 ripgrep
+
+require("telescope").setup()
+
+-- 查找文件: 在当面工作目录及子目录下查找. :pwd查看当前工作目录, :cd 可以进入新的工作目录
+vim.keybinds.gmap("n", "<leader>ff", "<cmd>Telescope find_files theme=dropdown<CR>", vim.keybinds.opts)
+
+-- 查找文件: 在打开过的文件中查找 file open rencend
+vim.keybinds.gmap("n", "<leader>fr", "<cmd>Telescope oldfiles theme=dropdown<CR>", vim.keybinds.opts)
+
+-- 查找文件: 在当前打开的缓冲区中查找
+vim.keybinds.gmap("n", "<leader>fb", "<cmd>Telescope buffers theme=dropdown<CR>", vim.keybinds.opts)
+
+-- 搜索光标下内容:  在当前工作目录及子目录下的文件中搜索
+vim.keybinds.gmap("n", "<leader>fs", "<cmd>Telescope grep_string theme=dropdown<CR>", vim.keybinds.opts)
+
+-- 搜索内容:  在当前工作目录及子目录下的文件中搜索
+-- vim.keybinds.gmap("n", "<leader>fg", "<cmd>Telescope live_grep theme=dropdown<CR>", vim.keybinds.opts)
+
+
+-- 查找 marks 标记
+vim.keybinds.gmap("n", "<leader>fm", "<cmd>Telescope marks theme=dropdown<CR>", vim.keybinds.opts)
+
+-- 查找帮助文档
+vim.keybinds.gmap("n", "<leader>fh", "<cmd>Telescope help_tags theme=dropdown<CR>", vim.keybinds.opts)
+
+```
+
+
+- **`<leader>ff`** 查找文件: 在当面工作目录及子目录下查找. :pwd查看当前工作目录, :cd 可以进入新的工作目录
+- **`<leader>fr`** 查找文件: 在打开过的文件中查找 file open rencent
+- **`<leader>fb`** 查找文件: 在当前打开的缓冲区中查找
+- **`<leader>fs`** 搜索光标下内容:  在当前工作目录及子目录下的文件中搜索
+
+- **`<leader>fm`** 查找 marks 标记
+- **`<leader>fh`** 查找帮助文档
+
+
+
+# [ranger](https://github.com/ranger/ranger)悬浮文件管理
 
 ranger只能逐级逐目录查找文件; 不能模糊、跨多个目录查找文件。
 
@@ -700,29 +803,4 @@ fzf基本命令
 <Esc> 退出浮动窗口
 ```
 
-# nvim-tree 文件管理
-packer.nvim安装
-```
-use { 'kyazdani42/nvim-tree.lua', requires = 'kyazdani42/nvim-web-devicons'}  -- 文件管理
-```
-nvim-tree 可以执行常见的 创建 、删除、拷贝、剪切 文件等操作
-```
-o 打开关闭文件夹
-a 创建文件
-r 重命名
-x 剪切
-c 拷贝
-p 粘贴
-d 删除
-s 使用系统默认程序打开目录或文件
-<Tab> 将文件添加到缓冲区，但不移动光标
-<C-t> 在新tab中打开文件
-<C-v> 垂直分屏打开文件
-<C-x> 水平分屏打开文件
-<C-]> 进入光标下的目录 相当 cd 目录
-<C-r> 重命名目录或文件，删除已有目录名称
- - 返回上层目录
- R 刷新 
- / 搜索
 
-```
