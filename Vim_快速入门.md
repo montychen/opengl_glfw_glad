@@ -428,21 +428,18 @@ use 'rlue/vim-barbaric'     --中文输入法自动切换，这里使用packer.n
 ## [解决办法2](https://zhuanlan.zhihu.com/p/49411224)使用[vim-xkbswitch](https://github.com/lyokha/vim-xkbswitch), 具体步骤
 
 1. 拷贝xkbswitch 到 /usr/local/bin
-   
    ```bash
    git clone https://link.zhihu.com/?target=https%3A//github.com/myshov/xkbswitch-macosx
    cp xkbswitch-macosx/bin/xkbswitch /usr/local/bin
    ```
 
 2. 拷贝 libxkbswitch.dylib 到 /usr/local/lib/
-   
    ```bash
    git clone https://github.com/myshov/libxkbswitch-macosx
    cp libxkbswitch-macosx/bin/libxkbswitch.dylib /usr/local/lib/
    ```
 
 3. 安装vim-xkbswitch 插件。下面示例使用vim-plug，在.vimrc文件中添加如下内容
-   
    ```bash
    call plug#begin('~/.vim/plugged')
     ...
@@ -475,21 +472,21 @@ vim-plug是Vim和Neovim都可以使用的主流插件管理器
 
 - 安装插件就是告诉插件管理器插件的地址(以下地址均是来自 github, 地址使用作者名/仓库名即可)
   
-  ```bash
-  call plug#begin('~/.vim/plugged')  "这里同时也指定了插件的安装目录~/.vim/plugged
-  
-  Plug 'scrooloose/nerdtree'
-  Plug 'mhinz/vim-startify' 
-  Plug 'tpope/vim-fugitive' 
-  Plug 'lfv89/vim-interestingwords'
-  
-  call plug#end()
-  ```
+ ```vim
+call plug#begin('~/.vim/plugged')  "这里同时也指定了插件的安装目录~/.vim/plugged
+
+Plug 'scrooloose/nerdtree'
+Plug 'mhinz/vim-startify' 
+Plug 'tpope/vim-fugitive' 
+Plug 'lfv89/vim-interestingwords'
+
+call plug#end()
+ ```
 
 ## 例子，配置nerdtree
 - 在 .vimrc 配置文件`call plug#end()`的后面添加如下配置，用来设置`空格键 + n`快捷键来激活nerdtree:
   
-  ```bash
+  ```vim
   let mapleader = " "  "注意： 双引号里有个空格，这里把leader键映射成空格键
   nnoremap <silent> <leader>n :NERDTreeToggle<CR>
   "n 表示这个映射只在普通(normal)模式下生效，
@@ -509,25 +506,24 @@ vim-plug是Vim和Neovim都可以使用的主流插件管理器
 
 ## 用vim-plua安装Markdown
 在.vimrc文件加入如下内容
-```bash
-    call plug#begin('~/.vim/plugged')
-        ...
-        "markdown support
-        Plug 'godlygeek/tabular'
-        Plug 'plasticboy/vim-markdown'
+```vim
+call plug#begin('~/.vim/plugged')
+    ...
+    "markdown support
+    Plug 'godlygeek/tabular'
+    Plug 'plasticboy/vim-markdown'
 
-        " markdown preview
-        Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
-        ...
-    call plug#end()
-    let g:vim_markdown_folding_disabled = 1  "设置md标题默认不折叠
-
+    " markdown preview
+    Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
+    ...
+call plug#end()
+let g:vim_markdown_folding_disabled = 1  "设置md标题默认不折叠
 ```
 在vim里运行 **`一次`** 下面的命令
 ```bash
-	:source %
-	:PluginInstall
-	:call mkdp#util#install()
+:source %
+:PluginInstall
+:call mkdp#util#install()
 ```
 以后只要在vim的md文件下运行 `:MarkdownPreview` 命令就可以一边编辑，一边在浏览器里面预览了，而且两边保持同步。
 
@@ -551,37 +547,39 @@ vim-plug是Vim和Neovim都可以使用的主流插件管理器
 
 # vim常用命令or操作
 ## 基本配置
+```vim
+ " autocmd! bufwritepost .vimrc source ~/.vimrc	                      "当 .vimrc 被修改时, 自动重新加载 
+ autocmd! bufwritepost basic.lua source ~/.config/nvim/lua/basic.lua   "当 lua/basic.lua 被修改时, 自动重新加载 
 
-    " autocmd! bufwritepost .vimrc source ~/.vimrc	                      "当 .vimrc 被修改时, 自动重新加载 
-    autocmd! bufwritepost basic.lua source ~/.config/nvim/lua/basic.lua   "当 lua/basic.lua 被修改时, 自动重新加载 
+set encoding=UTF-8
 
-	set encoding=UTF-8
+set tabstop=4           "tab 4个空格
+set softtabstop=4
+set shiftwidth=4
+set shiftround			" 表示缩进列数对齐到 shiftwidth 值的整数倍
+set expandtab			" 转换tab为空格，按下Tab 键时，输入到的都是空格
+set smarttab            " 表示插入 Tab 时使用 shiftwidth
 
-	set tabstop=4           "tab 4个空格
-	set softtabstop=4
-	set shiftwidth=4
-	set shiftround			" 表示缩进列数对齐到 shiftwidth 值的整数倍
-	set expandtab			" 转换tab为空格，按下Tab 键时，输入到的都是空格
-	set smarttab            " 表示插入 Tab 时使用 shiftwidth
+set nu					"显示行号
 
-	set nu					"显示行号
+set mouse=a             "开启鼠标支持
 
-    set mouse=a             "开启鼠标支持
+autocmd InsertLeave,WinEnter * set cursorline    "高亮当前行
+autocmd InsertEnter,WinLeave * set nocursorline  "插入模式，取消当前行高亮
 
-	autocmd InsertLeave,WinEnter * set cursorline    "高亮当前行
-	autocmd InsertEnter,WinLeave * set nocursorline  "插入模式，取消当前行高亮
-
-	set scrolloff=4			"jk移动时光标到底部时，光标上下方保留4行
-	set sidescrolloff=4
+set scrolloff=4			"jk移动时光标到底部时，光标上下方保留4行
+set sidescrolloff=4
+```
 
 
 ## 快捷键定义or映射
+```vim
+let mapleader = " "	   			"注意： 双引号里有个空格，这里把leader键映射成空格键
+inoremap jj <Esc>	   			"在插入模式下，连续输入jj可以退出插入模式
 
-	let mapleader = " "	        			  "注意： 双引号里有个空格，这里把leader键映射成空格键
-	inoremap jj <Esc>		    			"在插入模式下，连续输入jj可以退出插入模式
-
-	nmap sp :split<Return><C-w>w			"正常模式下，sp水平切分窗口
-	nmap vs :vsplit<Return><C-w>w			"正常模式下，vs垂直切分窗口
+nmap sp :split<Return><C-w>w			"正常模式下，sp水平切分窗口
+nmap vs :vsplit<Return><C-w>w			"正常模式下，vs垂直切分窗口
+```
 
 
 
@@ -599,25 +597,26 @@ vim-plug是Vim和Neovim都可以使用的主流插件管理器
 
 ## 系统剪贴板clipboard
 从vim复制到系统剪贴板复制 
-
-	"+y         注意前面的双引号"也要
-	"+2yy       复制两行
+```vim
+"+y         注意前面的双引号"也要
+"+2yy       复制两行
+```
 
 从系统剪贴板粘贴到vim
 
 - 方法一：在 **输入模式**下，使用**Ctrl + v**  也能从系统剪贴板粘贴到vim
 - 方法二： 
-
-		"+p				注意前面的双引号"也要
-
+```vim
+"+p				注意前面的双引号"也要
+```
 设置vim默认使用系统剪贴板。如果想y/p直接和系统剪贴板打通，可以在~/.vimrc中加上以下配置
-```bash
+```vim
 set clipboard^=unnamed,unnamedplus    "其中unnamed代表*寄存器，unnamedplus代表+寄存器。
 ```
 
 # nvim-tree 文件管理
 packer.nvim安装
-```
+```lua
 use { 'kyazdani42/nvim-tree.lua', requires = 'kyazdani42/nvim-web-devicons'}  -- 文件管理
 ```
 nvim-tree 可以执行常见的 创建 、删除、拷贝、剪切 文件等操作
@@ -645,7 +644,7 @@ s 使用系统默认程序打开目录或文件
 
 # [vim-visual-multi](https://github.com/mg979/vim-visual-multi) 多光标插件or多选择插件 
 用packer安装
-```
+```lua
 use {'mg979/vim-visual-multi', branch = 'master'}
 ```
 
@@ -663,7 +662,7 @@ i，a，I，A 启动插入模式
 
 # [telescope](https://github.com/nvim-telescope/telescope.nvim)模糊查找神器,比fzf好用
 用packer安装
-```
+```lua
 use {
     "nvim-telescope/telescope.nvim",
     requires = {
@@ -678,7 +677,7 @@ use {
 ```
 
 在lua/conf/telescope.lua 文件中添加如下配置代码
-```
+```lua
 -- telescope 需呀先手动安装依赖 fd 和 ripgrep
 
 require("telescope").setup()
@@ -704,9 +703,7 @@ vim.keybinds.gmap("n", "<leader>fm", "<cmd>Telescope marks theme=dropdown<CR>", 
 
 -- 查找帮助文档
 vim.keybinds.gmap("n", "<leader>fh", "<cmd>Telescope help_tags theme=dropdown<CR>", vim.keybinds.opts)
-
 ```
-
 
 - **`<leader>ff`** 查找文件: 在当面工作目录及子目录下查找. :pwd查看当前工作目录, :cd 可以进入新的工作目录
 - **`<leader>fr`** 查找文件: 在打开过的文件中查找 file open rencent
@@ -715,7 +712,34 @@ vim.keybinds.gmap("n", "<leader>fh", "<cmd>Telescope help_tags theme=dropdown<CR
 
 - **`<leader>fm`** 查找 marks 标记
 - **`<leader>fh`** 查找帮助文档
+```
+ctrl-t 新tab中打开文件 
+ctrl-x 水平分割窗口打开文件
+ctrl-v 垂直分割窗口打开文件，可能要连续按2次
 
+<Tab> 选中当前的搜索结果，可搭配 <CR> 一次性打开多个
+<C-c> 退出搜索框
+```
+# [hop](https://github.com/phaazon/hop.nvim) 字词行快速定位跳转
+使用packer安装
+```lua
+use {
+    "phaazon/hop.nvim",
+    config = function()
+        require("conf.hop")  -- config 是每次插件加载完成后自动运行 lua/conf/hop.lua 文件中的代码
+    end
+}
+```
+
+在lua/conf/hop.lua加入下面的配置代码
+```lua
+require("hop").setup()
+-- 搜索并跳转到字符
+vim.keybinds.gmap("n", "<leader>hc", "<cmd>HopChar1<CR>", vim.keybinds.opts)
+-- 搜索并跳转到单词
+vim.keybinds.gmap("n", "<leader>hw", "<cmd>HopWord<CR>", vim.keybinds.opts)
+```
+- **`<leader>hc`** 输入1个字符,就可以快速跳转到给字符的位置
 
 
 # [ranger](https://github.com/ranger/ranger)悬浮文件管理
@@ -734,7 +758,7 @@ pip3 install ranger-fm pynvim
 use "kevinhwang91/rnvimr"    --悬浮文件管理器ranger, mac下要先安装系统依赖。 使用hjkl 和 回车<CR>. ctrl-t新tab ctrl-x 水平 ctrl-v垂直打开文件
 ```
 ranger文件管理器快捷键和基本设置（init.lua）
-```
+```vim
 " 悬浮文件管理器ranger设置
 let g:rnvimr_enable_ex = 1          " 让Ranger取代Netrw并成为文件浏览器
 let g:rnvimr_enable_picker = 1      " 选择文件后隐藏
@@ -779,7 +803,7 @@ use 'junegunn/fzf.vim'
 ```
 
 fzf的基本配置（init.lua)
-```
+```vim
 " ------ fzf 模糊搜索
 " fzf的:Files模糊搜索当前项目、或者当前目录和子目录中的文件、或者vim打开的第一个文件所在目录和子目录下的文件 
 " :pwd 查看当前目录  :cd *** 可以改变当前目录
