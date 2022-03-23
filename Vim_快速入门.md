@@ -10,11 +10,6 @@ nvim除了支持使用vimscript来写配置，从0.5版本开始，nvim还添加
 # 终端问题
 mac下一定不要使用系统自带的终端Terminal.app，不然颜色丰富的主题theme都不能正常显示。 推荐[Alacritty](https://github.com/alacritty/alacritty), 最后是[iTerm2](https://github.com/gnachman/iTerm2)也行。
 
-## [Tabby](https://github.com/Eugeny/tabby) ,默认配置也很好，缺点是内存占用高一点, MacOS下Option|Alt按键估计也要重新映射才能用
-安装 `brew install tabby`
-
-
-
 ## Alacritty 内存占用少,性能最好,缺点是不支持tab也没有默认配置.
 安装Alacritty `brew cask install alacritty`
 
@@ -73,7 +68,7 @@ font:
     style: Bold Italic
 
   # 字大小
-  size: 20.0 
+  size: 19.0 
 
   offset:
     x: 0
@@ -194,6 +189,11 @@ key_bindings:
 ```
 
 
+## 终端[Tabby](https://github.com/Eugeny/tabby) ,默认配置很好，缺点是内存占用高, MacOS下Option|Alt按键估计也要重新映射才行
+安装 `brew install tabby`
+
+
+
 
 # 安装vim & nvim
 - mac下安装Neovim	 ` brew install neovim ` 。有时brew的版本太低，可以直接从nvim的github官网下载最新版本
@@ -218,7 +218,14 @@ brew install font-hack-nerd-font --cask
 
 
 # 一些插件要安装系统依赖，mac的安装方式。
+安装python支持，有一些好用的插件需要python3支持
+```bash
+brew install python3
+pip3 install neovim --upgrade
+```
+
 ranger悬浮文件管理器，安装系统依赖
+
 ```bash
 # macOS users please install ranger by `pip3 ranger-fm` instead of `brew install ranger`
 pip3 install ranger-fm pynvim
@@ -236,9 +243,27 @@ curl -o /usr/local/bin/xkbswitch https://raw.githubusercontent.com/myshov/xkbswi
 [fd](https://github.com/sharkdp/fd)  **文件搜索**find的最好替代
 
 [sed](https://www.gnu.org/software/sed/) 一种在线编辑器，它一次处理一行内容, 用于 nvim-spectre 的全局字符串替换。
+
+[ctags](https://github.com/universal-ctags/ctags) 用于LSP符号和标签的查看器和查找器
 ```bash
-brew install ripgrep fd gnu-sed
+brew install ripgrep fd gnu-sed ctags
 ```
+
+
+
+## 一些语言的 LSP language server依赖
+
+### vim script  LSP Server
+```
+yarn global add vim-language-server
+```
+
+### python  LSP Server
+```
+pip3 install 'python-lsp-server[all]' pylsp-mypy pyls-isort
+
+```
+
 
 
 # 配置文件
